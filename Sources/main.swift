@@ -6,9 +6,6 @@
 //
 
 import Foundation
-import SwiftSyntax
-import SwiftParser
-import SwiftSyntaxBuilder
 
 func main() {
     guard let path = CommandLineParser.parseCommandLine() else {
@@ -17,7 +14,11 @@ func main() {
     }
     
     FileHelper(path, excludePaths: ["Pods"]).sourceFiles.forEach { file in
-        print(file)
+        guard let fileContent = try? String(contentsOfFile: file, encoding: .utf8) else {
+            return
+        }
+        
+        SwiftRefactorUtil(fileContent).rewrite()
     }
 }
 
