@@ -30,19 +30,26 @@ public class SwiftRefactorUtil {
 
 private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
+        return super.visit(newNode)
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+        let newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        return super.visit(newNode)
     }
     
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
+        return super.visit(newNode)
     }
     
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
+        return super.visit(newNode)
     }
     
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
@@ -52,11 +59,14 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// attribute_start-", endTrivia: "// attribute_end-"))
+        let newNode = self.addCommentForDeclSyntax(node, startTrivia: "// attribute_start-", endTrivia: "// attribute_end-")
+        return super.visit(newNode)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// func_start-", endTrivia: "// func_end-"))
+        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// func_start-", endTrivia: "// func_end-")
+        newNode.name = TokenSyntax(stringLiteral: "fun_\(node.name.text)_fun")
+        return super.visit(newNode)
     }
 }
 
@@ -75,5 +85,9 @@ extension SwiftASTSyntaxRewriter {
         
         let newNode = node.with(\.leadingTrivia, leadingTrivia).with(\.trailingTrivia, trailingTrivia)
         return newNode
+    }
+    
+    private func renameForDeclSyntax<T: DeclSyntaxProtocol>(_ node: T, prefix: String) -> T {
+        return node
     }
 }
