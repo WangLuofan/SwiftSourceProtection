@@ -30,24 +30,19 @@ public class SwiftRefactorUtil {
 
 private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let startTrivia = TriviaPiece.lineComment("// class_start-")
-        let endTrivia = TriviaPiece.lineComment("// class_end-")
-        
-        var leadingTrivia = node.leadingTrivia + Trivia(pieces: [startTrivia, .newlines(1)])
-        var skipFirstNewLine: Bool = true
-        
-        node.leadingTrivia.pieces.forEach { piece in
-            if piece.isNewline && skipFirstNewLine {
-                skipFirstNewLine = false
-                return
-            }
-            leadingTrivia = leadingTrivia.appending(piece)
-        }
-        
-        let traillingTrivia = node.trailingTrivia + Trivia(pieces: [.newlines(1), endTrivia, .newlines(1)])
-        
-        let newNode = node.with(\.leadingTrivia, leadingTrivia).with(\.trailingTrivia, traillingTrivia)
-        return super.visit(newNode)
+        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
+    }
+    
+    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-"))
     }
     
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
@@ -57,23 +52,19 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        let startTrivia = TriviaPiece.lineComment("// attribute_start-")
-        let endTrivia = TriviaPiece.lineComment("// attribute_end-")
-        
-        var leadingTrivia = Trivia(pieces: [.newlines(1), startTrivia])
-        node.leadingTrivia.pieces.forEach { piece in
-            leadingTrivia = leadingTrivia.appending(piece)
-        }
-        
-        let trailingTrivia = node.trailingTrivia + Trivia(pieces: [.newlines(1), endTrivia, .newlines(1)])
-        
-        let newNode = node.with(\.leadingTrivia, leadingTrivia).with(\.trailingTrivia, trailingTrivia)
-        return super.visit(newNode)
+        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// attribute_start-", endTrivia: "// attribute_end-"))
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let startTrivia = TriviaPiece.lineComment("// func_start-")
-        let endTrivia = TriviaPiece.lineComment("// func_end-")
+        return super.visit(self.addCommentForDeclSyntax(node, startTrivia: "// func_start-", endTrivia: "// func_end-"))
+    }
+}
+
+extension SwiftASTSyntaxRewriter {
+    private func addCommentForDeclSyntax<T: DeclSyntaxProtocol>(_ node: T, startTrivia: String, endTrivia: String) -> T {
+        
+        let startTrivia = TriviaPiece.lineComment(startTrivia)
+        let endTrivia = TriviaPiece.lineComment(endTrivia)
         
         var leadingTrivia = Trivia(pieces: [.newlines(1), startTrivia])
         node.leadingTrivia.pieces.forEach { piece in
@@ -83,7 +74,6 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
         let trailingTrivia = node.trailingTrivia + Trivia(pieces: [.newlines(1), endTrivia, .newlines(1)])
         
         let newNode = node.with(\.leadingTrivia, leadingTrivia).with(\.trailingTrivia, trailingTrivia)
-        return super.visit(newNode)
+        return newNode
     }
 }
-
