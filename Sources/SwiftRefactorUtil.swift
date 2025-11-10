@@ -36,7 +36,17 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        let newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        
+        if let extendedType = node.extendedType.as(IdentifierTypeSyntax.self) {
+            let newExtendedType = IdentifierTypeSyntax(
+                name: TokenSyntax.identifier("cla_\(extendedType.name.text)_cla"),
+                genericArgumentClause: extendedType.genericArgumentClause
+            )
+            
+            newNode = newNode.with(\.extendedType, TypeSyntax(newExtendedType))
+        }
+        
         return super.visit(newNode)
     }
     
@@ -59,7 +69,20 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        let newNode = self.addCommentForDeclSyntax(node, startTrivia: "// attribute_start-", endTrivia: "// attribute_end-")
+        let updatedBindings: [PatternBindingSyntax] = node.bindings.map { bindings in
+            guard let identifierPattern = bindings.pattern.as(IdentifierPatternSyntax.self) else {
+                return bindings
+            }
+            
+            let newPattern = PatternSyntax(stringLiteral: "pro_\(identifierPattern.identifier.text)_pro")
+                .with(\.trailingTrivia, node.trailingTrivia)
+            
+            return bindings.with(\.pattern, newPattern)
+        }
+        
+        var newNode = node.with(\.bindings, PatternBindingListSyntax(updatedBindings))
+        newNode = self.addCommentForDeclSyntax(newNode, startTrivia: "// attribute_start-", endTrivia: "// attribute_end-")
+        
         return super.visit(newNode)
     }
     

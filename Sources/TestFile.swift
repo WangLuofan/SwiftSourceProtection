@@ -8,9 +8,9 @@
 import Foundation
 
 class TestClass {
-    private let testProperty = 1
+    private var testProperty: Int = 1
+}
+
+extension TestClass {
     
-    private func testFunc(_ param: Int) {
-        
-    }
 }
