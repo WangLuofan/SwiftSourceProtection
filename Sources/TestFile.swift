@@ -8,6 +8,7 @@
 import Foundation
 
 class TestClass {
+    private static let testProperty2: Int = 1
     private var testProperty: Int = 1
 }
 

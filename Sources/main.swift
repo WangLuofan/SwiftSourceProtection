@@ -18,7 +18,8 @@ func main() {
             return
         }
         
-        SwiftRefactorUtil(fileContent).rewrite()
+        let newFileContent = SwiftRefactorUtil(fileContent).rewrite()
+        try? newFileContent.write(toFile: file, atomically: true, encoding: .utf8)
     }
 }
 

@@ -69,12 +69,21 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
+        var isStatic: Bool = false
+        for modifier in node.modifiers {
+            if modifier.name.text.compare("static") == .orderedSame {
+                isStatic = true
+                break
+            }
+        }
+        
         let updatedBindings: [PatternBindingSyntax] = node.bindings.map { bindings in
             guard let identifierPattern = bindings.pattern.as(IdentifierPatternSyntax.self) else {
                 return bindings
             }
             
-            let newPattern = PatternSyntax(stringLiteral: "pro_\(identifierPattern.identifier.text)_pro")
+            let name = isStatic ? "par_\(identifierPattern.identifier.text)_par" : "pro_\(identifierPattern.identifier.text)_pro"
+            let newPattern = PatternSyntax(stringLiteral: name)
                 .with(\.trailingTrivia, node.trailingTrivia)
             
             return bindings.with(\.pattern, newPattern)
