@@ -30,13 +30,13 @@ public class SwiftRefactorUtil {
 
 private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        var newNode = self.addCommentForDeclSyntax(node, startTriviaString: "// class_start-", endTriviaString: "// class_end-")
         newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
         return super.visit(newNode)
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        var newNode = self.addCommentForDeclSyntax(node, startTriviaString: "// class_start-", endTriviaString: "// class_end-")
         
         if let extendedType = node.extendedType.as(IdentifierTypeSyntax.self) {
             let newExtendedType = IdentifierTypeSyntax(
@@ -51,62 +51,80 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        var newNode = self.addCommentForDeclSyntax(node, startTriviaString: "// class_start-", endTriviaString: "// class_end-")
         newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
         return super.visit(newNode)
     }
     
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// class_start-", endTrivia: "// class_end-")
+        var newNode = self.addCommentForDeclSyntax(node, startTriviaString: "// class_start-", endTriviaString: "// class_end-")
         newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
         return super.visit(newNode)
     }
     
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        let parent: Syntax? = node.parent
-        
-        if parent?.as(MemberBlockItemSyntax.self) == nil {
-            return super.visit(node)
-        }
-        
-        var isStatic: Bool = false
-        for modifier in node.modifiers {
-            if modifier.name.text.compare("static") == .orderedSame {
-                isStatic = true
-                break
-            }
-        }
         
         let updatedBindings: [PatternBindingSyntax] = node.bindings.map { bindings in
             guard let identifierPattern = bindings.pattern.as(IdentifierPatternSyntax.self) else {
                 return bindings
             }
             
-            let name = isStatic ? "par_\(identifierPattern.identifier.text)_par" : "pro_\(identifierPattern.identifier.text)_pro"
+            let isMemberType: Bool = self.isMemberVariable(node)
+            let name = isMemberType ? "pro_\(identifierPattern.identifier.text)_pro" : "par_\(identifierPattern.identifier.text)_par"
+            
             let newPattern = PatternSyntax(stringLiteral: name)
                 .with(\.trailingTrivia, node.trailingTrivia)
-            
             return bindings.with(\.pattern, newPattern)
         }
         
         var newNode = node.with(\.bindings, PatternBindingListSyntax(updatedBindings))
-        newNode = self.addCommentForDeclSyntax(newNode, startTrivia: "// attribute_start-", endTrivia: "// attribute_end-")
+        
+        if self.isMemberVariable(node) {
+            newNode = self.addCommentForDeclSyntax(newNode, startTriviaString: "// attribute_start-", endTriviaString: "// attribute_end-")
+        }
         
         return super.visit(newNode)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        var newNode = self.addCommentForDeclSyntax(node, startTrivia: "// func_start-", endTrivia: "// func_end-")
+        var newNode = self.addCommentForDeclSyntax(node, startTriviaString: "// func_start-", endTriviaString: "// func_end-")
         newNode.name = TokenSyntax(stringLiteral: "fun_\(node.name.text)_fun")
         return super.visit(newNode)
     }
 }
 
 extension SwiftASTSyntaxRewriter {
-    private func addCommentForDeclSyntax<T: DeclSyntaxProtocol>(_ node: T, startTrivia: String, endTrivia: String) -> T {
+    private func isStaticVariable(_ node: VariableDeclSyntax) -> Bool {
+        for modifier in node.modifiers {
+            if modifier.name.text.compare("static") == .orderedSame {
+                return true
+            }
+        }
         
-        let startTrivia = TriviaPiece.lineComment(startTrivia)
-        let endTrivia = TriviaPiece.lineComment(endTrivia)
+        return false
+    }
+    
+    private func isMemberVariable(_ node: VariableDeclSyntax) -> Bool {
+        var currentNode: Syntax? = Syntax(node)
+        
+        while let parent = currentNode?.parent {
+            switch parent.kind {
+            case .classDecl, .structDecl, .enumDecl, .extensionDecl:
+                return true
+            case .functionDecl, .closureExpr, .codeBlock, .ifExpr, .forStmt, .whileStmt, .repeatStmt, .switchExpr:
+                return false
+            default:
+                currentNode = parent
+            }
+        }
+        
+        return false
+    }
+    
+    private func addCommentForDeclSyntax<T: DeclSyntaxProtocol>(_ node: T, startTriviaString: String, endTriviaString: String) -> T {
+        
+        let startTrivia = TriviaPiece.lineComment(startTriviaString)
+        let endTrivia = TriviaPiece.lineComment(endTriviaString)
         
         var leadingTrivia = Trivia(pieces: [.newlines(1), startTrivia])
         node.leadingTrivia.pieces.forEach { piece in

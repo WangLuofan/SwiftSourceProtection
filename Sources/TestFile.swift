@@ -8,8 +8,14 @@
 import Foundation
 
 class TestClass {
-    private static let testProperty2: Int = 1
+    
+    /// 注释1
+    /// 注释3
     private var testProperty: Int = 1
+    
+    private func testFunc() {
+        let test = 1
+    }
 }
 
 extension TestClass {
