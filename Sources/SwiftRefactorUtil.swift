@@ -91,6 +91,10 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
         newNode.name = TokenSyntax(stringLiteral: "fun_\(node.name.text)_fun")
         return super.visit(newNode)
     }
+    
+    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        
+    }
 }
 
 extension SwiftASTSyntaxRewriter {
