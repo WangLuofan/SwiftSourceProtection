@@ -93,7 +93,27 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        var newNode = node
         
+        let newFirstNameText = node.firstName.text.compare("_") == .orderedSame ? node.firstName.text : "par_\(node.firstName.text)_par"
+        
+        let newFirstNameToken = TokenSyntax.identifier(newFirstNameText).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia)
+            
+        newNode = newNode.with(\.firstName, newFirstNameToken)
+        
+        if let originalSecondName = node.secondName {
+            let newSecondNameText = "par_\(originalSecondName.text)_par"
+            let newSecondNameToken = TokenSyntax.identifier(newSecondNameText)
+                .with(\.leadingTrivia, originalSecondName.leadingTrivia)
+                .with(\.trailingTrivia, originalSecondName.trailingTrivia)
+            newNode = newNode.with(\.secondName, newSecondNameToken)
+        }
+        
+        newNode = newNode
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
     }
 }
 

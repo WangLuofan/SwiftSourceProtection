@@ -13,7 +13,7 @@ class TestClass {
     /// 注释3
     private var testProperty: Int = 1
     
-    private func testFunc() {
+    private func testFunc(_ firstName: String, lastName: String) {
         let test = 1
     }
 }
