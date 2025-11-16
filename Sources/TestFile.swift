@@ -13,8 +13,13 @@ class TestClass {
     /// 注释3
     private var testProperty: Int = 1
     
-    private func testFunc(_ firstName: String, lastName: String) {
-        let test = 1
+    private func testFunc(with firstName: String, _ lastName: String) {
+        print("\(firstName): \(lastName)")
+    }
+    
+    private func testFunc2() {
+        self.testFunc(with: "Wang", "Luofan")
+        self.testProperty = 2
     }
 }
 
