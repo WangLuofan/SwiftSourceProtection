@@ -93,7 +93,7 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
-        
+        return super.visit(node)
     }
 }
 
