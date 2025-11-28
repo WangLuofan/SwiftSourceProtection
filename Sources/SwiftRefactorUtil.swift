@@ -29,6 +29,11 @@ public class SwiftRefactorUtil {
 }
 
 private class SwiftASTSyntaxRewriter: SyntaxRewriter {
+    private let swiftKeywords: Set<String> = [
+        "self", "super", "in", "let", "var", "func", "if", "else", "for", "while",
+        "return", "break", "continue", "nil", "true", "false", "guard", "switch"
+    ]
+    
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
         var newNode = self.addCommentForDeclSyntax(node, startTriviaString: "// class_start-", endTriviaString: "// class_end-")
         newNode.name = TokenSyntax(stringLiteral: "cla_\(node.name.text)_cla")
@@ -92,8 +97,54 @@ private class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        var funcName: String = ""
+        var expr: ExprSyntax?
+        
+        if let exp = node.calledExpression.as(DeclReferenceExprSyntax.self) {
+            funcName = "func_\(exp.baseName.text)_func"
+            let newToken = TokenSyntax.identifier(funcName).with(\.leadingTrivia, exp.leadingTrivia).with(\.trailingTrivia, exp.trailingTrivia)
+            expr = ExprSyntax(exp.with(\.baseName, newToken))
+        }  else if let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            funcName = "func_\(memberAccess.declName.baseName.text)_func"
+            let newDeclName = memberAccess.declName.with(\.baseName, TokenSyntax.identifier(funcName))
+            expr = ExprSyntax(memberAccess.with(\.declName, newDeclName))
+        }
+        
+        if let expr {
+            let newNode = node.with(\.calledExpression, expr)
+            return super.visit(newNode)
+        }
+        
         return super.visit(node)
+    }
+    
+    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        var newNode = node
+        
+        let newFirstNameText = node.firstName.text.compare("_") == .orderedSame ? node.firstName.text : "par_\(node.firstName.text)_par"
+        
+        let newFirstNameToken = TokenSyntax.identifier(newFirstNameText).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia)
+            
+        newNode = newNode.with(\.firstName, newFirstNameToken)
+        
+        if let originalSecondName = node.secondName {
+            let newSecondNameText = "par_\(originalSecondName.text)_par"
+            let newSecondNameToken = TokenSyntax.identifier(newSecondNameText)
+                .with(\.leadingTrivia, originalSecondName.leadingTrivia)
+                .with(\.trailingTrivia, originalSecondName.trailingTrivia)
+            newNode = newNode.with(\.secondName, newSecondNameToken)
+        }
+        
+        newNode = newNode
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
     }
 }
 
