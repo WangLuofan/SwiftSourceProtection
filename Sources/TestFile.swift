@@ -6,6 +6,10 @@
 //
 
 import Foundation
+import AuthenticationServices
+import Accounts
+import WeatherKit
+import WeatherKit
 
 func globalFunction(test: String) {
     

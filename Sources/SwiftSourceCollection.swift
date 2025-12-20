@@ -10,9 +10,12 @@ import SwiftParser
 
 class SwiftSourceCollection: SyntaxVisitor {
     private let sourceFile: String
+    private let sourceInfo: SwiftSourceInfo
     
-    init(sourceFile: String) {
+    init(sourceFile: String, sourceInfo: SwiftSourceInfo) {
         self.sourceFile = sourceFile
+        self.sourceInfo = sourceInfo
+        
         super.init(viewMode: .sourceAccurate)
     }
     
@@ -32,12 +35,12 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        SwiftSourceInfo.shared.appendSourceInfo(classInfo)
+        self.sourceInfo.appendSourceInfo(classInfo)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClassDeclSyntax) {
-        SwiftSourceInfo.shared.popSourceInfo()
+        self.sourceInfo.popSourceInfo()
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -53,15 +56,12 @@ class SwiftSourceCollection: SyntaxVisitor {
         }
         functionInfo.signature = node.signature.trimmedDescription
         
+        self.sourceInfo.appendSourceInfo(functionInfo)
         return super.visit(node)
     }
     
-    override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
-        node.path.forEach { pathCompSyntax in
-            SwiftSourceInfo.shared.appendImportComponent(pathCompSyntax.name.text)
-        }
-        
-        return super.visit(node)
+    override func visitPost(_ node: FunctionDeclSyntax) {
+        self.sourceInfo.popSourceInfo()
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -84,9 +84,13 @@ class SwiftSourceCollection: SyntaxVisitor {
                 propertyInfo.isFinal = modifier.isFinal
             }
             
-            SwiftSourceInfo.shared.appendSourceInfo(propertyInfo)
+            self.sourceInfo.appendSourceInfo(propertyInfo)
         }
         
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: VariableDeclSyntax) {
+        self.sourceInfo.popSourceInfo()
     }
 }

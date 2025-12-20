@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftSyntax
+import SwiftParser
 
 // 查找项目根目录
 func findProjectPath(for filePath: String) -> String? {
@@ -45,11 +47,28 @@ func main() {
         return
     }
     
+    let sourceInfo: SwiftSourceInfo = SwiftSourceInfo()
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
+    var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
-    sourceFiles.forEach { file in
-        if let newFileContent = SwiftRefactorUtil(sourceFile: file).rewrite() {
-            try? newFileContent.write(toFile: file, atomically: true, encoding: .utf8)
+    sourceFiles.forEach { sourceFile in
+        guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
+            return
+        }
+        
+        let sourceTree = Parser.parse(source: sourceCode)
+        
+        let sourceColletion: SwiftSourceCollection = SwiftSourceCollection(sourceFile: sourceFile, sourceInfo: sourceInfo)
+        sourceColletion.walk(sourceTree)
+        
+        sourceTreeDict[sourceFile] = sourceTree
+    }
+
+    sourceTreeDict.forEach { sourceFile, sourceTree in
+        if let confusedFileContent: String =  SwiftSourceConfuseUtil(sourceFile: sourceFile,
+                                                                     sourceInfo: sourceInfo,
+                                                                     sourceTree: sourceTree).confuse() {
+            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
         }
     }
     

@@ -17,6 +17,7 @@ class SwiftSourceBaseInfo {
         return .Unknown
     }
     
+    var parent: SwiftSourceBaseInfo?
     var children: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
     
     var filePath: String = ""
