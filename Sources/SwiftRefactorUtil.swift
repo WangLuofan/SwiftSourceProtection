@@ -12,10 +12,22 @@ import SwiftParser
 class SwiftSourceInfo: @unchecked Sendable {
     static let shared: SwiftSourceInfo = SwiftSourceInfo()
     lazy var sourceInfoList: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
+    
     private lazy var sourceStack: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
+    private lazy var importComps: Set<String> = Set<String>()
     
     init() {
         
+    }
+    
+    func appendImportComponent(_ pathComp: String) {
+        self.importComps.insert(pathComp)
+        return
+    }
+    
+    func popImportComponent(_ pathComp: String) {
+        self.importComps.remove(pathComp)
+        return
     }
     
     func appendSourceInfo(_ sourceInfo: SwiftSourceBaseInfo) {

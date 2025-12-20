@@ -51,12 +51,17 @@ class SwiftSourceCollection: SyntaxVisitor {
             functionInfo.isClass = modifier.isClass
             functionInfo.isOverride = modifier.isOverride
         }
+        functionInfo.signature = node.signature.trimmedDescription
         
         return super.visit(node)
     }
     
-    override func visitPost(_ node: FunctionDeclSyntax) {
-        SwiftSourceInfo.shared.popSourceInfo()
+    override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
+        node.path.forEach { pathCompSyntax in
+            SwiftSourceInfo.shared.appendImportComponent(pathCompSyntax.name.text)
+        }
+        
+        return super.visit(node)
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -83,9 +88,5 @@ class SwiftSourceCollection: SyntaxVisitor {
         }
         
         return super.visit(node)
-    }
-    
-    override func visitPost(_ node: VariableDeclSyntax) {
-        SwiftSourceInfo.shared.popSourceInfo()
     }
 }
