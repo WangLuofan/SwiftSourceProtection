@@ -25,6 +25,15 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
+            ], swiftSettings: [
+                .define("SWIFT_VERSION=5.5"),
+                .enableUpcomingFeature("StrictConcurrency"),
+                .unsafeFlags(["-swift-version", "5"]),
+                .unsafeFlags([
+                    "-Xfrontend",
+                    "-disable-availability-checking",
+                ]),
+                .unsafeFlags(["-Xfrontend", "-strict-concurrency=off"])
             ]
         ),
     ]
