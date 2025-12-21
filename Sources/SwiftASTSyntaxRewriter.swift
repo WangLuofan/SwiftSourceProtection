@@ -120,6 +120,42 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        
+        var funcDeclNode = node.parent
+        while funcDeclNode?.as(FunctionDeclSyntax.self) == nil {
+            funcDeclNode = funcDeclNode?.parent
+        }
+        
+        if funcDeclNode == nil {
+            return super.visit(node)
+        }
+        
+        guard let confusedFuncName: String = funcDeclNode?.as(FunctionDeclSyntax.self)?.name.text, let originFuncName = self.sourceInfo.confusedMap[confusedFuncName], let funcSourceInfo: SwiftSourceFunctionInfo = self.sourceInfo.sourceInfoList[originFuncName] as? SwiftSourceFunctionInfo, isSymbolInProjectPath(sourceInfo: funcSourceInfo) else {
+            return super.visit(node)
+        }
+        
+        var newNode = node
+        
+        let firstName = node.firstName.text
+        if firstName.compare("_") != .orderedSame, let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstName, sourceInfo: self.sourceInfo) {
+            newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia))
+        }
+        
+        if let secondName = newNode.secondName?.text, secondName.compare("_") != .orderedSame, let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName, sourceInfo: self.sourceInfo) {
+            var tokenSyntax = TokenSyntax(stringLiteral: confusedSecondName)
+            if let leadingTrivia = node.secondName?.leadingTrivia {
+                tokenSyntax = tokenSyntax.with(\.leadingTrivia, leadingTrivia)
+            }
+            if let trailingTrivia = node.secondName?.trailingTrivia {
+                tokenSyntax = tokenSyntax.with(\.trailingTrivia, trailingTrivia)
+            }
+            
+            newNode = newNode.with(\.secondName, tokenSyntax)
+        }
+        
+        return super.visit(newNode)
+    }
 }
 
 extension SwiftASTSyntaxRewriter {

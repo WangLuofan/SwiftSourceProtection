@@ -11,7 +11,9 @@ class SwiftSourceInfo: @unchecked Sendable {
     private lazy var sourceStack: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
     
     lazy var sourceInfoList: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
+    
     lazy var identifierMap: [String: String] = [String: String]()
+    lazy var confusedMap: [String: String] = [String: String]()
     
     init() {
         

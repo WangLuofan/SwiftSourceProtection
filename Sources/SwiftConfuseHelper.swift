@@ -41,6 +41,8 @@ class SwiftConfuseHelper {
         }
         
         sourceInfo.identifierMap[symbolName] = randomSymbolName
+        sourceInfo.confusedMap[randomSymbolName] = symbolName
+        
         return randomSymbolName
     }
 }
