@@ -47,6 +47,7 @@ class SwiftSourceCollection: SyntaxVisitor {
         let functionInfo: SwiftSourceFunctionInfo = SwiftSourceFunctionInfo()
         
         functionInfo.name = node.name.text
+        functionInfo.filePath = self.sourceFile
         node.modifiers.forEach { modifier in
             functionInfo.accessControl = modifier.accessControl
             functionInfo.isStatic = modifier.isStatic

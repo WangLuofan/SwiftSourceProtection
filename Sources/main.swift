@@ -67,7 +67,8 @@ func main() {
     sourceTreeDict.forEach { sourceFile, sourceTree in
         if let confusedFileContent: String =  SwiftSourceConfuseUtil(sourceFile: sourceFile,
                                                                      sourceInfo: sourceInfo,
-                                                                     sourceTree: sourceTree).confuse() {
+                                                                     sourceTree: sourceTree,
+                                                                     projectPath: projectPath).confuse() {
             try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
         }
     }

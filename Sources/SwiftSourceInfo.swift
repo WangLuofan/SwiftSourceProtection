@@ -24,15 +24,17 @@ class SwiftSourceInfo: @unchecked Sendable {
         } else {
             if sourceInfo.sourceType == .Class, let classInfo: SwiftSourceClassInfo = sourceInfo as? SwiftSourceClassInfo {
                 classInfo.parent = self.sourceStack.last
-                
                 self.sourceStack.last?.children.append(classInfo)
             } else if sourceInfo.sourceType == .Function, let functionInfo: SwiftSourceFunctionInfo = sourceInfo as? SwiftSourceFunctionInfo {
                 functionInfo.parent = self.sourceStack.last
                 self.sourceStack.last?.children.append(functionInfo)
+                self.sourceInfoList[sourceInfo.name] = functionInfo
             } else if sourceInfo.sourceType == .Property, let propertyInfo: SwiftSourcePropertyInfo = sourceInfo as? SwiftSourcePropertyInfo {
                 if let classInfo: SwiftSourceClassInfo = self.sourceStack.last as? SwiftSourceClassInfo {
                     propertyInfo.parent = classInfo
                     classInfo.children.append(propertyInfo)
+                    
+                    self.sourceInfoList[sourceInfo.name] = propertyInfo
                 }
             }
         }

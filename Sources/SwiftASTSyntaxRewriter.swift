@@ -11,28 +11,120 @@ import SwiftSyntaxBuilder
 
 class SwiftASTSyntaxRewriter: SyntaxRewriter {
     private let sourceInfo: SwiftSourceInfo
+    private let projectPath: String
     
-    init(sourceInfo: SwiftSourceInfo) {
+    init(sourceInfo: SwiftSourceInfo, projectPath: String) {
         self.sourceInfo = sourceInfo
+        self.projectPath = projectPath
+        
         super.init(viewMode: .sourceAccurate)
     }
     
-    override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-        
-        var importList: ImportPathComponentListSyntax = ImportPathComponentListSyntax()
-        node.path.forEach { path in
-            guard let confusedSymbolName = SwiftConfuseHelper
-                .confusedSymbolName(symbolName: path.name.text, sourceInfo: self.sourceInfo) else {
-                return
+//    override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+//        
+//        var importList: ImportPathComponentListSyntax = ImportPathComponentListSyntax()
+//        node.path.forEach { path in
+//            guard let confusedSymbolName = SwiftConfuseHelper
+//                .confusedSymbolName(symbolName: path.name.text, sourceInfo: self.sourceInfo) else {
+//                return
+//            }
+//            
+//            let newPath = path.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName))
+//            importList.append(newPath)
+//        }
+//        
+//        let newNode = node.with(\.path, importList)
+//        
+//        return super.visit(newNode)
+//    }
+    
+        override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    
+            let updatedBindings: [PatternBindingSyntax] = node.bindings.map { bindings in
+                guard let identifierPattern = bindings.pattern.as(IdentifierPatternSyntax.self),
+                      let name = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPattern.identifier.text, sourceInfo: self.sourceInfo) else {
+                    return bindings
+                }
+    
+                let newPattern = PatternSyntax(stringLiteral: name)
+                return bindings.with(\.leadingTrivia, identifierPattern.leadingTrivia).with(\.pattern, newPattern).with(\.trailingTrivia, identifierPattern.trailingTrivia)
             }
-            
-            let newPath = path.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName))
-            importList.append(newPath)
+    
+            let newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.bindings, PatternBindingListSyntax(updatedBindings)).with(\.trailingTrivia, node.trailingTrivia)
+    
+            return super.visit(newNode)
+        }
+    
+    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        let symbolName: String = node.name.text
+        guard let classInfo: SwiftSourceClassInfo = self.sourceInfo.sourceInfoList[symbolName] as? SwiftSourceClassInfo,
+                isSymbolInProjectPath(sourceInfo: classInfo),
+              let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: symbolName, sourceInfo: self.sourceInfo) else {
+            return super.visit(node)
         }
         
-        let newNode = node.with(\.path, importList)
+        var newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.name, TokenSyntax(stringLiteral: confusedName)).with(\.trailingTrivia, node.trailingTrivia)
+        
+        var confusedInheritedList: InheritedTypeListSyntax = InheritedTypeListSyntax()
+        if let inheritedList = node.inheritanceClause {
+            inheritedList.inheritedTypes.forEach { inheritedType in
+                
+            }
+            
+            let inheritedCount = inheritedList.inheritedTypes.count
+            for (inheritedIndex, inheritedType) in inheritedList.inheritedTypes.enumerated() {
+                let superClassName = inheritedType.type.description
+                guard let superClassInfo: SwiftSourceClassInfo = self.sourceInfo.sourceInfoList[superClassName] as? SwiftSourceClassInfo, isSymbolInProjectPath(sourceInfo: superClassInfo), let confusedSymbolName = SwiftConfuseHelper.confusedSymbolName(symbolName: superClassName, sourceInfo: self.sourceInfo) else {
+                    confusedInheritedList.append(inheritedType)
+                    continue
+                }
+                
+                var confusedInheritedType: InheritedTypeSyntax = InheritedTypeSyntax(type: TypeSyntax(stringLiteral: confusedSymbolName)).with(\.leadingTrivia, inheritedType.leadingTrivia).with(\.trailingTrivia, inheritedType.trailingTrivia)
+                if inheritedIndex != inheritedCount - 1 {
+                    confusedInheritedType = confusedInheritedType.with(\.trailingComma, .commaToken())
+                }
+                
+                confusedInheritedList.append(confusedInheritedType)
+            }
+            
+            newNode = newNode.with(\.inheritanceClause, InheritanceClauseSyntax(leadingTrivia: node.inheritanceClause?.leadingTrivia, inheritedTypes: confusedInheritedList, trailingTrivia: node.inheritanceClause?.trailingTrivia))
+        }
         
         return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self), let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: extendedType.name.text, sourceInfo: self.sourceInfo) else {
+            return super.visit(node)
+        }
+        
+        let newExtendedType = IdentifierTypeSyntax(
+            name: TokenSyntax.identifier(confusedName),
+            genericArgumentClause: extendedType.genericArgumentClause
+        ).with(\.leadingTrivia, extendedType.leadingTrivia).with(\.trailingTrivia, extendedType.trailingTrivia)
+        
+        let newNode = node.with(\.extendedType, TypeSyntax(newExtendedType)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+
+        let funcName: String = node.name.text
+        guard let funcSourceInfo: SwiftSourceFunctionInfo = self.sourceInfo.sourceInfoList[funcName] as? SwiftSourceFunctionInfo, isSymbolInProjectPath(sourceInfo: funcSourceInfo), let confusedFuncName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: funcName, sourceInfo: self.sourceInfo) else {
+            return super.visit(node)
+        }
+        
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedFuncName)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
+    }
+    
+}
+
+extension SwiftASTSyntaxRewriter {
+    private func isSymbolInProjectPath(sourceInfo: SwiftSourceBaseInfo) -> Bool {
+        return sourceInfo.filePath.hasPrefix(self.projectPath)
     }
 }
 

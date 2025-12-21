@@ -76,8 +76,8 @@ extension FileHelper {
         if !isDirectory {
             try? FileManager.default.copyItem(atPath: srcPath, toPath: fileName)
             
-            if self.shouldTreatASSrouce(fileName) {
-                self.sourceFiles.append(fileName)
+            if self.shouldTreatASSrouce(srcPath) {
+                self.sourceFiles.append(srcPath)
             }
             
             return
