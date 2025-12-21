@@ -31,7 +31,7 @@ class SwiftSourceCollection: SyntaxVisitor {
         
         if let inheritanceClause = node.inheritanceClause {
             inheritanceClause.inheritedTypes.forEach { inheritedType in
-                classInfo.superClasses.append(inheritedType.type.description)
+                classInfo.superClasses.append(inheritedType.type.trimmedDescription)
             }
         }
         
@@ -92,6 +92,28 @@ class SwiftSourceCollection: SyntaxVisitor {
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
+        self.sourceInfo.popSourceInfo()
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        let protocolInfo: SwiftSourceProtocolInfo = SwiftSourceProtocolInfo()
+        protocolInfo.filePath = self.sourceFile
+        
+        protocolInfo.name = node.name.text
+        node.modifiers.forEach { modifer in
+            protocolInfo.accessControl = modifer.accessControl
+            protocolInfo.isFinal = modifer.isFinal
+        }
+        
+        if let inheritanceClause = node.inheritanceClause {
+            inheritanceClause.inheritedTypes.forEach { inheritedType in
+                protocolInfo.superClasses.append(inheritedType.type.description)
+            }
+        }
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ProtocolDeclSyntax) {
         self.sourceInfo.popSourceInfo()
     }
 }

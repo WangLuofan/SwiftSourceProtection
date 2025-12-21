@@ -10,6 +10,7 @@ enum SwiftSourceType {
     case Class
     case Function
     case Property
+    case `Protocol`
 }
 
 class SwiftSourceBaseInfo {

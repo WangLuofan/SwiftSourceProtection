@@ -63,7 +63,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        var newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.name, TokenSyntax(stringLiteral: confusedName)).with(\.trailingTrivia, node.trailingTrivia)
+        var newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedName))
         
         var confusedInheritedList: InheritedTypeListSyntax = InheritedTypeListSyntax()
         if let inheritedList = node.inheritanceClause {
@@ -90,6 +90,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             newNode = newNode.with(\.inheritanceClause, InheritanceClauseSyntax(leadingTrivia: node.inheritanceClause?.leadingTrivia, inheritedTypes: confusedInheritedList, trailingTrivia: node.inheritanceClause?.trailingTrivia))
         }
         
+        newNode = newNode.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         return super.visit(newNode)
     }
     
@@ -111,7 +112,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
 
         let funcName: String = node.name.text
-        guard let funcSourceInfo: SwiftSourceFunctionInfo = self.sourceInfo.sourceInfoList[funcName] as? SwiftSourceFunctionInfo, isSymbolInProjectPath(sourceInfo: funcSourceInfo), let confusedFuncName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: funcName, sourceInfo: self.sourceInfo) else {
+        guard let funcSourceInfo: SwiftSourceFunctionInfo = self.sourceInfo.sourceInfoList[funcName] as? SwiftSourceFunctionInfo, isSymbolInProjectPath(sourceInfo: funcSourceInfo), isSymbolShouldBeConfused(sourceInfo: funcSourceInfo), let confusedFuncName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: funcName, sourceInfo: self.sourceInfo) else {
             return super.visit(node)
         }
         
@@ -156,11 +157,64 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         return super.visit(newNode)
     }
+    
+    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let calledExpression = node.calledExpression.as(DeclReferenceExprSyntax.self) {
+            let funcName = calledExpression.baseName.text
+            print("+++++++++\(funcName)")
+        } else if let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            let funcName = calledExpression.declName.baseName.text
+            if let funcInfo = self.sourceInfo.sourceInfoList[funcName] as? SwiftSourceFunctionInfo,
+                isSymbolShouldBeConfused(sourceInfo: funcInfo) {
+                
+                var exprList: LabeledExprListSyntax = LabeledExprListSyntax()
+                newNode.arguments.forEach { exprSyntax in
+                    var confusedExpr: LabeledExprSyntax = exprSyntax
+                    if let label = confusedExpr.label, let confusedLabelText = SwiftConfuseHelper.confusedSymbolName(symbolName: label.text, sourceInfo: self.sourceInfo) {
+                        confusedExpr = confusedExpr.with(\.label, TokenSyntax(stringLiteral: confusedLabelText)).with(\.leadingTrivia, confusedExpr.leadingTrivia).with(\.trailingTrivia, confusedExpr.trailingTrivia)
+                    }
+                    
+                    exprList.append(confusedExpr)
+                }
+                
+                newNode = newNode.with(\.arguments, exprList)
+            }
+        }
+        
+        return super.visit(newNode)
+    }
 }
 
 extension SwiftASTSyntaxRewriter {
     private func isSymbolInProjectPath(sourceInfo: SwiftSourceBaseInfo) -> Bool {
         return sourceInfo.filePath.hasPrefix(self.projectPath)
+    }
+    
+    private func isSymbolShouldBeConfused(sourceInfo: SwiftSourceBaseInfo) -> Bool {
+//        if sourceInfo.isFinal || sourceInfo.isStatic {
+//            return true
+//        }
+//        
+//        guard let clsInfo: SwiftSourceClassInfo = sourceInfo.parent as? SwiftSourceClassInfo, clsInfo.superClasses.count > 0 else {
+//            return true
+//        }
+//        
+//        var shouldConfuse: Bool = false
+//        for supercls in clsInfo.superClasses {
+//            if let superClsInfo: SwiftSourceClassInfo = self.sourceInfo.sourceInfoList[supercls] as? SwiftSourceClassInfo {
+//                for child in superClsInfo.children {
+//                    if SwiftConfuseHelper.isEqualSourceInfo(sourceInfo, child) {
+//                        shouldConfuse = isSymbolShouldBeConfused(sourceInfo: superClsInfo) || shouldConfuse
+//                        break
+//                    }
+//                }
+//            }
+//        }
+//        
+//        return shouldConfuse
+        return true
     }
 }
 

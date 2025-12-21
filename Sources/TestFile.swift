@@ -24,12 +24,18 @@ class TestClass2 {
         return 0
     }
     
-    var (num , text: String) = (1, "Hello")
+    func testOverrideFunc() {
+        
+    }
 }
 
 class TestClass3: TestClass2, TestProtocol {
     override var testOverride: Int {
         return 3
+    }
+    
+    override func testOverrideFunc() {
+        let i = 0
     }
 }
 
@@ -55,6 +61,8 @@ class TestClass: NSObject {
     }
     
     private func testFunc2() {
+        let testHello = "Hello, World"
+        
         self.testFunc(with: "Wang", "Luofan")
         self.testProperty = 2
     }

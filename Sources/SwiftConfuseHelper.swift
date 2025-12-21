@@ -8,6 +8,10 @@ import Foundation
 
 class SwiftConfuseHelper {
     static func confusedSymbolName(symbolName: String, sourceInfo: SwiftSourceInfo, minLength: Int = 1, maxLength: Int = 31) -> String? {
+        if symbolName == "_" || symbolName == "self" {
+            return symbolName
+        }
+        
         if let confusedName = sourceInfo.identifierMap[symbolName] {
             return confusedName
         }
@@ -44,5 +48,22 @@ class SwiftConfuseHelper {
         sourceInfo.confusedMap[randomSymbolName] = symbolName
         
         return randomSymbolName
+    }
+    
+    static func isEqualSourceInfo(_ lhs: SwiftSourceBaseInfo, _ rhs: SwiftSourceBaseInfo) -> Bool {
+        if lhs.sourceType != rhs.sourceType {
+            return false
+        }
+        
+        if lhs.name != rhs.name {
+            return false
+        }
+        
+        if let lhsFuncInfo: SwiftSourceFunctionInfo = lhs as? SwiftSourceFunctionInfo,
+           let rhsFuncInfo: SwiftSourceFunctionInfo = rhs as? SwiftSourceFunctionInfo {
+            return lhsFuncInfo.signature == rhsFuncInfo.signature
+        }
+        
+        return true
     }
 }
