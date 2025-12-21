@@ -221,53 +221,134 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
-        var modifiedNode = node
-
-        switch modifiedNode.parameterClause {
-        case .simpleInput(let paramList):
-            let newParams = paramList.map { param -> ClosureShorthandParameterSyntax in
-                guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: param.name.text, sourceInfo: self.sourceInfo) else {
-                    return param.with(\.leadingTrivia, param.leadingTrivia).with(\.name, TokenSyntax(stringLiteral: param.name.text)).with(\.trailingTrivia, param.trailingTrivia)
-                }
-                
-                return param.with(\.leadingTrivia, param.leadingTrivia).with(\.name, TokenSyntax(stringLiteral: confusedName)).with(\.trailingTrivia, param.trailingTrivia)
+    override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        let confusedParameters = node.parameters.map { parameter in
+            var firstNameToken = parameter.firstName
+            if firstNameToken != nil, let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstNameToken!.text, sourceInfo: self.sourceInfo) {
+                firstNameToken = TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, firstNameToken!.leadingTrivia).with(\.trailingTrivia, firstNameToken!.trailingTrivia)
             }
+            
+            var secondNameToken = parameter.secondName
+            if secondNameToken != nil, let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondNameToken!.text, sourceInfo: self.sourceInfo) {
+                secondNameToken = TokenSyntax(stringLiteral: confusedSecondName).with(\.leadingTrivia, secondNameToken!.leadingTrivia).with(\.trailingTrivia, secondNameToken!.trailingTrivia)
+            }
+            
+            return parameter.with(\.firstName, firstNameToken).with(\.secondName, secondNameToken).with(\.leadingTrivia, parameter.leadingTrivia).with(\.trailingTrivia, parameter.trailingTrivia)
+        }
+        
+        newNode = node.with(\.parameters, TupleTypeElementListSyntax(confusedParameters)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text, sourceInfo: self.sourceInfo) else {
+            return super.visit(node)
+        }
+        
+        newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, node.name.leadingTrivia).with(\.trailingTrivia, node.name.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        return super.visit(newNode)
+    }
 
-            modifiedNode = modifiedNode.with(\.leadingTrivia, modifiedNode.leadingTrivia).with(\.parameterClause, .simpleInput(ClosureShorthandParameterListSyntax(newParams))).with(\.trailingTrivia, modifiedNode.trailingTrivia)
-
+    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text, sourceInfo: self.sourceInfo) else {
+            return super.visit(node)
+        }
+        
+        newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, node.name.leadingTrivia).with(\.trailingTrivia, node.name.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        let confusedElements = node.elements.map { enumCaseElement in
+            guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: enumCaseElement.name.text, sourceInfo: self.sourceInfo) else {
+                return enumCaseElement
+            }
+            
+            return enumCaseElement.with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, enumCaseElement.leadingTrivia).with(\.trailingTrivia, enumCaseElement.trailingTrivia))
+        }
+        
+        newNode = node.with(\.elements, EnumCaseElementListSyntax(confusedElements).with(\.leadingTrivia, node.elements.leadingTrivia).with(\.trailingTrivia, node.elements.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
+        switch node.parameterClause {
         case .parameterClause(let paramClause):
+            // 处理完整参数列表，如 { (a: Int, b: String) in ... }
             let newParams = paramClause.parameters.map { param -> ClosureParameterSyntax in
                 var modifiedParam = param
-
-                if let secondName = param.secondName {
-                    
-                    guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName.text, sourceInfo: self.sourceInfo) else {
-                        return modifiedParam
-                    }
-                    
-                    modifiedParam = modifiedParam.with(\.leadingTrivia, modifiedParam.leadingTrivia).with(\.secondName, TokenSyntax(stringLiteral: confusedName)).with(\.trailingTrivia, modifiedNode.trailingTrivia)
+                
+                // 处理参数标签（外部参数名）
+                if let secondName = param.secondName,
+                   let confusedName = SwiftConfuseHelper.confusedSymbolName(
+                       symbolName: secondName.text,
+                       sourceInfo: self.sourceInfo
+                   ) {
+                    // 保持原有的格式信息
+                    modifiedParam = modifiedParam.with(
+                        \.secondName,
+                        secondName.with(\.tokenKind, .identifier(confusedName))
+                    )
                 }
                 
-                else if param.firstName.text != "_" {
-                    guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: param.firstName.text, sourceInfo: self.sourceInfo) else {
-                        return modifiedParam
-                    }
-                    
-                    modifiedParam = modifiedParam.with(\.leadingTrivia, modifiedParam.leadingTrivia).with(\.firstName, TokenSyntax(stringLiteral: confusedName)).with(\.trailingTrivia, modifiedParam.trailingTrivia)
+                // 处理参数名称（内部参数名），跳过下划线 _
+                if param.firstName.text != "_",
+                   let confusedName = SwiftConfuseHelper.confusedSymbolName(
+                       symbolName: param.firstName.text,
+                       sourceInfo: self.sourceInfo
+                   ) {
+                    modifiedParam = modifiedParam.with(
+                        \.firstName,
+                        param.firstName.with(\.tokenKind, .identifier(confusedName))
+                    )
                 }
-
+                
                 return modifiedParam
             }
-
-            let newParamClause = paramClause.with(\.parameters, ClosureParameterListSyntax(newParams))
-            modifiedNode = modifiedNode.with(\.leadingTrivia, modifiedNode.leadingTrivia).with(\.parameterClause, .parameterClause(newParamClause)).with(\.trailingTrivia, modifiedNode.trailingTrivia)
-
-        default:
-            break
+            
+            // 创建新的参数列表
+            let newParamList = ClosureParameterListSyntax(newParams)
+            
+            // 创建新的参数子句
+            let newParamClause = paramClause.with(\.parameters, newParamList)
+            
+            // 更新节点
+            let modifiedNode = node.with(\.parameterClause, .parameterClause(newParamClause))
+            return super.visit(modifiedNode)
+            
+        case .simpleInput(let paramList):
+            // 处理简写参数，如 { a, b in ... }
+            let newParams = paramList.map { param -> ClosureShorthandParameterSyntax in
+                guard let confusedName = SwiftConfuseHelper.confusedSymbolName(
+                    symbolName: param.name.text,
+                    sourceInfo: self.sourceInfo
+                ) else {
+                    return param
+                }
+                
+                return param.with(
+                    \.name,
+                    param.name.with(\.tokenKind, .identifier(confusedName))
+                )
+            }
+            
+            let newParamList = ClosureShorthandParameterListSyntax(newParams)
+            let modifiedNode = node.with(\.parameterClause, .simpleInput(newParamList))
+            return super.visit(modifiedNode)
+            
+        case .none:
+            // 没有参数的闭包，直接返回
+            return super.visit(node)
         }
-
-        return super.visit(modifiedNode)
     }
 }
 
