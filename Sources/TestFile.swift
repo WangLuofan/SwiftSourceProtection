@@ -11,8 +11,23 @@ import Accounts
 import WeatherKit
 import WeatherKit
 
+enum TestEnum {
+    case First
+    case Second
+}
+
 func globalFunction(test: String) {
+    let test: TestEnum = .First
+    switch test {
+    case .First:
+        print("hello")
+    case .Second:
+        print("world")
+    }
     
+    for i in 0...10 {
+        print("+++")
+    }
 }
 
 protocol TestProtocol {
