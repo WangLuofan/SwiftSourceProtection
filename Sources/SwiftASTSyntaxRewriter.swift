@@ -227,6 +227,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+        let newNode = node
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
         var newNode = node
         

@@ -44,50 +44,50 @@ class TestClass2 {
         return 0
     }
     
-    func UnDaX7DEXVBDngXQLxWXc3p13f2S7() {
-        y8J3G2YHui89pDm1RqrOk24RS40ta(a5i62wW8pDQI8ja: "Hello")
+    func testOverrideFunc() {
+        globalFunction(test: "Hello")
     }
 }
 
-class M6YJ7ooqu:K1w8Wvsw0AUF3O3lc27fqrOvQf ,P2YhL22IdULfCqR9OiEe40z  {
-    override var nChW52x47j4: Int {
+class TestClass3: TestClass2, TestProtocol {
+    override var testOverride: Int {
         return 3
     }
     
-    override func UnDaX7DEXVBDngXQLxWXc3p13f2S7() {
-        let CM2X416E81xQHC = 0
+    override func testOverrideFunc() {
+        let i = 0
     }
 }
 
-class xzDQFv153Ev7qE5x:cDCMd9lK9464BXO3A6nDsTOwpOx41g  {
+class TestClass: NSObject {
     
     /// 注释1
     /// 注释3
-    private var TkAn39RQ9xzEZT9f38f2aJA9d0B99: Int = 1
-    private var L: ((_ _QhV63KKaw8g862M: String, _ c3nbr: Int, _ KUG: String) -> Void)?
-    static let e1O9ikKEPcN8JQQ40d471N3S47: Int = 0
+    private var testProperty: Int = 1
+    private var testClosure: ((_ userName: String, _ userAge: Int, _ userEmail: String) -> Void)?
+    static let testStatic: Int = 0
     
-    private func N2zEl(c H3uAHPQ54A6BO3Tvi: String, _ cvp44e4x49V3iH9871: String) {
-        Sw("\(H3uAHPQ54A6BO3Tvi): \(cvp44e4x49V3iH9871)")
+    private func testFunc(with firstName: String, _ lastName: String) {
+        print("\(firstName): \(lastName)")
         
-        self.L = { [weak self] _QhV63KKaw8g862M, c3nbr, KUG in
-            Sw("\(_QhV63KKaw8g862M)-\(c3nbr)-\(KUG)")
+        self.testClosure = { [weak self] userName, userAge, userEmail in
+            print("\(userName)-\(userAge)-\(userEmail)")
         }
         
-//        let test2: TestClass2 = TestClass2()
-//        let closure: ((_ text: String, _ name: String) -> Void) = { [weak self, weak test2] text, name in
-//            print("\(text)")
-//        }
+        //        let test2: TestClass2 = TestClass2()
+        //        let closure: ((_ text: String, _ name: String) -> Void) = { [weak self, weak test2] text, name in
+        //            print("\(text)")
+        //        }
     }
     
-    private func L5n1Qg8Bt1r21W() {
-        let mIxfLEOA6Zcup0Jz4jOlholoz = "Hello, World"
+    private func testFunc2() {
+        let testHello = "Hello, World"
         
-        self.N2zEl(c: "Wang", "Luofan")
-        self.TkAn39RQ9xzEZT9f38f2aJA9d0B99 = 2
+        self.testFunc(with: "Wang", "Luofan")
+        self.testProperty = 2
     }
 }
 
-extension xzDQFv153Ev7qE5x {
+extension TestClass {
     
 }
