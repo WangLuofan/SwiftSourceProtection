@@ -10,11 +10,9 @@ import SwiftParser
 import SwiftSyntaxBuilder
 
 class SwiftASTSyntaxRewriter: SyntaxRewriter {
-    private let sourceInfo: SwiftSourceInfo
     private let projectPath: String
     
-    init(sourceInfo: SwiftSourceInfo, projectPath: String) {
-        self.sourceInfo = sourceInfo
+    init(projectPath: String) {
         self.projectPath = projectPath
         
         super.init(viewMode: .sourceAccurate)
@@ -25,7 +23,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     //        var importList: ImportPathComponentListSyntax = ImportPathComponentListSyntax()
     //        node.path.forEach { path in
     //            guard let confusedSymbolName = SwiftConfuseHelper
-    //                .confusedSymbolName(symbolName: path.name.text, sourceInfo: self.sourceInfo) else {
+    //                .confusedSymbolName(symbolName: path.name.text) else {
     //                return
     //            }
     //
@@ -42,7 +40,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         let updatedBindings: [PatternBindingSyntax] = node.bindings.map { bindings in
             guard let identifierPattern = bindings.pattern.as(IdentifierPatternSyntax.self),
-                  let name = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPattern.identifier.text, sourceInfo: self.sourceInfo) else {
+                  let name = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPattern.identifier.text) else {
                 return bindings
             }
             
@@ -57,7 +55,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
         let symbolName: String = node.name.text
-        guard let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: symbolName, sourceInfo: self.sourceInfo) else {
+        guard let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: symbolName) else {
             return super.visit(node)
         }
         
@@ -68,7 +66,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             let inheritedCount = inheritedList.inheritedTypes.count
             for (inheritedIndex, inheritedType) in inheritedList.inheritedTypes.enumerated() {
                 let superClassName = inheritedType.type.trimmedDescription
-                guard let confusedSymbolName = SwiftConfuseHelper.confusedSymbolName(symbolName: superClassName, sourceInfo: self.sourceInfo) else {
+                guard let confusedSymbolName = SwiftConfuseHelper.confusedSymbolName(symbolName: superClassName) else {
                     confusedInheritedList.append(inheritedType)
                     continue
                 }
@@ -89,7 +87,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self), let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: extendedType.name.text, sourceInfo: self.sourceInfo) else {
+        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self), let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: extendedType.name.text) else {
             return super.visit(node)
         }
         
@@ -104,8 +102,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        guard let confusedFuncName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text,
-                                                                                   sourceInfo: self.sourceInfo) else {
+        guard let confusedFuncName: String =
+                SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text) else {
             return super.visit(node)
         }
         
@@ -123,11 +121,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         
         let firstName = node.firstName.text
-        if firstName.compare("_") != .orderedSame, let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstName, sourceInfo: self.sourceInfo) {
+        if firstName.compare("_") != .orderedSame, let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstName) {
             newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia))
         }
         
-        if let secondName = newNode.secondName?.text, secondName.compare("_") != .orderedSame, let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName, sourceInfo: self.sourceInfo) {
+        if let secondName = newNode.secondName?.text, secondName.compare("_") != .orderedSame, let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName) {
             var tokenSyntax = TokenSyntax(stringLiteral: confusedSecondName)
             if let leadingTrivia = node.secondName?.leadingTrivia {
                 tokenSyntax = tokenSyntax.with(\.leadingTrivia, leadingTrivia)
@@ -146,7 +144,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         let baseName = newNode.baseName
         
-        if let confusedBaseName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: baseName.text, sourceInfo: self.sourceInfo) {
+        if let confusedBaseName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: baseName.text) {
             newNode = newNode.with(\.baseName, TokenSyntax(stringLiteral: confusedBaseName).with(\.leadingTrivia, baseName.leadingTrivia).with(\.trailingTrivia, baseName.trailingTrivia))
         }
         
@@ -155,11 +153,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         var newNode = node
-
+        
         var exprList: LabeledExprListSyntax = LabeledExprListSyntax()
         newNode.arguments.forEach { exprSyntax in
             var confusedExpr: LabeledExprSyntax = exprSyntax
-            if let label = confusedExpr.label, let confusedLabelText = SwiftConfuseHelper.confusedSymbolName(symbolName: label.text, sourceInfo: self.sourceInfo) {
+            if let label = confusedExpr.label, let confusedLabelText = SwiftConfuseHelper.confusedSymbolName(symbolName: label.text) {
                 confusedExpr = confusedExpr.with(\.label, TokenSyntax(stringLiteral: confusedLabelText)).with(\.leadingTrivia, confusedExpr.leadingTrivia).with(\.trailingTrivia, confusedExpr.trailingTrivia)
             }
             
@@ -173,7 +171,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
         let symbolName: String = node.name.text
-        guard let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: symbolName, sourceInfo: self.sourceInfo) else {
+        guard let confusedName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: symbolName) else {
             return super.visit(node)
         }
         
@@ -184,7 +182,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             let inheritedCount = inheritedList.inheritedTypes.count
             for (inheritedIndex, inheritedType) in inheritedList.inheritedTypes.enumerated() {
                 let superClassName = inheritedType.type.description
-                guard let confusedSymbolName = SwiftConfuseHelper.confusedSymbolName(symbolName: superClassName, sourceInfo: self.sourceInfo) else {
+                guard let confusedSymbolName = SwiftConfuseHelper.confusedSymbolName(symbolName: superClassName) else {
                     confusedInheritedList.append(inheritedType)
                     continue
                 }
@@ -206,11 +204,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: ClosureCaptureSyntax) -> ClosureCaptureSyntax {
         let originName = node.name.text
-        guard originName != "self", let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: originName, sourceInfo: self.sourceInfo) else {
+        guard originName != "self", let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: originName) else {
             return super.visit(node)
         }
-
-        let newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, node.name.leadingTrivia).with(\.trailingTrivia, node.name.trailingTrivia)).with(\.trailingTrivia, node.trailingTrivia)
+        
+        let newNode = node.with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.name, TokenSyntax(stringLiteral: confusedName)
+                .with(\.leadingTrivia, node.name.leadingTrivia)
+                .with(\.leadingTrivia, node.name.leadingTrivia))
+            .with(\.trailingTrivia, node.trailingTrivia)
         
         return super.visit(newNode)
     }
@@ -218,7 +220,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
         var newNode = node
         
-        if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self), let confusedIdentifier = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPatternSyntax.identifier.text, sourceInfo: self.sourceInfo) {
+        if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self), let confusedIdentifier = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPatternSyntax.identifier.text) {
             let pattern = identifierPatternSyntax.with(\.identifier, TokenSyntax(stringLiteral: confusedIdentifier).with(\.leadingTrivia, identifierPatternSyntax.identifier.leadingTrivia).with(\.trailingTrivia, identifierPatternSyntax.identifier.trailingTrivia))
             
             newNode = node.with(\.pattern, PatternSyntax(pattern).with(\.leadingTrivia, identifierPatternSyntax.leadingTrivia).with(\.trailingTrivia, identifierPatternSyntax.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
@@ -233,7 +235,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         let confusedConditions = node.conditions.map { condSyntax in
             if let optionalBindingCondSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self) {
                 if let identifierPatternSyntax = optionalBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self),
-                    let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPatternSyntax.identifier.text, sourceInfo: self.sourceInfo) {
+                   let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPatternSyntax.identifier.text) {
                     let confusedIDPatternSyntax = identifierPatternSyntax.with(\.identifier, TokenSyntax(stringLiteral: confusedName)).with(\.leadingTrivia, identifierPatternSyntax.leadingTrivia).with(\.trailingTrivia, identifierPatternSyntax.trailingTrivia)
                     
                     let confusedOptBindSyntax = optionalBindingCondSyntax.with(\.pattern, PatternSyntax(confusedIDPatternSyntax)).with(\.leadingTrivia, optionalBindingCondSyntax.leadingTrivia).with(\.trailingTrivia, optionalBindingCondSyntax.trailingTrivia)
@@ -255,12 +257,12 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         let confusedParameters = node.parameters.map { parameter in
             var firstNameToken = parameter.firstName
-            if firstNameToken != nil, let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstNameToken!.text, sourceInfo: self.sourceInfo) {
+            if firstNameToken != nil, let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstNameToken!.text) {
                 firstNameToken = TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, firstNameToken!.leadingTrivia).with(\.trailingTrivia, firstNameToken!.trailingTrivia)
             }
             
             var secondNameToken = parameter.secondName
-            if secondNameToken != nil, let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondNameToken!.text, sourceInfo: self.sourceInfo) {
+            if secondNameToken != nil, let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondNameToken!.text) {
                 secondNameToken = TokenSyntax(stringLiteral: confusedSecondName).with(\.leadingTrivia, secondNameToken!.leadingTrivia).with(\.trailingTrivia, secondNameToken!.trailingTrivia)
             }
             
@@ -275,22 +277,27 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text, sourceInfo: self.sourceInfo) else {
+        guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text) else {
             return super.visit(node)
         }
         
         newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, node.name.leadingTrivia).with(\.trailingTrivia, node.name.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         return super.visit(newNode)
     }
-
+    
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text, sourceInfo: self.sourceInfo) else {
+        guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text) else {
             return super.visit(node)
         }
         
-        newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, node.name.leadingTrivia).with(\.trailingTrivia, node.name.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+        .with(\.leadingTrivia, node.leadingTrivia)
+        .with(\.trailingTrivia, node.trailingTrivia)
+        
         return super.visit(newNode)
     }
     
@@ -298,75 +305,73 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         
         let confusedElements = node.elements.map { enumCaseElement in
-            guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: enumCaseElement.name.text, sourceInfo: self.sourceInfo) else {
+            guard let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: enumCaseElement.name.text) else {
                 return enumCaseElement
             }
             
-            return enumCaseElement.with(\.name, TokenSyntax(stringLiteral: confusedName).with(\.leadingTrivia, enumCaseElement.leadingTrivia).with(\.trailingTrivia, enumCaseElement.trailingTrivia))
+            return enumCaseElement.with(\.name, TokenSyntax(stringLiteral: confusedName)
+                .with(\.leadingTrivia, enumCaseElement.leadingTrivia)
+                .with(\.trailingTrivia, enumCaseElement.trailingTrivia))
         }
         
-        newNode = node.with(\.elements, EnumCaseElementListSyntax(confusedElements).with(\.leadingTrivia, node.elements.leadingTrivia).with(\.trailingTrivia, node.elements.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        newNode = node.with(\.elements, EnumCaseElementListSyntax(confusedElements)
+            .with(\.leadingTrivia, node.elements.leadingTrivia)
+            .with(\.trailingTrivia, node.elements.trailingTrivia))
+        .with(\.leadingTrivia, node.leadingTrivia)
+        .with(\.trailingTrivia, node.trailingTrivia)
+        
         return super.visit(newNode)
     }
     
     override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
         switch node.parameterClause {
         case .parameterClause(let paramClause):
-            // 处理完整参数列表，如 { (a: Int, b: String) in ... }
             let newParams = paramClause.parameters.map { param -> ClosureParameterSyntax in
                 var modifiedParam = param
                 
-                // 处理参数标签（外部参数名）
                 if let secondName = param.secondName,
                    let confusedName = SwiftConfuseHelper.confusedSymbolName(
-                       symbolName: secondName.text,
-                       sourceInfo: self.sourceInfo
+                    symbolName: secondName.text
                    ) {
-                    // 保持原有的格式信息
+                    
                     modifiedParam = modifiedParam.with(
                         \.secondName,
-                        secondName.with(\.tokenKind, .identifier(confusedName))
+                         secondName.with(\.tokenKind, .identifier(confusedName))
                     )
                 }
                 
-                // 处理参数名称（内部参数名），跳过下划线 _
                 if param.firstName.text != "_",
                    let confusedName = SwiftConfuseHelper.confusedSymbolName(
-                       symbolName: param.firstName.text,
-                       sourceInfo: self.sourceInfo
+                    symbolName: param.firstName.text
                    ) {
                     modifiedParam = modifiedParam.with(
                         \.firstName,
-                        param.firstName.with(\.tokenKind, .identifier(confusedName))
+                         param.firstName.with(\.tokenKind, .identifier(confusedName))
                     )
                 }
                 
                 return modifiedParam
             }
             
-            // 创建新的参数列表
             let newParamList = ClosureParameterListSyntax(newParams)
             
-            // 创建新的参数子句
             let newParamClause = paramClause.with(\.parameters, newParamList)
             
-            // 更新节点
             let modifiedNode = node.with(\.parameterClause, .parameterClause(newParamClause))
             return super.visit(modifiedNode)
             
         case .simpleInput(let paramList):
-            // 处理简写参数，如 { a, b in ... }
+            
             let newParams = paramList.map { param -> ClosureShorthandParameterSyntax in
                 guard let confusedName = SwiftConfuseHelper.confusedSymbolName(
-                    symbolName: param.name.text,
-                    sourceInfo: self.sourceInfo
+                    symbolName: param.name.text
                 ) else {
                     return param
                 }
                 
                 return param.with(
                     \.name,
-                    param.name.with(\.tokenKind, .identifier(confusedName))
+                     param.name.with(\.tokenKind, .identifier(confusedName))
                 )
             }
             
@@ -375,7 +380,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(modifiedNode)
             
         case .none:
-            // 没有参数的闭包，直接返回
             return super.visit(node)
         }
     }

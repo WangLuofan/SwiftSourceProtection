@@ -10,6 +10,7 @@ class SwiftSourceFunctionInfo: SwiftSourceBaseInfo {
         return .Function
     }
     
+    var functionName: String?
     var signature: String?
     var returnType: String?
 }

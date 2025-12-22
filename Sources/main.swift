@@ -47,7 +47,6 @@ func main() {
         return
     }
     
-    let sourceInfo: SwiftSourceInfo = SwiftSourceInfo()
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
@@ -58,18 +57,20 @@ func main() {
         
         let sourceTree = Parser.parse(source: sourceCode)
         
-        let sourceColletion: SwiftSourceCollection = SwiftSourceCollection(sourceFile: sourceFile, sourceInfo: sourceInfo)
+        let sourceColletion: SwiftSourceCollection = SwiftSourceCollection(sourceFile: sourceFile)
         sourceColletion.walk(sourceTree)
         
         sourceTreeDict[sourceFile] = sourceTree
     }
 
     sourceTreeDict.forEach { sourceFile, sourceTree in
-        if let confusedFileContent: String =  SwiftSourceProtection(sourceFile: sourceFile,
-                                                                     sourceInfo: sourceInfo,
-                                                                     sourceTree: sourceTree,
-                                                                     projectPath: projectPath).confuse() {
+        if let confusedFileContent: String =
+            SwiftSourceProtection(sourceFile: sourceFile,
+                                  sourceTree: sourceTree,
+                                  projectPath: projectPath).confuse() {
+            
             try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+            
         }
     }
     

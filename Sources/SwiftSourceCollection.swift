@@ -10,16 +10,15 @@ import SwiftParser
 
 class SwiftSourceCollection: SyntaxVisitor {
     private let sourceFile: String
-    private let sourceInfo: SwiftSourceInfo
     
-    init(sourceFile: String, sourceInfo: SwiftSourceInfo) {
+    init(sourceFile: String) {
         self.sourceFile = sourceFile
-        self.sourceInfo = sourceInfo
         
         super.init(viewMode: .sourceAccurate)
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+        
         let classInfo: SwiftSourceClassInfo = SwiftSourceClassInfo()
         classInfo.filePath = self.sourceFile
         
@@ -35,18 +34,21 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        self.sourceInfo.appendSourceInfo(classInfo)
+        SwiftSourceScopeManager.pushSymbol(classInfo.name, sourceInfo: classInfo)
+        SwiftSourceScopeManager.pushScope()
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClassDeclSyntax) {
-        self.sourceInfo.popSourceInfo()
+        SwiftSourceScopeManager.popScope()
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        
         let functionInfo: SwiftSourceFunctionInfo = SwiftSourceFunctionInfo()
         
-        functionInfo.name = node.name.text
+        functionInfo.functionName = node.name.text
         functionInfo.filePath = self.sourceFile
         node.modifiers.forEach { modifier in
             functionInfo.accessControl = modifier.accessControl
@@ -56,18 +58,21 @@ class SwiftSourceCollection: SyntaxVisitor {
             functionInfo.isOverride = modifier.isOverride
         }
         functionInfo.signature = node.signature.trimmedDescription
+        functionInfo.name = "\(functionInfo.functionName ?? "")\(functionInfo.signature ?? "")"
         let retType = node.signature.returnClause?.type.trimmedDescription
         
         if retType != "Void" {
             functionInfo.returnType = retType
         }
         
-        self.sourceInfo.appendSourceInfo(functionInfo)
+        SwiftSourceScopeManager.pushSymbol(functionInfo.name, sourceInfo: functionInfo)
+        SwiftSourceScopeManager.pushScope()
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: FunctionDeclSyntax) {
-        self.sourceInfo.popSourceInfo()
+        SwiftSourceScopeManager.popScope()
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -93,16 +98,17 @@ class SwiftSourceCollection: SyntaxVisitor {
             variableInfo.isFinal = modifier.isFinal
         }
         
-        self.sourceInfo.appendSourceInfo(variableInfo)
+        SwiftSourceScopeManager.pushSymbol(variableInfo.name, sourceInfo: variableInfo)
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
-        self.sourceInfo.popSourceInfo()
+        
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        
         let protocolInfo: SwiftSourceProtocolInfo = SwiftSourceProtocolInfo()
         protocolInfo.filePath = self.sourceFile
         
@@ -118,10 +124,13 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
+        SwiftSourceScopeManager.pushSymbol(protocolInfo.name, sourceInfo: protocolInfo)
+        SwiftSourceScopeManager.pushScope()
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: ProtocolDeclSyntax) {
-        self.sourceInfo.popSourceInfo()
+        SwiftSourceScopeManager.popScope()
     }
 }

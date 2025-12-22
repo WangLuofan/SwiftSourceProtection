@@ -8,15 +8,7 @@ import Foundation
 import SwiftSyntax
 
 class SwiftConfuseHelper {
-    static func confusedSymbolName(symbolName: String, sourceInfo: SwiftSourceInfo, minLength: Int = 1, maxLength: Int = 31) -> String? {
-        
-        if symbolName == "_" || symbolName == "self" {
-            return symbolName
-        }
-        
-        if let confusedName = sourceInfo.identifierMap[symbolName] {
-            return confusedName
-        }
+    static func confusedSymbolName(symbolName: String, minLength: Int = 1, maxLength: Int = 31) -> String? {
         
         if minLength <= 0 || maxLength >= 32 {
             return nil
@@ -45,13 +37,6 @@ class SwiftConfuseHelper {
             let stringArr: [String.Element] = Array(allCharacters[randomIndex])
             randomSymbolName += String(stringArr[randomItem])
         }
-        
-        if sourceInfo.identifierMap[symbolName] != nil {
-            return self.confusedSymbolName(symbolName: symbolName, sourceInfo: sourceInfo)
-        }
-        
-        sourceInfo.identifierMap[symbolName] = randomSymbolName
-        sourceInfo.confusedMap[randomSymbolName] = symbolName
         
         return randomSymbolName
     }
