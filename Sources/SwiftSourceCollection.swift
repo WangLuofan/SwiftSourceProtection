@@ -66,7 +66,7 @@ class SwiftSourceCollection: SyntaxVisitor {
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        if SwiftRefactorHelper.isMemberVariable(node) {
+        if SwiftConfuseHelper.isMemberVariable(node) {
             let propertyInfo: SwiftSourcePropertyInfo = SwiftSourcePropertyInfo()
             propertyInfo.filePath = self.sourceFile
             
@@ -110,6 +110,7 @@ class SwiftSourceCollection: SyntaxVisitor {
                 protocolInfo.superClasses.append(inheritedType.type.description)
             }
         }
+        
         return super.visit(node)
     }
     

@@ -4,13 +4,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftRefactorUtil",
+    name: "SwiftSourceProtection",
     platforms: [
         .macOS(.v10_15)
     ],
     products: [
-        .executable(name: "SwiftRefactorUtil", targets: [
-            "SwiftRefactorUtil"
+        .executable(name: "SwiftSourceProtection", targets: [
+            "SwiftSourceProtection"
         ])
     ],
     dependencies: [
@@ -20,7 +20,7 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .executableTarget(
-            name: "SwiftRefactorUtil",
+            name: "SwiftSourceProtection",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),

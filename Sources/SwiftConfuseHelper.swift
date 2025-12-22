@@ -5,6 +5,7 @@
 //  Created by wangluofan on 2025/12/20.
 //
 import Foundation
+import SwiftSyntax
 
 class SwiftConfuseHelper {
     static func confusedSymbolName(symbolName: String, sourceInfo: SwiftSourceInfo, minLength: Int = 1, maxLength: Int = 31) -> String? {
@@ -65,5 +66,56 @@ class SwiftConfuseHelper {
         }
         
         return true
+    }
+    
+    static func isMemberVariable(_ node: VariableDeclSyntax) -> Bool {
+        var currentNode: Syntax? = Syntax(node)
+        
+        while let parent = currentNode?.parent {
+            switch parent.kind {
+            case .classDecl, .structDecl, .enumDecl, .extensionDecl:
+                return true
+            case .functionDecl, .closureExpr, .codeBlock, .ifExpr, .forStmt, .whileStmt, .repeatStmt, .switchExpr:
+                return false
+            default:
+                currentNode = parent
+            }
+        }
+        
+        return false
+    }
+}
+
+extension DeclModifierSyntax {
+    var accessControl: SwiftSourceAccessControl {
+        if self.name.text == "open" {
+            return .Open
+        } else if self.name.text == "public" {
+            return .Public
+        } else if self.name.text == "fileprivate" {
+            return .FilePrivate
+        } else if self.name.text == "private" {
+            return .Private
+        } else if self.name.text == "package" {
+            return .Package
+        }
+        
+        return .Internal
+    }
+    
+    var isStatic: Bool {
+        return self.name.text == "static"
+    }
+    
+    var isOverride: Bool {
+        return self.name.text == "override"
+    }
+    
+    var isClass: Bool {
+        return self.name.text == "class"
+    }
+    
+    var isFinal: Bool {
+        return self.name.text == "final"
     }
 }
