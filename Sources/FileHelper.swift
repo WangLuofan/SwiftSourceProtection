@@ -10,10 +10,14 @@ import Foundation
 
 class FileHelper {
     public var sourceFiles: [String] = []
-    private let excludePaths: [String]?
+    private var excludePaths: [String] = [String]()
     
     init(_ path: String, excludePaths: [String]? = nil) {
-        self.excludePaths = excludePaths
+        if let excludePaths {
+            for excludePath in excludePaths {
+                self.excludePaths.append((path as NSString).appendingPathComponent(excludePath))
+            }
+        }
         
         let dupPath: String = self.prepareForBackup(FileManager.default.currentDirectoryPath)
         
@@ -38,11 +42,7 @@ extension FileHelper {
         if (path as NSString).pathExtension.compare("swift", options: .caseInsensitive) != .orderedSame {
             return false
         }
-        
-        guard let excludePaths else {
-            return true
-        }
-        
+
         for excludePath in excludePaths {
             if path.starts(with: excludePath) {
                 return false

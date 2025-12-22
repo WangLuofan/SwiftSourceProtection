@@ -46,6 +46,10 @@ class SwiftConfuseHelper {
             randomSymbolName += String(stringArr[randomItem])
         }
         
+        if sourceInfo.identifierMap[symbolName] != nil {
+            return self.confusedSymbolName(symbolName: symbolName, sourceInfo: sourceInfo)
+        }
+        
         sourceInfo.identifierMap[symbolName] = randomSymbolName
         sourceInfo.confusedMap[randomSymbolName] = symbolName
         
