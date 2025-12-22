@@ -1,6 +1,6 @@
 //
 //  SwiftConfuseHelper.swift
-//  SwiftRefactorUtil
+//  SwiftSourceProtection
 //
 //  Created by wangluofan on 2025/12/20.
 //
@@ -9,6 +9,7 @@ import SwiftSyntax
 
 class SwiftConfuseHelper {
     static func confusedSymbolName(symbolName: String, sourceInfo: SwiftSourceInfo, minLength: Int = 1, maxLength: Int = 31) -> String? {
+        
         if symbolName == "_" || symbolName == "self" {
             return symbolName
         }

@@ -1,6 +1,6 @@
 //
 //  SwiftSourceCollection.swift
-//  SwiftRefactorUtil
+//  SwiftSourceProtection
 //
 //  Created by WangLuofan on 2025/12/12.
 //
@@ -56,6 +56,11 @@ class SwiftSourceCollection: SyntaxVisitor {
             functionInfo.isOverride = modifier.isOverride
         }
         functionInfo.signature = node.signature.trimmedDescription
+        let retType = node.signature.returnClause?.type.trimmedDescription
+        
+        if retType != "Void" {
+            functionInfo.returnType = retType
+        }
         
         self.sourceInfo.appendSourceInfo(functionInfo)
         return super.visit(node)
@@ -66,27 +71,29 @@ class SwiftSourceCollection: SyntaxVisitor {
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        if SwiftConfuseHelper.isMemberVariable(node) {
-            let propertyInfo: SwiftSourcePropertyInfo = SwiftSourcePropertyInfo()
-            propertyInfo.filePath = self.sourceFile
-            
-            node.bindings.forEach { binding in
-                let pattern = binding.pattern
-                if let identifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
-                    propertyInfo.name = identifierPatternSyntax.identifier.text
-                }
+        let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo(SwiftConfuseHelper.isMemberVariable(node))
+        variableInfo.filePath = self.sourceFile
+        
+        node.bindings.forEach { binding in
+            let pattern = binding.pattern
+            if let identifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
+                variableInfo.name = identifierPatternSyntax.identifier.text
             }
             
-            node.modifiers.forEach { modifier in
-                propertyInfo.isStatic = modifier.isStatic
-                propertyInfo.isClass = modifier.isClass
-                propertyInfo.isOverride = modifier.isOverride
-                propertyInfo.accessControl = modifier.accessControl
-                propertyInfo.isFinal = modifier.isFinal
+            if let retType = binding.typeAnnotation?.type.trimmedDescription, retType != "Void" {
+                variableInfo.type = retType
             }
-            
-            self.sourceInfo.appendSourceInfo(propertyInfo)
         }
+        
+        node.modifiers.forEach { modifier in
+            variableInfo.isStatic = modifier.isStatic
+            variableInfo.isClass = modifier.isClass
+            variableInfo.isOverride = modifier.isOverride
+            variableInfo.accessControl = modifier.accessControl
+            variableInfo.isFinal = modifier.isFinal
+        }
+        
+        self.sourceInfo.appendSourceInfo(variableInfo)
         
         return super.visit(node)
     }

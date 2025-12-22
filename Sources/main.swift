@@ -1,6 +1,6 @@
 //
 //  main.swift
-//  SwiftRefactorUtil
+//  SwiftSourceProtection
 //
 //  Created by 王落凡 on 2025/10/28.
 //
@@ -39,7 +39,7 @@ func findProjectPath(for filePath: String) -> String? {
 
 func main() {
     guard let path = CommandLineParser.parseCommandLine() else {
-        print("Usage ./SwiftRefactorUtil [file/directory]")
+        print("Usage ./SwiftSourceProtection [file/directory]")
         return
     }
     
@@ -65,7 +65,7 @@ func main() {
     }
 
     sourceTreeDict.forEach { sourceFile, sourceTree in
-        if let confusedFileContent: String =  SwiftSourceConfuseUtil(sourceFile: sourceFile,
+        if let confusedFileContent: String =  SwiftSourceProtection(sourceFile: sourceFile,
                                                                      sourceInfo: sourceInfo,
                                                                      sourceTree: sourceTree,
                                                                      projectPath: projectPath).confuse() {

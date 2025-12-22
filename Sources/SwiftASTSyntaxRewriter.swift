@@ -1,6 +1,6 @@
 //
 //  SwiftASTSyntaxRewriter.swift
-//  SwiftRefactorUtil
+//  SwiftSourceProtection
 //
 //  Created by WangLuofan on 2025/12/12.
 //
@@ -155,24 +155,18 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         var newNode = node
-        
-        if let calledExpression = node.calledExpression.as(DeclReferenceExprSyntax.self) {
-            let funcName = calledExpression.baseName.text
-        } else if let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self) {
-            let funcName = calledExpression.declName.baseName.text
-            
-            var exprList: LabeledExprListSyntax = LabeledExprListSyntax()
-            newNode.arguments.forEach { exprSyntax in
-                var confusedExpr: LabeledExprSyntax = exprSyntax
-                if let label = confusedExpr.label, let confusedLabelText = SwiftConfuseHelper.confusedSymbolName(symbolName: label.text, sourceInfo: self.sourceInfo) {
-                    confusedExpr = confusedExpr.with(\.label, TokenSyntax(stringLiteral: confusedLabelText)).with(\.leadingTrivia, confusedExpr.leadingTrivia).with(\.trailingTrivia, confusedExpr.trailingTrivia)
-                }
-                
-                exprList.append(confusedExpr)
+
+        var exprList: LabeledExprListSyntax = LabeledExprListSyntax()
+        newNode.arguments.forEach { exprSyntax in
+            var confusedExpr: LabeledExprSyntax = exprSyntax
+            if let label = confusedExpr.label, let confusedLabelText = SwiftConfuseHelper.confusedSymbolName(symbolName: label.text, sourceInfo: self.sourceInfo) {
+                confusedExpr = confusedExpr.with(\.label, TokenSyntax(stringLiteral: confusedLabelText)).with(\.leadingTrivia, confusedExpr.leadingTrivia).with(\.trailingTrivia, confusedExpr.trailingTrivia)
             }
             
-            newNode = newNode.with(\.arguments, exprList)
+            exprList.append(confusedExpr)
         }
+        
+        newNode = newNode.with(\.arguments, exprList)
         
         return super.visit(newNode)
     }

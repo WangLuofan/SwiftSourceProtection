@@ -1,6 +1,6 @@
 //
 //  TestFile.swift
-//  SwiftRefactorUtil
+//  SwiftSourceProtection
 //
 //  Created by WangLuofan on 2025/10/28.
 //
@@ -25,7 +25,7 @@ class TestClass2 {
     }
     
     func testOverrideFunc() {
-        
+        globalFunction(test: "Hello")
     }
 }
 

@@ -1,6 +1,6 @@
 //
-//  SwiftSourceConfuseUtil.swift
-//  SwiftSourceConfuseUtil
+//  SwiftSourceProtection.swift
+//  SwiftSourceProtection
 //
 //  Created by 王落凡 on 2025/10/28.
 //
@@ -9,7 +9,7 @@ import Foundation
 import SwiftSyntax
 import SwiftParser
 
-class SwiftSourceConfuseUtil {
+class SwiftSourceProtection {
     private let sourceFile: String
     private let projectPath: String
     

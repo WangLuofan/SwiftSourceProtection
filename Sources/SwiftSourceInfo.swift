@@ -1,6 +1,6 @@
 //
 //  SwiftSourceInfo.swift
-//  SwiftRefactorUtil
+//  SwiftSourceProtection
 //
 //  Created by wangluofan on 2025/12/20.
 //
@@ -30,11 +30,9 @@ class SwiftSourceInfo: @unchecked Sendable {
             } else if sourceInfo.sourceType == .Function, let functionInfo: SwiftSourceFunctionInfo = sourceInfo as? SwiftSourceFunctionInfo {
                 functionInfo.parent = self.sourceStack.last
                 self.sourceStack.last?.children.append(functionInfo)
-            } else if sourceInfo.sourceType == .Property, let propertyInfo: SwiftSourcePropertyInfo = sourceInfo as? SwiftSourcePropertyInfo {
-                if let classInfo: SwiftSourceClassInfo = self.sourceStack.last as? SwiftSourceClassInfo {
-                    propertyInfo.parent = classInfo
-                    classInfo.children.append(propertyInfo)
-                }
+            } else if sourceInfo.sourceType == .Property, let variableInfo: SwiftSourceVariableInfo = sourceInfo as? SwiftSourceVariableInfo {
+                variableInfo.parent = self.sourceStack.last
+                self.sourceStack.last?.children.append(variableInfo)
             }
         }
         
