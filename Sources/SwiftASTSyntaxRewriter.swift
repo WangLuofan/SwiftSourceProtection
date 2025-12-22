@@ -215,6 +215,18 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        
+        if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self), let confusedIdentifier = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPatternSyntax.identifier.text, sourceInfo: self.sourceInfo) {
+            let pattern = identifierPatternSyntax.with(\.identifier, TokenSyntax(stringLiteral: confusedIdentifier).with(\.leadingTrivia, identifierPatternSyntax.identifier.leadingTrivia).with(\.trailingTrivia, identifierPatternSyntax.identifier.trailingTrivia))
+            
+            newNode = node.with(\.pattern, PatternSyntax(pattern).with(\.leadingTrivia, identifierPatternSyntax.leadingTrivia).with(\.trailingTrivia, identifierPatternSyntax.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
         var newNode = node
         
