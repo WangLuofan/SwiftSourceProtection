@@ -8,10 +8,22 @@ import Foundation
 import SwiftSyntax
 
 class SwiftConfuseHelper {
-    static func confusedSymbolName(symbolName: String, minLength: Int = 1, maxLength: Int = 31) -> String? {
+    static func shouldSymbolConfused(_ symbolName: String) -> Bool {
+        if symbolName == "_" || symbolName == "self" || symbolName == "Self" {
+            return false
+        }
         
-        if minLength <= 0 || maxLength >= 32 {
-            return nil
+        return true
+    }
+    
+    static func confusedSymbolName(symbolName: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+        
+        if minLength <= 0 || maxLength >= 32 || !Self.shouldSymbolConfused(symbolName) {
+            return symbolName
+        }
+        
+        if let confusedSymbol = SwiftSourceConfusedTable.shared.confusedTable[symbolName] {
+            return confusedSymbol
         }
         
         let lowercase: String = "abcdefghijklmnopqrstuvwxyz"
@@ -38,6 +50,11 @@ class SwiftConfuseHelper {
             randomSymbolName += String(stringArr[randomItem])
         }
         
+        if SwiftSourceConfusedTable.shared.reversedTable[randomSymbolName] != nil {
+            return self.confusedSymbolName(symbolName: symbolName)
+        }
+        
+        SwiftSourceConfusedTable.pushSymbol(symbol: symbolName, confusedSymbol: randomSymbolName)
         return randomSymbolName
     }
     
