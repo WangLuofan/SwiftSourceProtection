@@ -108,6 +108,66 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: DoStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GenericArgumentClauseSyntax) -> GenericArgumentClauseSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GenericArgumentSyntax) -> GenericArgumentSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GenericParameterClauseSyntax) -> GenericParameterClauseSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GenericParameterSyntax) -> GenericParameterSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GenericWhereClauseSyntax) -> GenericWhereClauseSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: TupleExprSyntax) -> ExprSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var parentNode = node.parent
         while parentNode != nil && parentNode?.as(FunctionDeclSyntax.self) == nil {
