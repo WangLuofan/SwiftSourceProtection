@@ -143,6 +143,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: InheritanceClauseSyntax) -> InheritanceClauseSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
         var newNode = node
         return super.visit(newNode)
