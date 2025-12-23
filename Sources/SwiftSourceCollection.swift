@@ -133,4 +133,30 @@ class SwiftSourceCollection: SyntaxVisitor {
     override func visitPost(_ node: ProtocolDeclSyntax) {
         SwiftSourceScopeManager.popScope()
     }
+    
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        let classInfo: SwiftSourceClassInfo = SwiftSourceClassInfo()
+        classInfo.filePath = self.sourceFile
+        
+        classInfo.name = node.name.text
+        node.modifiers.forEach { modifer in
+            classInfo.accessControl = modifer.accessControl
+            classInfo.isFinal = modifer.isFinal
+        }
+        
+        if let inheritanceClause = node.inheritanceClause {
+            inheritanceClause.inheritedTypes.forEach { inheritedType in
+                classInfo.superClasses.append(inheritedType.type.trimmedDescription)
+            }
+        }
+        
+        SwiftSourceScopeManager.pushSymbol(classInfo.name, sourceInfo: classInfo)
+        SwiftSourceScopeManager.pushScope()
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: StructDeclSyntax) {
+        SwiftSourceScopeManager.popScope()
+    }
 }

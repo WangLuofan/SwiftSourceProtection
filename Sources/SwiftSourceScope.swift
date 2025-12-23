@@ -13,6 +13,11 @@ class SwiftSourceScopeManager: @unchecked Sendable {
     lazy var currentScope: SwiftSourceScope = globalScope
     
     static func pushScope() {
+        if let nextScope = self.shared.currentScope.nextScope {
+            self.shared.currentScope = nextScope
+            return
+        }
+        
         let scope: SwiftSourceScope = SwiftSourceScope()
         
         self.shared.currentScope.nextScope = scope
@@ -29,6 +34,10 @@ class SwiftSourceScopeManager: @unchecked Sendable {
     
     static func resetScope() {
         self.shared.currentScope = self.shared.globalScope
+    }
+    
+    static func isGlobalScope() -> Bool {
+        return self.shared.currentScope === self.shared.globalScope
     }
 }
 

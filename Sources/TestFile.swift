@@ -25,8 +25,8 @@ func globalFunction(test: String) {
         print("world")
     }
     
-    for i in 0...10 {
-        print("+++")
+    for i in 0..<10 {
+        let i = 0
     }
     
     let optStr: String? = "Hello"
