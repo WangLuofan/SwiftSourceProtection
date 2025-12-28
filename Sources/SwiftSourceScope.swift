@@ -7,12 +7,14 @@
 
 class SwiftSourceScopeManager: @unchecked Sendable {
     static let shared: SwiftSourceScopeManager = SwiftSourceScopeManager()
+    
+    private lazy var parentStack: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
     private let globalScope: SwiftSourceScope = SwiftSourceScope()
     
     lazy var currentScope: SwiftSourceScope = self.globalScope
     
     func pushScopeWithNoCreate() {
-        guard let nextScope = currentScope.scopeQueue.last else {
+        guard let nextScope = currentScope.scopeQueue.first else {
             return
         }
         
@@ -34,6 +36,10 @@ class SwiftSourceScopeManager: @unchecked Sendable {
         }
         
         self.currentScope = prevScope
+        
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
     }
     
     func popScopeWithRemove() {
@@ -45,7 +51,8 @@ class SwiftSourceScopeManager: @unchecked Sendable {
     }
     
     func pushSourceInfo(_ sourceInfo: SwiftSourceBaseInfo) {
-        self.currentScope.symbols[sourceInfo.name] = sourceInfo
+        self.currentScope.symbols[sourceInfo.symbolName] = sourceInfo
+        sourceInfo.parent = self.parentStack.last
     }
     
     func isCurrentGlobalScope() -> Bool {

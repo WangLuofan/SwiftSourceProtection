@@ -9,9 +9,13 @@ import SwiftSyntax
 
 class SwiftConfuseHelper {
     
-    private static func shouldSymbolConfused(_ symbolName: String) -> Bool {
+    private static func shouldSymbolConfused(_ symbolName: String, _ info: SwiftSourceBaseInfo? = nil) -> Bool {
         
-        guard !symbolName.isSwiftKeyWord, let sourceInfo = self.findSymbolInScope(symbolName) else {
+        guard !symbolName.isSwiftKeyWord else {
+            return false
+        }
+        
+        guard let sourceInfo = info ?? self.findSymbolInScope(symbolName) else {
             return false
         }
         
@@ -33,6 +37,23 @@ class SwiftConfuseHelper {
             } else if sourceInfo.isOverride {
                 /// 向上查找，找到最终定义位置
                 /// 判断是否在用户目录
+                if sourceInfo.parent == nil {
+                    return false
+                }
+                
+                guard sourceInfo.parent?.sourceType == .Class, let clsSourceInfo: SwiftSourceClassInfo = sourceInfo.parent as? SwiftSourceClassInfo else {
+                    return true
+                }
+                
+                for superCls in clsSourceInfo.superClasses {
+                    guard let superClsInfo: SwiftSourceClassInfo = self.findSymbolInScope(superCls) as? SwiftSourceClassInfo else {
+                        continue
+                    }
+                    
+                    if self.shouldSymbolConfused(symbolName, superClsInfo) {
+                        return true
+                    }
+                }
             } else {
                 /// 如果是实现了协议，则向上查获协议，找到最终定义位置
                 /// 判断是否在用户目录
@@ -63,9 +84,9 @@ class SwiftConfuseHelper {
         return self.findSymbolInScope(symbolName, scope.prevScope)
     }
     
-    static func confusedSymbolName(symbolName: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+    static func confusedSymbolName(symbolName: String, bAlwaysConfuse: Bool = false, minLength: Int = 1, maxLength: Int = 31) -> String {
         
-        if minLength <= 0 || maxLength >= 32 || !Self.shouldSymbolConfused(symbolName) {
+        if minLength <= 0 || maxLength >= 32 || (!bAlwaysConfuse && !Self.shouldSymbolConfused(symbolName)) {
             return symbolName
         }
         
@@ -110,7 +131,7 @@ class SwiftConfuseHelper {
             return false
         }
         
-        if lhs.name != rhs.name {
+        if lhs.identifier != rhs.identifier || lhs.symbolName != rhs.symbolName {
             return false
         }
         

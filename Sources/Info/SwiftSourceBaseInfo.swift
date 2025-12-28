@@ -25,7 +25,8 @@ class SwiftSourceBaseInfo {
     var filePath: String = ""
     var accessControl: SwiftSourceAccessControl = .Internal
     
-    var name: String = ""
+    var symbolName: String = ""
+    var identifier: String = ""
     
     var isStatic: Bool = false
     var isOverride: Bool = false

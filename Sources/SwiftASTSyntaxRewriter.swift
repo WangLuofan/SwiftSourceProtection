@@ -177,11 +177,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
-        var parentNode = node.parent
-        while parentNode != nil && parentNode?.as(FunctionDeclSyntax.self) == nil {
-            parentNode = parentNode?.parent
-        }
-        
+         
         var newNode = node
         
         let firstName = node.firstName.text
@@ -190,7 +186,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia))
         
         if let secondName = newNode.secondName?.text {
-            let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName)
+            let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName, bAlwaysConfuse: true)
             
             var tokenSyntax = TokenSyntax(stringLiteral: confusedSecondName)
             if let leadingTrivia = node.secondName?.leadingTrivia {
@@ -277,6 +273,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        
         var newNode = node
         
         if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
@@ -448,9 +446,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visitPost(_ node: Syntax) {
         if node.as(ClassDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScope()
+            SwiftSourceScopeManager.shared.popScopeWithRemove()
         } else if node.as(VariableDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScope()
+            SwiftSourceScopeManager.shared.popScopeWithRemove()
+        } else if node.as(FunctionDeclSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScopeWithRemove()
+        } else if node.as(ProtocolDeclSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScopeWithRemove()
+        } else if node.as(ForStmtSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScopeWithRemove()
         }
     }
 }

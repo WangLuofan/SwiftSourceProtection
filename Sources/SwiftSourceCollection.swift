@@ -22,7 +22,9 @@ class SwiftSourceCollection: SyntaxVisitor {
         let classInfo: SwiftSourceClassInfo = SwiftSourceClassInfo()
         classInfo.filePath = self.sourceFile
         
-        classInfo.name = node.name.text
+        classInfo.identifier = node.name.text
+        classInfo.symbolName = node.name.text
+        
         node.modifiers.forEach { modifer in
             classInfo.accessControl = modifer.accessControl
             classInfo.isFinal = modifer.isFinal
@@ -33,8 +35,6 @@ class SwiftSourceCollection: SyntaxVisitor {
                 classInfo.superClasses.append(inheritedType.type.trimmedDescription)
             }
         }
-        
-        print("++++++++++++\(classInfo.name)")
         
         SwiftSourceScopeManager.shared.pushSourceInfo(classInfo)
         SwiftSourceScopeManager.shared.pushScope()
@@ -50,7 +50,7 @@ class SwiftSourceCollection: SyntaxVisitor {
         
         let functionInfo: SwiftSourceFunctionInfo = SwiftSourceFunctionInfo()
         
-        functionInfo.functionName = node.name.text
+        functionInfo.symbolName = node.name.text
         functionInfo.filePath = self.sourceFile
         functionInfo.isMember = SwiftConfuseHelper.isMemberVariable(node)
         
@@ -62,15 +62,13 @@ class SwiftSourceCollection: SyntaxVisitor {
             functionInfo.isOverride = modifier.isOverride
         }
         functionInfo.signature = node.signature.trimmedDescription
-        functionInfo.name = "\(functionInfo.functionName ?? "")\(functionInfo.signature ?? "")"
+        functionInfo.identifier = "\(functionInfo.symbolName)\(functionInfo.signature ?? "")"
         let retType = node.signature.returnClause?.type.trimmedDescription
         
         if retType != "Void" {
             functionInfo.returnType = retType
         }
         
-        print("++++++++++++\(functionInfo.name)")
-
         SwiftSourceScopeManager.shared.pushSourceInfo(functionInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
@@ -90,7 +88,8 @@ class SwiftSourceCollection: SyntaxVisitor {
         node.bindings.forEach { binding in
             let pattern = binding.pattern
             if let identifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
-                variableInfo.name = identifierPatternSyntax.identifier.text
+                variableInfo.identifier = identifierPatternSyntax.identifier.text
+                variableInfo.symbolName = identifierPatternSyntax.identifier.text
             }
             
             if let retType = binding.typeAnnotation?.type.trimmedDescription, retType != "Void" {
@@ -106,8 +105,6 @@ class SwiftSourceCollection: SyntaxVisitor {
             variableInfo.isFinal = modifier.isFinal
         }
         
-        print("++++++++++++\(variableInfo.name)")
-
         SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
@@ -123,7 +120,9 @@ class SwiftSourceCollection: SyntaxVisitor {
         let protocolInfo: SwiftSourceProtocolInfo = SwiftSourceProtocolInfo()
         protocolInfo.filePath = self.sourceFile
         
-        protocolInfo.name = node.name.text
+        protocolInfo.identifier = node.name.text
+        protocolInfo.symbolName = node.name.text
+        
         node.modifiers.forEach { modifer in
             protocolInfo.accessControl = modifer.accessControl
             protocolInfo.isFinal = modifer.isFinal
@@ -135,8 +134,6 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        print("++++++++++++\(protocolInfo.name)")
-
         SwiftSourceScopeManager.shared.pushSourceInfo(protocolInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
@@ -151,7 +148,9 @@ class SwiftSourceCollection: SyntaxVisitor {
         let classInfo: SwiftSourceClassInfo = SwiftSourceClassInfo()
         classInfo.filePath = self.sourceFile
         
-        classInfo.name = node.name.text
+        classInfo.identifier = node.name.text
+        classInfo.symbolName = node.name.text
+        
         node.modifiers.forEach { modifer in
             classInfo.accessControl = modifer.accessControl
             classInfo.isFinal = modifer.isFinal
@@ -163,8 +162,6 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        print("++++++++++++\(classInfo.name)")
-
         SwiftSourceScopeManager.shared.pushSourceInfo(classInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
@@ -173,6 +170,40 @@ class SwiftSourceCollection: SyntaxVisitor {
     
     override func visitPost(_ node: StructDeclSyntax) {
         SwiftSourceScopeManager.shared.popScope()
+    }
+    
+    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.shared.pushScope()
+        
+        if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            let identifier = identifierPatternSyntax.identifier.text
+            
+            let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+            variableInfo.filePath = self.sourceFile
+            variableInfo.symbolName = identifier
+            variableInfo.identifier = identifier
+            
+            SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+        }
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ForStmtSyntax) {
+        SwiftSourceScopeManager.shared.popScope()
+    }
+    
+    override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
+        
+        let firstName = node.firstName.text
+        
+        if let secondName = node.secondName?.text {
+            
+        } else {
+            
+        }
+        
+        return super.visit(node)
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
