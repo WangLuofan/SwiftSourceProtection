@@ -62,14 +62,17 @@ func main() {
         
         sourceTreeDict[sourceFile] = sourceTree
     }
-
+    
+    let isCurrentGlobalScope = SwiftSourceScopeManager.shared.isCurrentGlobalScope()
+    let scope = SwiftSourceScopeManager.shared.currentScope
+    
     sourceTreeDict.forEach { sourceFile, sourceTree in
         if let confusedFileContent: String =
             SwiftSourceProtection(sourceFile: sourceFile,
                                   sourceTree: sourceTree,
                                   projectPath: projectPath).confuse() {
             
-            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+//            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
             
         }
     }

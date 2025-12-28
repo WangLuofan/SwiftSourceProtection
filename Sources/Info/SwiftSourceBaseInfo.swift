@@ -20,7 +20,7 @@ class SwiftSourceBaseInfo {
     }
     
     var parent: SwiftSourceBaseInfo?
-    var children: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
+    var children: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
     
     var filePath: String = ""
     var accessControl: SwiftSourceAccessControl = .Internal
@@ -31,4 +31,5 @@ class SwiftSourceBaseInfo {
     var isOverride: Bool = false
     var isClass: Bool = false
     var isFinal: Bool = false
+    var isMember: Bool = false
 }

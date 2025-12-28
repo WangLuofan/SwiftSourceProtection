@@ -34,14 +34,16 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        SwiftSourceScopeManager.pushSymbol(classInfo.name, sourceInfo: classInfo)
-        SwiftSourceScopeManager.pushScope()
+        print("++++++++++++\(classInfo.name)")
+        
+        SwiftSourceScopeManager.shared.pushSourceInfo(classInfo)
+        SwiftSourceScopeManager.shared.pushScope()
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClassDeclSyntax) {
-        SwiftSourceScopeManager.popScope()
+        SwiftSourceScopeManager.shared.popScope()
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -50,6 +52,8 @@ class SwiftSourceCollection: SyntaxVisitor {
         
         functionInfo.functionName = node.name.text
         functionInfo.filePath = self.sourceFile
+        functionInfo.isMember = SwiftConfuseHelper.isMemberVariable(node)
+        
         node.modifiers.forEach { modifier in
             functionInfo.accessControl = modifier.accessControl
             functionInfo.isStatic = modifier.isStatic
@@ -65,19 +69,23 @@ class SwiftSourceCollection: SyntaxVisitor {
             functionInfo.returnType = retType
         }
         
-        SwiftSourceScopeManager.pushSymbol(functionInfo.name, sourceInfo: functionInfo)
-        SwiftSourceScopeManager.pushScope()
+        print("++++++++++++\(functionInfo.name)")
+
+        SwiftSourceScopeManager.shared.pushSourceInfo(functionInfo)
+        SwiftSourceScopeManager.shared.pushScope()
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: FunctionDeclSyntax) {
-        SwiftSourceScopeManager.popScope()
+        SwiftSourceScopeManager.shared.popScope()
     }
-    
+
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo(SwiftConfuseHelper.isMemberVariable(node))
+        
+        let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
         variableInfo.filePath = self.sourceFile
+        variableInfo.isMember = SwiftConfuseHelper.isMemberVariable(node)
         
         node.bindings.forEach { binding in
             let pattern = binding.pattern
@@ -98,15 +106,18 @@ class SwiftSourceCollection: SyntaxVisitor {
             variableInfo.isFinal = modifier.isFinal
         }
         
-        SwiftSourceScopeManager.pushSymbol(variableInfo.name, sourceInfo: variableInfo)
+        print("++++++++++++\(variableInfo.name)")
+
+        SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+        SwiftSourceScopeManager.shared.pushScope()
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
-        
+        SwiftSourceScopeManager.shared.popScope()
     }
-    
+
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         
         let protocolInfo: SwiftSourceProtocolInfo = SwiftSourceProtocolInfo()
@@ -124,14 +135,16 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        SwiftSourceScopeManager.pushSymbol(protocolInfo.name, sourceInfo: protocolInfo)
-        SwiftSourceScopeManager.pushScope()
+        print("++++++++++++\(protocolInfo.name)")
+
+        SwiftSourceScopeManager.shared.pushSourceInfo(protocolInfo)
+        SwiftSourceScopeManager.shared.pushScope()
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: ProtocolDeclSyntax) {
-        SwiftSourceScopeManager.popScope()
+        SwiftSourceScopeManager.shared.popScope()
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -150,13 +163,23 @@ class SwiftSourceCollection: SyntaxVisitor {
             }
         }
         
-        SwiftSourceScopeManager.pushSymbol(classInfo.name, sourceInfo: classInfo)
-        SwiftSourceScopeManager.pushScope()
+        print("++++++++++++\(classInfo.name)")
+
+        SwiftSourceScopeManager.shared.pushSourceInfo(classInfo)
+        SwiftSourceScopeManager.shared.pushScope()
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
-        SwiftSourceScopeManager.popScope()
+        SwiftSourceScopeManager.shared.popScope()
+    }
+
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
     }
 }

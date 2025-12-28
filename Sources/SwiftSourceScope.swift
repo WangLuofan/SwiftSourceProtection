@@ -2,50 +2,61 @@
 //  SwiftSourceScope.swift
 //  SwiftSourceProtection
 //
-//  Created by wangluofan on 2025/12/22.
+//  Created by wangluofan on 2025/12/27.
 //
 
 class SwiftSourceScopeManager: @unchecked Sendable {
-    private static let shared: SwiftSourceScopeManager = SwiftSourceScopeManager()
-    
+    static let shared: SwiftSourceScopeManager = SwiftSourceScopeManager()
     private let globalScope: SwiftSourceScope = SwiftSourceScope()
     
-    lazy var currentScope: SwiftSourceScope = globalScope
+    lazy var currentScope: SwiftSourceScope = self.globalScope
     
-    static func pushScope() {
-        if let nextScope = self.shared.currentScope.nextScope {
-            self.shared.currentScope = nextScope
+    func pushScopeWithNoCreate() {
+        guard let nextScope = currentScope.scopeQueue.last else {
             return
         }
         
+        self.currentScope = nextScope
+    }
+    
+    func pushScope() {
         let scope: SwiftSourceScope = SwiftSourceScope()
         
-        self.shared.currentScope.nextScope = scope
-        scope.prevScope = self.shared.currentScope
+        self.currentScope.scopeQueue.append(scope)
+        scope.prevScope = self.currentScope
+        
+        self.currentScope = scope
     }
     
-    static func popScope() {
-        self.shared.currentScope = self.shared.currentScope.prevScope ?? self.shared.globalScope
+    func popScope() {
+        guard let prevScope = currentScope.prevScope else {
+            return
+        }
+        
+        self.currentScope = prevScope
     }
     
-    static func pushSymbol(_ symbolName: String, sourceInfo: SwiftSourceBaseInfo) {
-        self.shared.currentScope.symbols[symbolName] = sourceInfo
+    func popScopeWithRemove() {
+        self.popScope()
+        
+        if !self.currentScope.scopeQueue.isEmpty {
+            self.currentScope.scopeQueue.removeFirst()
+        }
     }
     
-    static func resetScope() {
-        self.shared.currentScope = self.shared.globalScope
+    func pushSourceInfo(_ sourceInfo: SwiftSourceBaseInfo) {
+        self.currentScope.symbols[sourceInfo.name] = sourceInfo
     }
     
-    static func isGlobalScope() -> Bool {
-        return self.shared.currentScope === self.shared.globalScope
+    func isCurrentGlobalScope() -> Bool {
+        return self.currentScope === self.globalScope
     }
 }
 
-class SwiftSourceScope: @unchecked Sendable {
+class SwiftSourceScope {
+    lazy var scopeQueue: [SwiftSourceScope] = [SwiftSourceScope]()
     
     var prevScope: SwiftSourceScope?
-    var nextScope: SwiftSourceScope?
     
     lazy var symbols: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
-
 }

@@ -11,6 +11,13 @@ import Accounts
 import WeatherKit
 import WeatherKit
 
+class ABC {
+    lazy var testLazy: String = {
+        let testLazy: String = "TestLazy"
+        return testLazy
+    }()
+}
+
 enum TestEnum {
     case First
     case Second
