@@ -7,6 +7,7 @@
 
 class SwiftSourceVariableInfo: SwiftSourceBaseInfo {
     var type: String?
+    var label: String?
     
     init() {
         super.init(sourcetype: .Variable)

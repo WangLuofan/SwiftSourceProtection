@@ -231,15 +231,17 @@ class SwiftSourceCollection: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
+        let firstName = node.firstName
         
-        let firstName = node.firstName.text
+        let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+        variableInfo.label = firstName.text
+        variableInfo.symbolName = firstName.text
         
-        if let secondName = node.secondName?.text {
-            
-        } else {
-            
+        if let secondName = node.secondName {
+            variableInfo.symbolName = secondName.text
         }
         
+        SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
         return super.visit(node)
     }
     

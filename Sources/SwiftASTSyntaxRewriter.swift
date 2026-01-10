@@ -226,10 +226,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         var newNode = node
         
-        let firstName = node.firstName.text
-        let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstName)
-        
-        newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia))
+        if let funcNode: FunctionDeclSyntax = parentNode?.as(FunctionDeclSyntax.self),
+           let funcName: String = SwiftConfusedSymbolTable.shared.reversedSymbol[funcNode.name.text],
+           SwiftConfuseHelper.shouldSymbolConfused(funcName) {
+            
+            let firstName = node.firstName.text
+            let confusedFirstName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: firstName, bAlwaysConfuse: true)
+            
+            newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedFirstName).with(\.leadingTrivia, node.firstName.leadingTrivia).with(\.trailingTrivia, node.firstName.trailingTrivia))
+        }
         
         if let secondName = newNode.secondName?.text {
             let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondName, bAlwaysConfuse: true)

@@ -9,7 +9,7 @@ import SwiftSyntax
 
 class SwiftConfuseHelper {
     
-    private static func shouldSymbolConfused(_ symbolName: String, _ info: SwiftSourceBaseInfo? = nil) -> Bool {
+    static func shouldSymbolConfused(_ symbolName: String, _ info: SwiftSourceBaseInfo? = nil) -> Bool {
         
         guard !symbolName.isSwiftKeyWord else {
             return false
