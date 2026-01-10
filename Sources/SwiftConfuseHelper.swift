@@ -307,6 +307,50 @@ extension String {
             
             // 异步/并发
             "async", "await",
+            
+            // 基础类型
+            "Int", "Int8", "Int16", "Int32", "Int64",
+            "UInt", "UInt8", "UInt16", "UInt32", "UInt64",
+            "Float", "Double", "Float16", "Float32", "Float64", "Float80",
+            "Bool",
+            "String", "Character", "Substring",
+            
+            // 集合类型
+            "Array", "Dictionary", "Set",
+            "Range", "ClosedRange", "PartialRangeFrom",
+            "PartialRangeThrough", "PartialRangeUpTo",
+            "ArraySlice",
+            
+            // 可选和错误
+            "Optional",
+            "Error", "ErrorProtocol", "Result",
+            
+            // 指针类型
+            "UnsafePointer", "UnsafeMutablePointer",
+            "UnsafeBufferPointer", "UnsafeMutableBufferPointer",
+            "UnsafeRawPointer", "UnsafeMutableRawPointer",
+            "AutoreleasingUnsafeMutablePointer",
+            "Unmanaged",
+            
+            // 类型擦除
+            "Any", "AnyObject", "AnyHashable", "AnyClass", "AnyProtocol",
+            
+            // 特殊类型
+            "Never", "Void",
+            
+            // 并发（Swift 5.5+）
+            "Task", "CheckedContinuation", "UnsafeContinuation",
+            
+            // 标准库重要类型
+            "Date", "Data", "URL", "UUID",
+            "Decimal", "NSNumber", "NSDecimalNumber",
+            
+            // 平台特定
+            "CGFloat", "CGRect", "CGPoint", "CGSize",
+            
+            // Objective-C 桥接
+            "NSString", "NSArray", "NSDictionary", "NSSet",
+            "NSNumber", "NSData", "NSDate",
         ]
         
         return swiftKeywords.contains(self)

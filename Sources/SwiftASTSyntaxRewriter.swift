@@ -39,14 +39,27 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         
         let updatedBindings: [PatternBindingSyntax] = node.bindings.map { bindings in
-            guard let identifierPattern = bindings.pattern.as(IdentifierPatternSyntax.self) else {
+            guard let identifierPattern: IdentifierPatternSyntax = bindings.pattern.as(IdentifierPatternSyntax.self) else {
                 return bindings
             }
             
-            let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPattern.identifier.text)
+            let idName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPattern.identifier.text)
+            var typeAnnotationSyntax: TypeAnnotationSyntax?
             
-            let newPattern = PatternSyntax(stringLiteral: confusedName).with(\.leadingTrivia, identifierPattern.leadingTrivia).with(\.trailingTrivia, identifierPattern.trailingTrivia)
-            return bindings.with(\.leadingTrivia, bindings.leadingTrivia).with(\.pattern, newPattern).with(\.trailingTrivia, bindings.trailingTrivia)
+            if let typeAnnSyntax: TypeAnnotationSyntax = bindings.typeAnnotation?.as(TypeAnnotationSyntax.self),
+                      let typeIDSyntax: IdentifierTypeSyntax = typeAnnSyntax.type.as(IdentifierTypeSyntax.self) {
+                let typeName = SwiftConfuseHelper.confusedSymbolName(symbolName: typeIDSyntax.name.text)
+                typeAnnotationSyntax = typeAnnSyntax.with(\.type, TypeSyntax(stringLiteral: typeName).with(\.leadingTrivia, typeIDSyntax.leadingTrivia).with(\.trailingTrivia, typeIDSyntax.trailingTrivia)).with(\.leadingTrivia, typeAnnSyntax.leadingTrivia).with(\.trailingTrivia, typeAnnSyntax.trailingTrivia)
+            }
+            
+            let syntaxPattern = PatternSyntax(stringLiteral: idName).with(\.leadingTrivia, identifierPattern.leadingTrivia).with(\.trailingTrivia, identifierPattern.trailingTrivia)
+            var newBindings = bindings.with(\.leadingTrivia, bindings.leadingTrivia).with(\.pattern, syntaxPattern).with(\.trailingTrivia, bindings.trailingTrivia)
+            
+            if let typeAnnotationSyntax {
+                newBindings = newBindings.with(\.typeAnnotation, typeAnnotationSyntax)
+            }
+            
+            return newBindings
         }
         
         let newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.bindings, PatternBindingListSyntax(updatedBindings)).with(\.trailingTrivia, node.trailingTrivia)
