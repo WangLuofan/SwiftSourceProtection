@@ -64,7 +64,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         let newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.bindings, PatternBindingListSyntax(updatedBindings)).with(\.trailingTrivia, node.trailingTrivia)
         
-        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -318,6 +317,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
         var newNode = node
         
+        SwiftSourceScopeManager.shared.pushScope(false)
         let confusedConditions = node.conditions.map { condSyntax in
             if let optionalBindingCondSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self) {
                 if let identifierPatternSyntax = optionalBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
@@ -475,13 +475,13 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visitPost(_ node: Syntax) {
         if node.as(ClassDeclSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
-        } else if node.as(VariableDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(FunctionDeclSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(ProtocolDeclSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(ForStmtSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScope(true)
+        } else if node.as(IfExprSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         }
     }

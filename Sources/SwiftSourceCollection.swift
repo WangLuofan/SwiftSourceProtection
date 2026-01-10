@@ -114,7 +114,7 @@ class SwiftSourceCollection: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
-        SwiftSourceScopeManager.shared.pushScope()
+//        SwiftSourceScopeManager.shared.pushScope()
         
         if variableInfo.isMember {
             variableInfo.parent = parentStack.last
@@ -124,6 +124,31 @@ class SwiftSourceCollection: SyntaxVisitor {
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
+//        SwiftSourceScopeManager.shared.popScope()
+    }
+    
+    override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.shared.pushScope()
+        
+        node.conditions.forEach { condSyntax in
+            if let optBindingCondSyntax: OptionalBindingConditionSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self),
+               let identPatternSyntax: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+                
+                variableInfo.symbolName = identPatternSyntax.identifier.text
+                if let typeAnnotation = optBindingCondSyntax.typeAnnotation,
+                   let idPatternSyntax: IdentifierPatternSyntax = typeAnnotation.type.as(IdentifierPatternSyntax.self) {
+                    variableInfo.type = idPatternSyntax.identifier.text
+                }
+                
+                SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+            }
+        }
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: IfExprSyntax) {
         SwiftSourceScopeManager.shared.popScope()
     }
 

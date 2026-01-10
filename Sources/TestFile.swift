@@ -1,15 +1,7 @@
-class Test {
-    func test() {
-        
-    }
-    
-    var test2: Int = 0
-}
-
-class Test2 {
-    var test: Test = Test()
-    
-    func test2() -> Test {
-        return Test()
+func testFunc() {
+    let r: Int? = 0
+    let q: String? = "123"
+    if let rp: Int = r, let qp: String = q {
+        print(rp)
     }
 }
