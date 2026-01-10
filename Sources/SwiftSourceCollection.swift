@@ -8,6 +8,8 @@
 import SwiftSyntax
 import SwiftParser
 
+nonisolated(unsafe) var parentStack: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
+
 class SwiftSourceCollection: SyntaxVisitor {
     private let sourceFile: String
     
@@ -39,10 +41,13 @@ class SwiftSourceCollection: SyntaxVisitor {
         SwiftSourceScopeManager.shared.pushSourceInfo(classInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
+        classInfo.parent = parentStack.last
+        parentStack.append(classInfo)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClassDeclSyntax) {
+        parentStack.removeLast()
         SwiftSourceScopeManager.shared.popScope()
     }
     
@@ -72,10 +77,13 @@ class SwiftSourceCollection: SyntaxVisitor {
         SwiftSourceScopeManager.shared.pushSourceInfo(functionInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
+        functionInfo.parent = parentStack.last
+        parentStack.append(functionInfo)
         return super.visit(node)
     }
     
     override func visitPost(_ node: FunctionDeclSyntax) {
+        parentStack.removeLast()
         SwiftSourceScopeManager.shared.popScope()
     }
 
@@ -108,6 +116,10 @@ class SwiftSourceCollection: SyntaxVisitor {
         SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
+        if variableInfo.isMember {
+            variableInfo.parent = parentStack.last
+        }
+        
         return super.visit(node)
     }
     
@@ -117,7 +129,7 @@ class SwiftSourceCollection: SyntaxVisitor {
 
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         
-        let protocolInfo: SwiftSourceProtocolInfo = SwiftSourceProtocolInfo()
+        let protocolInfo: SwiftSourceClassInfo = SwiftSourceClassInfo(sourcetype: .Protocol)
         protocolInfo.filePath = self.sourceFile
         
         protocolInfo.identifier = node.name.text

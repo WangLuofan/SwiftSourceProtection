@@ -9,7 +9,11 @@ class SwiftSourceClassInfo: SwiftSourceBaseInfo {
     
     var superClasses: [String] = []
     
-    override var sourceType: SwiftSourceType {
-        return .Class
+    init() {
+        super.init(sourcetype: .Class)
+    }
+    
+    override init(sourcetype: SwiftSourceType) {
+        super.init(sourcetype: sourcetype)
     }
 }

@@ -8,51 +8,41 @@
 class SwiftSourceScopeManager: @unchecked Sendable {
     static let shared: SwiftSourceScopeManager = SwiftSourceScopeManager()
     
-    private lazy var parentStack: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
     private let globalScope: SwiftSourceScope = SwiftSourceScope()
     
     lazy var currentScope: SwiftSourceScope = self.globalScope
     
-    func pushScopeWithNoCreate() {
-        guard let nextScope = currentScope.scopeQueue.first else {
-            return
+    func pushScope(_ new: Bool = true) {
+        if new {
+            let scope: SwiftSourceScope = SwiftSourceScope()
+            
+            self.currentScope.scopeQueue.append(scope)
+            scope.prevScope = self.currentScope
+            
+            self.currentScope = scope
+        } else {
+            guard let nextScope = currentScope.scopeQueue.first else {
+                return
+            }
+            
+            self.currentScope = nextScope
         }
-        
-        self.currentScope = nextScope
     }
     
-    func pushScope() {
-        let scope: SwiftSourceScope = SwiftSourceScope()
-        
-        self.currentScope.scopeQueue.append(scope)
-        scope.prevScope = self.currentScope
-        
-        self.currentScope = scope
-    }
-    
-    func popScope() {
+    func popScope(_ remove: Bool = false) {
         guard let prevScope = currentScope.prevScope else {
             return
         }
         
         self.currentScope = prevScope
         
-        if !self.parentStack.isEmpty {
-            self.parentStack.removeLast()
-        }
-    }
-    
-    func popScopeWithRemove() {
-        self.popScope()
-        
-        if !self.currentScope.scopeQueue.isEmpty {
+        if remove && !self.currentScope.scopeQueue.isEmpty {
             self.currentScope.scopeQueue.removeFirst()
         }
     }
     
     func pushSourceInfo(_ sourceInfo: SwiftSourceBaseInfo) {
         self.currentScope.symbols[sourceInfo.symbolName] = sourceInfo
-        sourceInfo.parent = self.parentStack.last
     }
     
     func isCurrentGlobalScope() -> Bool {

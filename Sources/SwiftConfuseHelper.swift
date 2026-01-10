@@ -22,15 +22,9 @@ class SwiftConfuseHelper {
         switch sourceInfo.sourceType {
         case .Unknown:
             return false
-        case .Protocol:
-            fallthrough
-        case .Enum:
-            fallthrough
-        case .Class:
+        case .Protocol, .Enum, .Class:
             return true
-        case .Function:
-            fallthrough
-        case .Property: do {
+        case .Function, .Variable: do {
             if sourceInfo.isStatic || sourceInfo.isFinal || sourceInfo.accessControl == .FilePrivate
                 || sourceInfo.accessControl == .Private || !sourceInfo.isMember {
                 return true
@@ -41,12 +35,14 @@ class SwiftConfuseHelper {
                     return false
                 }
                 
-                guard sourceInfo.parent?.sourceType == .Class, let clsSourceInfo: SwiftSourceClassInfo = sourceInfo.parent as? SwiftSourceClassInfo else {
+                guard sourceInfo.parent?.sourceType == .Class,
+                        let clsSourceInfo: SwiftSourceClassInfo = sourceInfo.parent as? SwiftSourceClassInfo else {
                     return true
                 }
                 
                 for superCls in clsSourceInfo.superClasses {
-                    guard let superClsInfo: SwiftSourceClassInfo = self.findSymbolInScope(superCls) as? SwiftSourceClassInfo else {
+                    guard let superClsInfo: SwiftSourceClassInfo = self.findSymbolInScope(superCls) as? SwiftSourceClassInfo,
+                          superClsInfo.sourceType == .Class else {
                         continue
                     }
                     
@@ -57,10 +53,24 @@ class SwiftConfuseHelper {
             } else {
                 /// 如果是实现了协议，则向上查获协议，找到最终定义位置
                 /// 判断是否在用户目录
-                if sourceInfo.parent == nil || sourceInfo.parent?.sourceType != .Class || sourceInfo.parent?.sourceType != .Protocol {
+                guard sourceInfo.parent != nil,
+                      let clsSourceInfo: SwiftSourceClassInfo = sourceInfo.parent as? SwiftSourceClassInfo,
+                      !clsSourceInfo.superClasses.isEmpty else {
                     return true
                 }
+                
+                for superCls in clsSourceInfo.superClasses {
+                    guard let superClsInfo: SwiftSourceClassInfo = self.findSymbolInScope(superCls) as? SwiftSourceClassInfo,
+                          superClsInfo.sourceType == .Protocol else {
+                        continue
+                    }
+                    
+                    if self.shouldSymbolConfused(symbolName, superClsInfo) {
+                        return true
+                    }
+                }
             }
+            
             break
         }
         @unknown default:

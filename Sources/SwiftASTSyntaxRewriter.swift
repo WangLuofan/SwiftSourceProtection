@@ -51,7 +51,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         let newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.bindings, PatternBindingListSyntax(updatedBindings)).with(\.trailingTrivia, node.trailingTrivia)
         
-        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -79,7 +79,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         newNode = newNode.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         
-        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -107,7 +107,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedFuncName)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         
-        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -177,7 +177,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
-         
+        var parentNode = node.parent
+        while parentNode != nil && parentNode?.as(FunctionDeclSyntax.self) == nil {
+            parentNode = parentNode?.parent
+        }
+        
         var newNode = node
         
         let firstName = node.firstName.text
@@ -255,7 +259,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         newNode = newNode.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         
-        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -273,7 +277,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        SwiftSourceScopeManager.shared.pushScope(false)
         
         var newNode = node
         
@@ -359,7 +363,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         newNode = newNode.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         
-        SwiftSourceScopeManager.shared.pushScopeWithNoCreate()
+        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -446,15 +450,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visitPost(_ node: Syntax) {
         if node.as(ClassDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScopeWithRemove()
+            SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(VariableDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScopeWithRemove()
+            SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(FunctionDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScopeWithRemove()
+            SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(ProtocolDeclSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScopeWithRemove()
+            SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(ForStmtSyntax.self) != nil {
-            SwiftSourceScopeManager.shared.popScopeWithRemove()
+            SwiftSourceScopeManager.shared.popScope(true)
         }
     }
 }

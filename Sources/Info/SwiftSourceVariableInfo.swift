@@ -8,7 +8,7 @@
 class SwiftSourceVariableInfo: SwiftSourceBaseInfo {
     var type: String?
     
-    override var sourceType: SwiftSourceType {
-        return .Property
+    init() {
+        super.init(sourcetype: .Variable)
     }
 }

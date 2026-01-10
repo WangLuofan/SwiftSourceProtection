@@ -9,15 +9,13 @@ enum SwiftSourceType {
     case Unknown
     case Class
     case Function
-    case Property
+    case Variable
     case `Protocol`
     case Enum
 }
 
-class SwiftSourceBaseInfo {
-    var sourceType: SwiftSourceType {
-        return .Unknown
-    }
+class SwiftSourceBaseInfo: SwiftSourceInfoProtocol {
+    var sourceType: SwiftSourceType = .Unknown
     
     var parent: SwiftSourceBaseInfo?
     var children: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
@@ -33,4 +31,8 @@ class SwiftSourceBaseInfo {
     var isClass: Bool = false
     var isFinal: Bool = false
     var isMember: Bool = false
+    
+    init(sourcetype: SwiftSourceType) {
+        self.sourceType = sourcetype
+    }
 }

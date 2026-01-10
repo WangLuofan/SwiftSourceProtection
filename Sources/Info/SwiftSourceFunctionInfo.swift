@@ -6,10 +6,11 @@
 //
 
 class SwiftSourceFunctionInfo: SwiftSourceBaseInfo {
-    override var sourceType: SwiftSourceType {
-        return .Function
-    }
     
     var signature: String?
     var returnType: String?
+    
+    init() {
+        super.init(sourcetype: .Function)
+    }
 }
