@@ -189,6 +189,17 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ReturnClauseSyntax) -> ReturnClauseSyntax {
+        var newNode = node
+        
+        if let identifierSyntax: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self) {
+            let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierSyntax.name.text)
+            newNode = node.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia).with(\.type, TypeSyntax(stringLiteral: confusedName).with(\.leadingTrivia, identifierSyntax.leadingTrivia).with(\.trailingTrivia, identifierSyntax.trailingTrivia))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var parentNode = node.parent
         while parentNode != nil && parentNode?.as(FunctionDeclSyntax.self) == nil {
