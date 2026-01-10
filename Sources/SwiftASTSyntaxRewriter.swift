@@ -18,23 +18,30 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         super.init(viewMode: .sourceAccurate)
     }
     
-    //    override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-    //
-    //        var importList: ImportPathComponentListSyntax = ImportPathComponentListSyntax()
-    //        node.path.forEach { path in
-    //            guard let confusedSymbolName = SwiftConfuseHelper
-    //                .confusedSymbolName(symbolName: path.name.text) else {
-    //                return
-    //            }
-    //
-    //            let newPath = path.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName))
-    //            importList.append(newPath)
-    //        }
-    //
-    //        let newNode = node.with(\.path, importList)
-    //
-    //        return super.visit(newNode)
-    //    }
+    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        var newNode = node
+        
+        var importDeclSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
+        var otherDeclSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
+        node.statements.forEach { cbItemSyntax in
+            if let _ = cbItemSyntax.item.as(ImportDeclSyntax.self) {
+                importDeclSyntaxList.append(cbItemSyntax)
+            } else {
+                otherDeclSyntaxList.append(cbItemSyntax)
+            }
+        }
+        
+        importDeclSyntaxList.shuffle()
+        otherDeclSyntaxList.shuffle()
+        
+        var reorderedSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
+        reorderedSyntaxList.append(contentsOf: importDeclSyntaxList)
+        reorderedSyntaxList.append(contentsOf: otherDeclSyntaxList)
+        
+        newNode = node.with(\.statements, CodeBlockItemListSyntax(reorderedSyntaxList).with(\.leadingTrivia, node.statements.leadingTrivia).with(\.trailingTrivia, node.statements.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
+    }
     
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         
@@ -147,8 +154,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: DoStmtSyntax) -> StmtSyntax {
-        var newNode = node
-        return super.visit(newNode)
+        SwiftSourceScopeManager.shared.pushScope(false)
+        return super.visit(node)
     }
     
     override func visit(_ node: GenericArgumentClauseSyntax) -> GenericArgumentClauseSyntax {
@@ -175,17 +182,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         return super.visit(newNode)
     }
-    
-    override func visit(_ node: InheritanceClauseSyntax) -> InheritanceClauseSyntax {
-        var newNode = node
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
-        var newNode = node
-        return super.visit(newNode)
-    }
-    
+
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
         var newNode = node
         
@@ -528,6 +525,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if node.as(WhileStmtSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(GuardStmtSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScope(true)
+        } else if node.as(DoStmtSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         }
     }

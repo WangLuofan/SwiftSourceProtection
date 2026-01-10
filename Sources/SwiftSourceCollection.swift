@@ -266,6 +266,10 @@ class SwiftSourceCollection: SyntaxVisitor {
         return super.visit(node)
     }
     
+    override func visitPost(_ node: GuardStmtSyntax) {
+        SwiftSourceScopeManager.shared.popScope()
+    }
+    
     override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
         SwiftSourceScopeManager.shared.pushScope()
         
@@ -292,7 +296,12 @@ class SwiftSourceCollection: SyntaxVisitor {
         SwiftSourceScopeManager.shared.popScope()
     }
     
-    override func visitPost(_ node: GuardStmtSyntax) {
+    override func visit(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.shared.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: DoStmtSyntax) {
         SwiftSourceScopeManager.shared.popScope()
     }
 
