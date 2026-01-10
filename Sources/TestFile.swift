@@ -6,5 +6,11 @@ func testFunc(first text: String, second: String?) {
         return
     }
     
+    var count: Int = 0
+    while let rq = r {
+        let s = 1
+        count += s
+    }
+    
     print(second)
 }

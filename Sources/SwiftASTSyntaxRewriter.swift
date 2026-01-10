@@ -124,7 +124,25 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.shared.pushScope(false)
         var newNode = node
+        
+        let confusedConditions = node.conditions.map { condSyntax in
+            if let optionalBindingCondSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self) {
+                if let identifierPatternSyntax = optionalBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                    let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: identifierPatternSyntax.identifier.text)
+                    let confusedIDPatternSyntax = identifierPatternSyntax.with(\.identifier, TokenSyntax(stringLiteral: confusedName)).with(\.leadingTrivia, identifierPatternSyntax.leadingTrivia).with(\.trailingTrivia, identifierPatternSyntax.trailingTrivia)
+                    
+                    let confusedOptBindSyntax = optionalBindingCondSyntax.with(\.pattern, PatternSyntax(confusedIDPatternSyntax)).with(\.leadingTrivia, optionalBindingCondSyntax.leadingTrivia).with(\.trailingTrivia, optionalBindingCondSyntax.trailingTrivia)
+                    
+                    return condSyntax.with(\.condition, ConditionElementSyntax.Condition(confusedOptBindSyntax)).with(\.leadingTrivia, condSyntax.leadingTrivia).with(\.trailingTrivia, condSyntax.trailingTrivia)
+                }
+            }
+            
+            return condSyntax
+        }
+        
+        newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConditions)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         return super.visit(newNode)
     }
     
@@ -506,6 +524,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if node.as(ForStmtSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(IfExprSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScope(true)
+        } else if node.as(WhileStmtSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScope(true)
+        } else if node.as(GuardStmtSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         }
     }

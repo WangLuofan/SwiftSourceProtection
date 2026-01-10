@@ -266,6 +266,32 @@ class SwiftSourceCollection: SyntaxVisitor {
         return super.visit(node)
     }
     
+    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.shared.pushScope()
+        
+        node.conditions.forEach { condSyntax in
+            if let optBindingCondSyntax: OptionalBindingConditionSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self),
+               let idPatternSyntax: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+                
+                variableInfo.symbolName = idPatternSyntax.identifier.text
+                
+                if let typeAnnSyntax: TypeAnnotationSyntax = optBindingCondSyntax.typeAnnotation,
+                   let idPatternSyntax: IdentifierPatternSyntax = typeAnnSyntax.type.as(IdentifierPatternSyntax.self) {
+                    variableInfo.type = idPatternSyntax.identifier.text
+                }
+                
+                SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+            }
+        }
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: WhileStmtSyntax) {
+        SwiftSourceScopeManager.shared.popScope()
+    }
+    
     override func visitPost(_ node: GuardStmtSyntax) {
         SwiftSourceScopeManager.shared.popScope()
     }
