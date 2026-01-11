@@ -96,7 +96,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             newNode = newNode.with(\.inheritanceClause, InheritanceClauseSyntax(leadingTrivia: node.inheritanceClause?.leadingTrivia, inheritedTypes: confusedInheritedList, trailingTrivia: node.inheritanceClause?.trailingTrivia))
         }
         
-        newNode = newNode.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        let members = newNode.memberBlock.members.shuffled()
+        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(members).with(\.leadingTrivia, newNode.memberBlock.members.leadingTrivia).with(\.trailingTrivia, newNode.memberBlock.members.trailingTrivia))).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         
         SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
