@@ -120,7 +120,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let symbolName: String = "\(node.name.text)\(node.signature.trimmedDescription)"
         let confusedFuncName: String =
                 SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text)
         
@@ -325,6 +324,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        SwiftSourceScopeManager.shared.pushScope(false)
+        return super.visit(node)
+    }
+    
     override func visit(_ node: ClosureCaptureSyntax) -> ClosureCaptureSyntax {
 
         let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: node.name.text)
@@ -389,7 +393,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             
             var secondNameToken = parameter.secondName
             if secondNameToken != nil {
-                let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondNameToken!.text)
+                let confusedSecondName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: secondNameToken!.text, bAlwaysConfuse: true)
                 secondNameToken = TokenSyntax(stringLiteral: confusedSecondName).with(\.leadingTrivia, secondNameToken!.leadingTrivia).with(\.trailingTrivia, secondNameToken!.trailingTrivia)
             }
             
@@ -527,6 +531,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if node.as(GuardStmtSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(DoStmtSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScope(true)
+        } else if node.as(ClosureExprSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         }
     }

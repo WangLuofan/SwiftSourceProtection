@@ -304,6 +304,39 @@ class SwiftSourceCollection: SyntaxVisitor {
     override func visitPost(_ node: DoStmtSyntax) {
         SwiftSourceScopeManager.shared.popScope()
     }
+    
+    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.shared.pushScope()
+        
+        if let captureClause: ClosureCaptureClauseSyntax = node.signature?.capture?.as(ClosureCaptureClauseSyntax.self) {
+            captureClause.items.forEach { captureSyntax in
+                let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+                variableInfo.symbolName = captureSyntax.name.text
+                SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+            }
+        }
+        
+        if let paramClause: ClosureShorthandParameterListSyntax = node.signature?.parameterClause?.as(ClosureShorthandParameterListSyntax.self) {
+            paramClause.forEach { parameterSyntax in
+                let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+                variableInfo.symbolName = parameterSyntax.name.text
+                SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+            }
+        } else if let paramClause: ClosureParameterClauseSyntax = node.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
+            paramClause.parameters.forEach { parameterSyntax in
+                let variableInfo: SwiftSourceVariableInfo = SwiftSourceVariableInfo()
+                if let secondName = parameterSyntax.secondName {
+                    variableInfo.symbolName = secondName.text
+                } else {
+                    variableInfo.symbolName = parameterSyntax.firstName.text
+                }
+                
+                SwiftSourceScopeManager.shared.pushSourceInfo(variableInfo)
+            }
+        }
+        
+        return super.visit(node)
+    }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         return super.visit(node)
