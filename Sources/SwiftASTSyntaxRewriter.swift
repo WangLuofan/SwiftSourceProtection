@@ -268,14 +268,14 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-        let baseName = node.baseName
-        
-        let confusedBaseName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: baseName.text)
-        let newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedBaseName).with(\.leadingTrivia, baseName.leadingTrivia).with(\.trailingTrivia, baseName.trailingTrivia))
-        
-        return super.visit(newNode)
-    }
+//    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+//        let baseName = node.baseName
+//        
+//        let confusedBaseName: String = SwiftConfuseHelper.confusedSymbolName(symbolName: baseName.text)
+//        let newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedBaseName).with(\.leadingTrivia, baseName.leadingTrivia).with(\.trailingTrivia, baseName.trailingTrivia))
+//        
+//        return super.visit(newNode)
+//    }
     
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         var newNode = node
@@ -445,6 +445,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         .with(\.leadingTrivia, node.leadingTrivia)
         .with(\.trailingTrivia, node.trailingTrivia)
         
+        SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
     }
     
@@ -453,10 +454,30 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         let confusedElements = node.elements.map { enumCaseElement in
             let confusedName = SwiftConfuseHelper.confusedSymbolName(symbolName: enumCaseElement.name.text)
-            
-            return enumCaseElement.with(\.name, TokenSyntax(stringLiteral: confusedName)
+            var confusedEnumCaseElem = enumCaseElement
+                .with(\.name, TokenSyntax(stringLiteral: confusedName)
                 .with(\.leadingTrivia, enumCaseElement.leadingTrivia)
                 .with(\.trailingTrivia, enumCaseElement.trailingTrivia))
+            
+            if let paramClause: EnumCaseParameterClauseSyntax = enumCaseElement.parameterClause {
+                let confusedParamSyntaxList = paramClause.parameters.map { paramSyntax in
+                    if let identTypeSyntax: IdentifierTypeSyntax = paramSyntax.type.as(IdentifierTypeSyntax.self) {
+                        let confusedParamType = SwiftConfuseHelper.confusedSymbolName(symbolName: identTypeSyntax.name.text)
+                        return paramSyntax.with(\.type, TypeSyntax(stringLiteral: confusedParamType)).with(\.leadingTrivia, paramSyntax.leadingTrivia).with(\.trailingTrivia, paramSyntax.trailingTrivia)
+                    }
+                    
+                    return paramSyntax
+                }
+                
+                confusedEnumCaseElem = confusedEnumCaseElem.with(\.parameterClause, paramClause
+                    .with(\.parameters, EnumCaseParameterListSyntax(confusedParamSyntaxList))
+                    .with(\.leadingTrivia, paramClause.parameters.leadingTrivia)
+                    .with(\.trailingTrivia, paramClause.parameters.trailingTrivia))
+                .with(\.leadingTrivia, paramClause.leadingTrivia)
+                .with(\.trailingTrivia, paramClause.trailingTrivia)
+            }
+            
+            return confusedEnumCaseElem
         }
         
         newNode = node.with(\.elements, EnumCaseElementListSyntax(confusedElements)
@@ -534,6 +555,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if node.as(DoStmtSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         } else if node.as(ClosureExprSyntax.self) != nil {
+            SwiftSourceScopeManager.shared.popScope(true)
+        } else if node.as(EnumDeclSyntax.self) != nil {
             SwiftSourceScopeManager.shared.popScope(true)
         }
     }

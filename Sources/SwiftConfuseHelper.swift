@@ -22,7 +22,7 @@ class SwiftConfuseHelper {
         switch sourceInfo.sourceType {
         case .Unknown:
             return false
-        case .Protocol, .Enum, .Class:
+        case .Protocol, .Enum, .Class, .EnumCase:
             return true
         case .Function, .Variable: do {
             if sourceInfo.isStatic || sourceInfo.isFinal || sourceInfo.accessControl == .FilePrivate

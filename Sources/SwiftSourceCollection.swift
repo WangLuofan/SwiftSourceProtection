@@ -339,10 +339,45 @@ class SwiftSourceCollection: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        let enumInfo: SwiftSourceClassInfo = SwiftSourceClassInfo(sourcetype: .Enum)
+        
+        enumInfo.symbolName = node.name.text
+        enumInfo.filePath = self.sourceFile
+        enumInfo.isMember = SwiftConfuseHelper.isMemberVariable(node)
+        
+        node.modifiers.forEach { modifier in
+            enumInfo.accessControl = modifier.accessControl
+            enumInfo.isStatic = modifier.isStatic
+            enumInfo.isFinal = modifier.isFinal
+            enumInfo.isClass = modifier.isClass
+            enumInfo.isOverride = modifier.isOverride
+        }
+        
+        parentStack.append(enumInfo)
+        SwiftSourceScopeManager.shared.pushSourceInfo(enumInfo)
+        SwiftSourceScopeManager.shared.pushScope()
         return super.visit(node)
     }
     
-    override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
+    override func visitPost(_ node: EnumDeclSyntax) {
+        parentStack.removeLast()
+        SwiftSourceScopeManager.shared.popScope()
+    }
+    
+    override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
+        node.elements.forEach { enumCaseElemSyntax in
+            let enumCaseInfo: SwiftSourceEnumCaseInfo = SwiftSourceEnumCaseInfo()
+            enumCaseInfo.symbolName = enumCaseElemSyntax.name.text
+            enumCaseElemSyntax.parameterClause?.parameters.forEach { enumCaseParamDecl in
+                if let identTypeSyntax: IdentifierTypeSyntax = enumCaseParamDecl.type.as(IdentifierTypeSyntax.self) {
+                    enumCaseInfo.itemParamTypes.append(identTypeSyntax.name.text)
+                }
+            }
+            
+            enumCaseInfo.parent = parentStack.last
+            SwiftSourceScopeManager.shared.pushSourceInfo(enumCaseInfo)
+        }
+        
         return super.visit(node)
     }
 }

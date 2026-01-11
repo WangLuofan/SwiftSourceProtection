@@ -5,20 +5,21 @@
 //  Created by WangLuofan on 2025/12/12.
 //
 
-enum SwiftSourceType {
+enum SwiftSourceType: Int {
     case Unknown
     case Class
     case Function
     case Variable
     case `Protocol`
     case Enum
+    case EnumCase
 }
 
 class SwiftSourceBaseInfo: SwiftSourceInfoProtocol {
     var sourceType: SwiftSourceType = .Unknown
     
     var parent: SwiftSourceBaseInfo?
-    var children: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
+    lazy var children: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
     
     var filePath: String = ""
     var accessControl: SwiftSourceAccessControl = .Internal
