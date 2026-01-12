@@ -77,7 +77,11 @@ class SwiftSourceCollection: SyntaxVisitor {
         SwiftSourceScopeManager.shared.pushSourceInfo(functionInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
-        functionInfo.parent = parentStack.last
+        if functionInfo.isMember {
+            parentStack.last?.children.append(functionInfo)
+            functionInfo.parent = parentStack.last
+        }
+        
         parentStack.append(functionInfo)
         return super.visit(node)
     }
@@ -118,6 +122,7 @@ class SwiftSourceCollection: SyntaxVisitor {
         
         if variableInfo.isMember {
             variableInfo.parent = parentStack.last
+            parentStack.last?.children.append(variableInfo)
         }
         
         return super.visit(node)
@@ -202,10 +207,12 @@ class SwiftSourceCollection: SyntaxVisitor {
         SwiftSourceScopeManager.shared.pushSourceInfo(classInfo)
         SwiftSourceScopeManager.shared.pushScope()
         
+        parentStack.append(classInfo)
         return super.visit(node)
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
+        parentStack.removeLast()
         SwiftSourceScopeManager.shared.popScope()
     }
     
@@ -379,5 +386,14 @@ class SwiftSourceCollection: SyntaxVisitor {
         }
         
         return super.visit(node)
+    }
+    
+    override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.shared.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: SwitchCaseSyntax) {
+        SwiftSourceScopeManager.shared.popScope()
     }
 }

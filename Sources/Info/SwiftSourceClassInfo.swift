@@ -8,7 +8,7 @@
 class SwiftSourceClassInfo: SwiftSourceBaseInfo {
     
     lazy var superClasses: [String] = []
-    
+
     init() {
         super.init(sourcetype: .Class)
     }

@@ -19,8 +19,8 @@ class SwiftSourceBaseInfo: SwiftSourceInfoProtocol {
     var sourceType: SwiftSourceType = .Unknown
     
     var parent: SwiftSourceBaseInfo?
-    lazy var children: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
-    
+    lazy var children: [SwiftSourceBaseInfo] = [SwiftSourceBaseInfo]()
+
     var filePath: String = ""
     var accessControl: SwiftSourceAccessControl = .Internal
     

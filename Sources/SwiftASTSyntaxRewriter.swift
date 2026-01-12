@@ -18,30 +18,30 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         super.init(viewMode: .sourceAccurate)
     }
     
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        var newNode = node
-        
-        var importDeclSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
-        var otherDeclSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
-        node.statements.forEach { cbItemSyntax in
-            if let _ = cbItemSyntax.item.as(ImportDeclSyntax.self) {
-                importDeclSyntaxList.append(cbItemSyntax)
-            } else {
-                otherDeclSyntaxList.append(cbItemSyntax)
-            }
-        }
-        
-        importDeclSyntaxList.shuffle()
-        otherDeclSyntaxList.shuffle()
-        
-        var reorderedSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
-        reorderedSyntaxList.append(contentsOf: importDeclSyntaxList)
-        reorderedSyntaxList.append(contentsOf: otherDeclSyntaxList)
-        
-        newNode = node.with(\.statements, CodeBlockItemListSyntax(reorderedSyntaxList).with(\.leadingTrivia, node.statements.leadingTrivia).with(\.trailingTrivia, node.statements.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
-        
-        return super.visit(newNode)
-    }
+//    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+//        var newNode = node
+//        
+//        var importDeclSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
+//        var otherDeclSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
+//        node.statements.forEach { cbItemSyntax in
+//            if let _ = cbItemSyntax.item.as(ImportDeclSyntax.self) {
+//                importDeclSyntaxList.append(cbItemSyntax)
+//            } else {
+//                otherDeclSyntaxList.append(cbItemSyntax)
+//            }
+//        }
+//        
+//        importDeclSyntaxList.shuffle()
+//        otherDeclSyntaxList.shuffle()
+//        
+//        var reorderedSyntaxList: [CodeBlockItemSyntax] = [CodeBlockItemSyntax]()
+//        reorderedSyntaxList.append(contentsOf: importDeclSyntaxList)
+//        reorderedSyntaxList.append(contentsOf: otherDeclSyntaxList)
+//        
+//        newNode = node.with(\.statements, CodeBlockItemListSyntax(reorderedSyntaxList).with(\.leadingTrivia, node.statements.leadingTrivia).with(\.trailingTrivia, node.statements.trailingTrivia)).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+//        
+//        return super.visit(newNode)
+//    }
     
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         
@@ -96,8 +96,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             newNode = newNode.with(\.inheritanceClause, InheritanceClauseSyntax(leadingTrivia: node.inheritanceClause?.leadingTrivia, inheritedTypes: confusedInheritedList, trailingTrivia: node.inheritanceClause?.trailingTrivia))
         }
         
-        let members = newNode.memberBlock.members.shuffled()
-        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(members).with(\.leadingTrivia, newNode.memberBlock.members.leadingTrivia).with(\.trailingTrivia, newNode.memberBlock.members.trailingTrivia))).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+//        let members = newNode.memberBlock.members.shuffled()
+//        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(members).with(\.leadingTrivia, newNode.memberBlock.members.leadingTrivia).with(\.trailingTrivia, newNode.memberBlock.members.trailingTrivia))).with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
         
         SwiftSourceScopeManager.shared.pushScope(false)
         return super.visit(newNode)
@@ -485,6 +485,63 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             .with(\.trailingTrivia, node.elements.trailingTrivia))
         .with(\.leadingTrivia, node.leadingTrivia)
         .with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let subjectExpr = node.subject.as(DeclReferenceExprSyntax.self) {
+            let confusedSubjectName = SwiftConfuseHelper.confusedSymbolName(symbolName: subjectExpr.baseName.text)
+            newNode = node
+                .with(\.subject, ExprSyntax(stringLiteral: confusedSubjectName))
+                .with(\.leadingTrivia, subjectExpr.leadingTrivia)
+                .with(\.trailingTrivia, subjectExpr.trailingTrivia)
+        }
+        
+        newNode = newNode.with(\.leadingTrivia, node.leadingTrivia).with(\.trailingTrivia, node.trailingTrivia)
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        guard let base = newNode.base?.as(DeclReferenceExprSyntax.self) else {
+            return super.visit(newNode)
+        }
+        
+        let findParentDecl: (() -> ClassDeclSyntax?) = {
+            var parentNode = node.parent
+            while parentNode?.as(ClassDeclSyntax.self) == nil {
+                parentNode = parentNode?.parent
+            }
+            
+            return parentNode?.as(ClassDeclSyntax.self)
+        }
+        
+        if base.baseName.identifier?.name == "self" {
+            guard let parentDecl: ClassDeclSyntax = findParentDecl(),
+                  let clsInfo: SwiftSourceClassInfo = SwiftConfuseHelper.findSymbolInScope(parentDecl.name.text) as? SwiftSourceClassInfo else {
+                return super.visit(newNode)
+            }
+            
+            for child in clsInfo.children {
+                if child.symbolName == node.declName.baseName.text {
+                    
+                }
+            }
+            
+        } else if base.baseName.identifier?.name == "Self" {
+            
+        } else {
+            
+        }
         
         return super.visit(newNode)
     }

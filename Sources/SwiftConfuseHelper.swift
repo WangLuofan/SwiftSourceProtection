@@ -80,7 +80,7 @@ class SwiftConfuseHelper {
         return false
     }
     
-    private static func findSymbolInScope(_ symbolName: String, _ scope: SwiftSourceScope? = SwiftSourceScopeManager.shared.currentScope) -> SwiftSourceBaseInfo? {
+    static func findSymbolInScope(_ symbolName: String, _ scope: SwiftSourceScope? = SwiftSourceScopeManager.shared.currentScope) -> SwiftSourceBaseInfo? {
         guard let scope else {
             return nil
         }
@@ -160,10 +160,9 @@ class SwiftConfuseHelper {
             switch parent.kind {
             case .classDecl, .structDecl, .enumDecl, .extensionDecl:
                 return true
-            case .functionDecl, .closureExpr, .codeBlock, .ifExpr, .forStmt, .whileStmt, .repeatStmt, .switchExpr:
-                return false
             default:
                 currentNode = parent
+                break
             }
         }
         

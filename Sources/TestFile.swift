@@ -1,15 +1,35 @@
 
-import SwiftParserDiagnostics
-import Social
-import WeatherKit
-import WebKit
+//func TestEnumFunc() {
+//    let text = 123
+//    let first = TestEnum.first(3)
+//    switch first {
+//    case .first(let num):
+//        print(num)
+//    case .second(let str):
+//        print(str)
+//    case .third(let str1, let str2):
+//        print(str1 + str2)
+//    case .forth:
+//        print("None")
+//    }
+//}
+//
+//enum TestEnum {
+//    case first(Int)
+//    case second(String)
+//    case third(String, String), forth
+//    
+//    func test() {
+//        
+//    }
+//}
 
-func testFunc(first text: String, second: String?) {
-    let webView = SocketPort()
-    let testBlock: ((_ num: Int, _ text: String) -> Void) = { [weak webView] (num1: Int, text1: String) in
-        let i = 0
-        print(num1)
-    }
+class Test1 {
+    var testNum: Int = 0
+    var testString: String = ""
     
-    print(second)
+    func testFunc(_ num: Int, _ text: String) {
+        self.testNum = num
+        self.testString = text
+    }
 }
