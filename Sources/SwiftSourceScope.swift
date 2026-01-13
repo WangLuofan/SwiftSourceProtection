@@ -2,58 +2,37 @@
 //  SwiftSourceScope.swift
 //  SwiftSourceProtection
 //
-//  Created by wangluofan on 2025/12/27.
+//  Created by wangluofan on 2026/1/12.
 //
 
-class SwiftSourceScopeManager: @unchecked Sendable {
-    static let shared: SwiftSourceScopeManager = SwiftSourceScopeManager()
+class SwiftSourceScopeManager {
+    nonisolated(unsafe) static let sharedManager: SwiftSourceScopeManager = SwiftSourceScopeManager()
+    private lazy var globalScope: [SwiftSourceScope] = [SwiftSourceScope]()
     
-    private let globalScope: SwiftSourceScope = SwiftSourceScope()
+    var currentScope: SwiftSourceScope?
     
-    lazy var currentScope: SwiftSourceScope = self.globalScope
-    
-    func pushScope(_ new: Bool = true) {
-        if new {
-            let scope: SwiftSourceScope = SwiftSourceScope()
-            
-            self.currentScope.scopeQueue.append(scope)
-            scope.prevScope = self.currentScope
-            
-            self.currentScope = scope
+    func pushScope() {
+        let scope: SwiftSourceScope = SwiftSourceScope()
+        if self.currentScope == nil {
+            self.globalScope.append(scope)
         } else {
-            guard let nextScope = currentScope.scopeQueue.first else {
-                return
-            }
-            
-            self.currentScope = nextScope
-        }
-    }
-    
-    func popScope(_ remove: Bool = false) {
-        guard let prevScope = currentScope.prevScope else {
-            return
+            scope.prev = self.currentScope
+            self.currentScope?.next.append(scope)
         }
         
-        self.currentScope = prevScope
-        
-        if remove && !self.currentScope.scopeQueue.isEmpty {
-            self.currentScope.scopeQueue.removeFirst()
-        }
+        self.currentScope = scope
     }
     
-    func pushSourceInfo(_ sourceInfo: SwiftSourceBaseInfo) {
-        self.currentScope.symbols[sourceInfo.symbolName] = sourceInfo
-    }
-    
-    func isCurrentGlobalScope() -> Bool {
-        return self.currentScope === self.globalScope
+    func popScope() {
+        self.currentScope = self.currentScope?.prev
     }
 }
 
 class SwiftSourceScope {
-    lazy var scopeQueue: [SwiftSourceScope] = [SwiftSourceScope]()
     
-    var prevScope: SwiftSourceScope?
+    lazy var symbols: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
     
-    lazy var symbols: [String: SwiftSourceBaseInfo] = [String: SwiftSourceBaseInfo]()
+    var prev: SwiftSourceScope?
+    lazy var next: [SwiftSourceScope] = [SwiftSourceScope]()
+    
 }

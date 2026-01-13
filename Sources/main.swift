@@ -50,31 +50,31 @@ func main() {
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
-    sourceFiles.forEach { sourceFile in
-        guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
-            return
-        }
-        
-        let sourceTree = Parser.parse(source: sourceCode)
-        
-        let sourceColletion: SwiftSourceCollection = SwiftSourceCollection(sourceFile: sourceFile)
-        sourceColletion.walk(sourceTree)
-        
-        sourceTreeDict[sourceFile] = sourceTree
-    }
-    
-    let isCurrentGlobalScope = SwiftSourceScopeManager.shared.isCurrentGlobalScope()
-    let scope = SwiftSourceScopeManager.shared.currentScope
-    
-    sourceTreeDict.forEach { sourceFile, sourceTree in
-        if let confusedFileContent: String =
-            SwiftSourceProtection(sourceFile: sourceFile,
-                                  sourceTree: sourceTree,
-                                  projectPath: projectPath).confuse() {
-            
+//    sourceFiles.forEach { sourceFile in
+//        guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
+//            return
+//        }
+//        
+//        let sourceTree = Parser.parse(source: sourceCode)
+//        
+//        let sourceColletion: SwiftSourceCollection = SwiftSourceCollection(sourceFile: sourceFile)
+//        sourceColletion.walk(sourceTree)
+//        
+//        sourceTreeDict[sourceFile] = sourceTree
+//    }
+//    
+//    let isCurrentGlobalScope = SwiftSourceScopeManager.shared.isCurrentGlobalScope()
+//    let scope = SwiftSourceScopeManager.shared.currentScope
+//    
+//    sourceTreeDict.forEach { sourceFile, sourceTree in
+//        if let confusedFileContent: String =
+//            SwiftSourceProtection(sourceFile: sourceFile,
+//                                  sourceTree: sourceTree,
+//                                  projectPath: projectPath).confuse() {
+//            
 //            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
-        }
-    }
+//        }
+//    }
     
 }
 
