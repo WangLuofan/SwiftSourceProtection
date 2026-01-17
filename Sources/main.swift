@@ -50,18 +50,19 @@ func main() {
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
-//    sourceFiles.forEach { sourceFile in
-//        guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
-//            return
-//        }
-//        
-//        let sourceTree = Parser.parse(source: sourceCode)
-//        
-//        let sourceColletion: SwiftSourceCollection = SwiftSourceCollection(sourceFile: sourceFile)
-//        sourceColletion.walk(sourceTree)
-//        
-//        sourceTreeDict[sourceFile] = sourceTree
-//    }
+    sourceFiles.forEach { sourceFile in
+        guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
+            return
+        }
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        let sourceTree = Parser.parse(source: sourceCode)
+        
+        let sourceCollector: SwiftSourceCollector = SwiftSourceCollector(sourceFile: sourceFile)
+        sourceCollector.walk(sourceTree)
+        SwiftSourceScopeManager.sharedManager.popScope()
+        
+        sourceTreeDict[sourceFile] = sourceTree
+    }
 //    
 //    let isCurrentGlobalScope = SwiftSourceScopeManager.shared.isCurrentGlobalScope()
 //    let scope = SwiftSourceScopeManager.shared.currentScope

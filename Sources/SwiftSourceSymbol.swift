@@ -41,4 +41,7 @@ class SwiftSourceSymbol {
     
     /// 父结点
     var parent: SwiftSourceSymbol?
+    
+    /// 继承列表
+    var inheritedType: [String]?
 }
