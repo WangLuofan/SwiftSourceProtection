@@ -1,4 +1,5 @@
-enum TestEnum {
-    case first(Int, String)
-    case second(String, Double)
+class Test {
+    static func testFunc(_ num: Int, str: String) -> Int {
+        return 0
+    }
 }

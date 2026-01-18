@@ -29,7 +29,6 @@ class SwiftSourceCollector: SyntaxVisitor {
         classSymbol.ASTNode = node
         classSymbol.parent = parentStack.last
         classSymbol.originalSymbol = node.name.text
-        classSymbol.identifier = node.name.text
         classSymbol.inheritedType = node.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
         node.modifiers.forEach { modifier in
             classSymbol.accessControl = modifier.accessControl
@@ -55,7 +54,6 @@ class SwiftSourceCollector: SyntaxVisitor {
         classSymbol.ASTNode = node
         classSymbol.parent = parentStack.last
         classSymbol.originalSymbol = node.name.text
-        classSymbol.identifier = node.name.text
         classSymbol.inheritedType = node.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
         node.modifiers.forEach { modifier in
             classSymbol.accessControl = modifier.accessControl
@@ -81,7 +79,6 @@ class SwiftSourceCollector: SyntaxVisitor {
         classSymbol.ASTNode = node
         classSymbol.parent = parentStack.last
         classSymbol.originalSymbol = node.name.text
-        classSymbol.identifier = node.name.text
         classSymbol.inheritedType = node.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
         node.modifiers.forEach { modifier in
             classSymbol.accessControl = modifier.accessControl
@@ -114,9 +111,37 @@ class SwiftSourceCollector: SyntaxVisitor {
             funcSymbol.isOverride = modifier.isOverride
         }
         
-        funcSymbol.returnType = node.signature.returnClause?.trimmedDescription ?? "Void"
+        funcSymbol.returnType = "Void"
+        if let identSyntax: IdentifierTypeSyntax = node.signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
+            funcSymbol.returnType = identSyntax.name.text
+        }
+        
         funcSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)
-        funcSymbol.identifier = "\(funcSymbol.isStatic ? "static " : "")\(node.name.text)\(node.signature.trimmedDescription)"
+        
+        var funcSignature: String = "\(funcSymbol.isStatic ? "static " : "")\(funcSymbol.originalSymbol ?? "")("
+        var isFirstParameter: Bool = true
+        node.signature.parameterClause.parameters.forEach { parameterSyntax in
+            let funcLabel: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .label)
+            funcLabel.ASTNode = parameterSyntax
+            funcLabel.parent = parentStack.last
+            funcLabel.originalSymbol = parameterSyntax.firstName.text
+            funcLabel.symbolFilePath = self.sourceFile
+            funcSymbol.labels.append(funcLabel)
+            
+            if !isFirstParameter {
+                funcSignature.append(", ")
+            }
+            
+            funcSignature.append("\(parameterSyntax.firstName.text)")
+            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
+                funcSignature.append(": \(typeSyntax.name.text)")
+            }
+            
+            isFirstParameter = false
+        }
+        
+        funcSignature.append(") -> \(funcSymbol.returnType)")
+        funcSymbol.identifier = funcSignature
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -171,7 +196,10 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         if let secondName = node.secondName {
             variableInfo.originalSymbol = secondName.text
+        } else {
+            variableInfo.originalSymbol = node.firstName.text
         }
+        
         if let type: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self) {
             variableInfo.symbolType = type.name.text
         }
@@ -244,12 +272,10 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.pushScope()
         
         if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-            let identifier = identifierPatternSyntax.identifier.text
             
             let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
             variableInfo.symbolFilePath = self.sourceFile
-            variableInfo.originalSymbol = identifier
-            variableInfo.identifier = identifier
+            variableInfo.originalSymbol = identifierPatternSyntax.identifier.text
             variableInfo.ASTNode = identifierPatternSyntax
             variableInfo.parent = parentStack.last
             
@@ -358,5 +384,23 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         return super.visit(node)
+    }
+    
+    override func visit(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: DoStmtSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: SwitchCaseSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope()
     }
 }

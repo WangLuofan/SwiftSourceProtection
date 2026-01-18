@@ -12,6 +12,7 @@ enum SwiftNodeKind {
     case `class`
     case variable
     case `function`
+    case label
     case `protocol`
     case `struct`
     case `enum`
@@ -89,6 +90,9 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
 class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
     /// 返回类型
     var returnType: String = "Void"
+    
+    /// 标签
+    lazy var labels: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
 }
 
 class SwiftSourceEnumCaseSymbol: SwiftSourceSymbol {
