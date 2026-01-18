@@ -7,7 +7,7 @@
 import Foundation
 import SwiftSyntax
 
-enum SwiftNodeType {
+enum SwiftNodeKind {
     case unknown
     case `class`
     case variable
@@ -15,6 +15,7 @@ enum SwiftNodeType {
     case `protocol`
     case `struct`
     case `enum`
+    case enumCase
 }
 
 enum SwiftSourceAccessControl {
@@ -28,7 +29,7 @@ enum SwiftSourceAccessControl {
 
 class SwiftSourceSymbol {
     /// 结点类型
-    var nodeType: SwiftNodeType = .unknown
+    var nodeKind: SwiftNodeKind = .unknown
     
     /// 惟一标识
     var identifier: String?
@@ -37,7 +38,11 @@ class SwiftSourceSymbol {
     var symbolFilePath: String?
     
     /// 原始符号
-    var originalSymbol: String?
+    var originalSymbol: String? {
+        didSet {
+            self.identifier = originalSymbol
+        }
+    }
     
     /// 混淆符号
     var confusedSymbol: String?
@@ -69,8 +74,8 @@ class SwiftSourceSymbol {
     /// 成员
     var isMember: Bool = false
     
-    init(nodeType: SwiftNodeType) {
-        self.nodeType = nodeType
+    init(nodeKind: SwiftNodeKind) {
+        self.nodeKind = nodeKind
     }
 }
 
@@ -84,4 +89,8 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
 class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
     /// 返回类型
     var returnType: String = "Void"
+}
+
+class SwiftSourceEnumCaseSymbol: SwiftSourceSymbol {
+    lazy var relatedType: [String] = [String]()
 }
