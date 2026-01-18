@@ -1,7 +1,5 @@
-class Test: Test2 {
-    
-}
-
-class Test2 {
-    
+func testFunc() {
+    let a = { (num: Int, text: String) in
+        3 > 2 ? 3 : 2
+    }
 }

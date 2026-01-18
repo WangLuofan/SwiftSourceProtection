@@ -17,6 +17,15 @@ enum SwiftNodeType {
     case `enum`
 }
 
+enum SwiftSourceAccessControl {
+    case Open
+    case Public
+    case Internal
+    case Package
+    case FilePrivate
+    case Private
+}
+
 class SwiftSourceSymbol {
     /// 结点类型
     var nodeType: SwiftNodeType = .unknown
@@ -42,6 +51,37 @@ class SwiftSourceSymbol {
     /// 父结点
     var parent: SwiftSourceSymbol?
     
+    /// 访问控制
+    var accessControl: SwiftSourceAccessControl = .Internal
+    
+    /// 静态
+    var isStatic: Bool = false
+    
+    /// override
+    var isOverride: Bool = false
+    
+    /// 类变量
+    var isClass: Bool = false
+    
+    /// final
+    var isFinal: Bool = false
+    
+    /// 成员
+    var isMember: Bool = false
+    
+    init(nodeType: SwiftNodeType) {
+        self.nodeType = nodeType
+    }
+}
+
+/// 类类型
+class SwiftSourceClassSymbol: SwiftSourceSymbol {
     /// 继承列表
     var inheritedType: [String]?
+}
+
+/// 方法类型
+class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
+    /// 返回类型
+    var returnType: String = "Void"
 }

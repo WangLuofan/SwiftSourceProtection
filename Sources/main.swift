@@ -8,6 +8,19 @@
 import Foundation
 import SwiftSyntax
 import SwiftParser
+import IndexStoreDB
+
+class IndexDelegateImpl: IndexDelegate {
+    func processingAddedPending(_ count: Int) {
+        print("\(#function) - \(count)")
+    }
+    
+    func processingCompleted(_ count: Int) {
+        print("\(#function) - \(count)")
+    }
+    
+    
+}
 
 // 查找项目根目录
 func findProjectPath(for filePath: String) -> String? {
@@ -63,7 +76,7 @@ func main() {
         
         sourceTreeDict[sourceFile] = sourceTree
     }
-//    
+    
 //    let isCurrentGlobalScope = SwiftSourceScopeManager.shared.isCurrentGlobalScope()
 //    let scope = SwiftSourceScopeManager.shared.currentScope
 //    
