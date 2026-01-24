@@ -51,6 +51,58 @@ class SwiftConfusedHelper {
         
         return randomSymbolName
     }
+}
+
+extension SwiftConfusedHelper {
+    static func promoteBuiltInType(left: String, right: String) -> String {
+        if left == right {
+            return left
+        }
+        
+        let table = [
+            "Int8", "Int16", "Int", "Int32", "Int64", "Int128",
+            "UInt8", "UInt16", "UInt", "UInt32", "UInt64", "UInt128",
+            "Float", "Float32", "Double", "Float64", "Float80"
+        ]
+        
+        if let leftIndex: Int = table.firstIndex(of: left),
+           let rightIndex: Int = table.firstIndex(of: right) {
+            return leftIndex > rightIndex ? left : right
+        }
+        
+        return left
+    }
+    
+    static func inferMemberAccessExprSyntaxType(_ memberAccessExpr: MemberAccessExprSyntax) -> String? {
+        var symbol: SwiftSourceSymbol?
+        var isStaticType: Bool = false
+        
+        if let baseExpr: DeclReferenceExprSyntax = memberAccessExpr.base?.as(DeclReferenceExprSyntax.self) {
+            if baseExpr.baseName.text == "Self" {
+                isStaticType = true
+            }
+            symbol = SwiftSourceScopeManager.sharedManager.findSymbol(.class)
+        }
+        
+        
+        
+        return nil
+    }
+    
+    static func inferFunctionCallExprSyntaxType(_ functionCallExpr: FunctionCallExprSyntax, isIntance: Bool = false) -> String? {
+        if let callExpr: DeclReferenceExprSyntax = functionCallExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
+            if callExpr.baseName.text.isSwiftKeyWord {
+                /// 类型转换
+                return callExpr.baseName.text
+            } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(callExpr.baseName.text, isIntance: isIntance) {
+                return symbol.symbolType
+            }
+        } else if let callExpr: MemberAccessExprSyntax = functionCallExpr.calledExpression.as(MemberAccessExprSyntax.self) {
+            self.inferMemberAccessExprSyntaxType(callExpr)
+        }
+        
+        return nil
+    }
     
     static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax) -> String? {
         var typeString: String?
@@ -77,7 +129,7 @@ class SwiftConfusedHelper {
         return typeString
     }
     
-    static func inferExprSyntaxType(_ expr: ExprSyntax) -> String? {
+    static func inferExprSyntaxType(_ expr: ExprSyntaxProtocol, isIntance: Bool = true) -> String? {
         if let _ = expr.as(IntegerLiteralExprSyntax.self) {
             return "Int"
         } else if let _ = expr.as(StringLiteralExprSyntax.self) {
@@ -94,12 +146,15 @@ class SwiftConfusedHelper {
             return "Bool"
         } else if let _ = expr.as(RegexLiteralExprSyntax.self) {
             return "Regex"
-        } else if let _ = expr.as(SequenceExprSyntax.self) {
-            
-        } else if let _ = expr.as(FunctionCallExprSyntax.self) {
-            
-        } else if let _ = expr.as(DeclReferenceExprSyntax.self) {
-            
+        } else if let callExprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
+            return self.inferFunctionCallExprSyntaxType(callExprSyntax)
+        } else if let declRefExpr: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
+            if declRefExpr.baseName.text == "self" || declRefExpr.baseName.text == "Self",
+               let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(.class) {
+                return symbol.originalSymbol
+            } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExpr.baseName.text, isIntance: isIntance) {
+                return symbol.symbolType
+            }
         } else if let macroExpr: MacroExpansionExprSyntax = expr.as(MacroExpansionExprSyntax.self) {
             let macroName = macroExpr.macroName.text
             switch macroName {
@@ -110,21 +165,52 @@ class SwiftConfusedHelper {
             default:
                 break
             }
-        } else if let _ = expr.as(MemberAccessExprSyntax.self) {
-            
-        } else if let _ = expr.as(ForceUnwrapExprSyntax.self) {
-            
+        } else if let memberAccessExpr: MemberAccessExprSyntax = expr.as(MemberAccessExprSyntax.self) {
+            return self.inferMemberAccessExprSyntaxType(memberAccessExpr)
+        } else if let forceUnwrapExpr: ForceUnwrapExprSyntax = expr.as(ForceUnwrapExprSyntax.self) {
+            return self.inferExprSyntaxType(forceUnwrapExpr.expression)
         } else if let _ = expr.as(TupleExprSyntax.self) {
-            
-        } else if let _ = expr.as(PrefixOperatorExprSyntax.self) {
             
         } else if let _ = expr.as(SubscriptCallExprSyntax.self) {
             
         } else if let _ = expr.as(KeyPathExprSyntax.self) {
             
+        } else if let infixOperatorExpr = expr.as(InfixOperatorExprSyntax.self) {
+            if let oper: BinaryOperatorExprSyntax = infixOperatorExpr.operator.as(BinaryOperatorExprSyntax.self) {
+                if oper.isBooleanOperator {
+                    return "Bool"
+                }
+                
+                let leftOperand = self.inferExprSyntaxType(infixOperatorExpr.leftOperand)
+                let rightOperand = self.inferExprSyntaxType(infixOperatorExpr.rightOperand)
+                
+                if let leftOperand, let rightOperand {
+                    return self.promoteBuiltInType(left: leftOperand, right: rightOperand)
+                }
+                
+                return leftOperand
+            }
+        } else if let _ = expr.as(IsExprSyntax.self) {
+            return "Bool"
+        } else if let prefixOper: PrefixOperatorExprSyntax = expr.as(PrefixOperatorExprSyntax.self) {
+            if prefixOper.operator.text == "!" {
+                return "Bool"
+            }
         }
         
         return nil  // 暂时无法推导
+    }
+}
+
+extension BinaryOperatorExprSyntax {
+    var isBooleanOperator: Bool {
+        let oper: [String] = [
+            "==", "!=", "===", "!==",
+            "<", ">", "<=", ">=",
+            "~="
+        ]
+        
+        return oper.contains(self.operator.text)
     }
 }
 

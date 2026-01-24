@@ -118,7 +118,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         funcSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)
         
-        var funcSignature: String = "\(funcSymbol.isStatic ? "static " : "")\(funcSymbol.originalSymbol ?? "")("
+        // symbol|static|return|parameter
+        var funcSignature: String = "\(node.name.text)|\(funcSymbol.isStatic ? "static" : "")|\(funcSymbol.returnType)|("
         var isFirstParameter: Bool = true
         node.signature.parameterClause.parameters.forEach { parameterSyntax in
             let funcLabel: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .label)
@@ -140,7 +141,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             isFirstParameter = false
         }
         
-        funcSignature.append(") -> \(funcSymbol.returnType)")
+        funcSignature.append(")")
         funcSymbol.identifier = funcSignature
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
@@ -173,6 +174,8 @@ class SwiftSourceCollector: SyntaxVisitor {
             
             if let typeAnnontation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
                 variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
+            } else if let initializer: InitializerClauseSyntax = patternBinding.initializer?.as(InitializerClauseSyntax.self) {
+                variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
             }
         }
         variableSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)

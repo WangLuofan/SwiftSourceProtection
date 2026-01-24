@@ -60,13 +60,13 @@ class SwiftSourceSymbol {
     /// 访问控制
     var accessControl: SwiftSourceAccessControl = .Internal
     
-    /// 静态
+    /// 静态成员
     var isStatic: Bool = false
     
     /// override
     var isOverride: Bool = false
     
-    /// 类变量
+    /// 类成员
     var isClass: Bool = false
     
     /// final
@@ -74,6 +74,9 @@ class SwiftSourceSymbol {
     
     /// 成员
     var isMember: Bool = false
+    
+    /// 子声明
+    lazy var children: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
     
     init(nodeKind: SwiftNodeKind) {
         self.nodeKind = nodeKind
