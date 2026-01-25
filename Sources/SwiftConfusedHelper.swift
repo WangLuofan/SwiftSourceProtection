@@ -74,21 +74,16 @@ extension SwiftConfusedHelper {
     }
     
     static func inferMemberAccessExprSyntaxType(_ memberAccessExpr: MemberAccessExprSyntax) -> String? {
-        var symbol: SwiftSourceSymbol?
-        var isStaticType: Bool = false
-        
-        if let baseExpr: DeclReferenceExprSyntax = memberAccessExpr.base?.as(DeclReferenceExprSyntax.self) {
-            if baseExpr.baseName.text == "Self" {
-                isStaticType = true
-            }
-            
-            symbol = SwiftSourceScopeManager.sharedManager.findSymbol(.class)
+        var baseSymbol = self.lookupSymbolNodeForExpr(memberAccessExpr.base)
+        if baseSymbol?.nodeKind == .variable,
+           let symbolName: String = baseSymbol?.symbolType {
+            baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(symbolName)
         }
         
         if let declName: DeclReferenceExprSyntax = memberAccessExpr.declName.as(DeclReferenceExprSyntax.self),
-           let children = symbol?.children {
-            for (name, child) in children {
-                if name == declName.baseName.text && (child.isStatic == isStaticType || child.isClass == isStaticType) {
+           let children = baseSymbol?.children {
+            for child in children {
+                if child.identifierName == declName.baseName.text {
                     return child.symbolType
                 }
             }
@@ -106,27 +101,34 @@ extension SwiftConfusedHelper {
                 return SwiftSourceScopeManager.sharedManager.findSymbol(.class)
             } else {
                 if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
-                    for (name, child) in baseSymbol.children {
-                        if String(name.prefix(baseExpr.baseName.text.count)) == baseExpr.baseName.text {
-                            return child
+                    var symbol: SwiftSourceSymbol?
+                    for child in baseSymbol.children {
+                        if child.identifierName == baseExpr.baseName.text {
+                            symbol = child
+                            break
                         }
                     }
+                    
+                    if symbol?.nodeKind == .variable,
+                       let symbolType: String = symbol?.symbolType {
+                        return SwiftSourceScopeManager.sharedManager.findSymbol(.class, symbolName: symbolType)
+                    }
+                    
+                    return symbol
                 } else {
-                    let symbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseExpr.baseName.text)
+                    let symbol = SwiftSourceScopeManager.sharedManager.findSymbol(.class, symbolName: baseExpr.baseName.text)
                     if symbol?.nodeKind == .class {
                         
                     }
                     
                     return symbol
                 }
-                
-                return nil
             }
         } else if let baseExpr: FunctionCallExprSyntax = expr?.as(FunctionCallExprSyntax.self) {
             if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
                 if let calledExpr: DeclReferenceExprSyntax = baseExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
-                    for (name, child) in baseSymbol.children {
-                        if String(name.prefix(calledExpr.baseName.text.count)) == calledExpr.baseName.text {
+                    for child in baseSymbol.children {
+                        if child.identifierName == calledExpr.baseName.text {
                             return child
                         }
                     }
@@ -139,7 +141,7 @@ extension SwiftConfusedHelper {
                 }
             }
         } else if let baseExpr: MemberAccessExprSyntax = expr?.as(MemberAccessExprSyntax.self) {
-            let baseSymbol = self.lookupSymbolNodeForExpr(baseExpr.base, baseSymbol: baseSymbol) as? SwiftSourceClassSymbol
+            let baseSymbol = self.lookupSymbolNodeForExpr(baseExpr.base, baseSymbol: baseSymbol)
             return self.lookupSymbolNodeForExpr(baseExpr.declName, baseSymbol: baseSymbol)
         }
         
@@ -159,12 +161,12 @@ extension SwiftConfusedHelper {
             if let declName: DeclReferenceExprSyntax = callExpr.declName.as(DeclReferenceExprSyntax.self) {
                 if symbol?.nodeKind == .class,
                    let children = symbol?.children {
-                    for (name, child) in children {
+                    for child in children {
                         if child.nodeKind != .function {
                             continue
                         }
                         
-                        if String(name.prefix(declName.baseName.text.count)) == declName.baseName.text {
+                        if child.identifierName == declName.baseName.text {
                             return (child as? SwiftSourceFunctionSymbol)?.returnType
                         }
                     }

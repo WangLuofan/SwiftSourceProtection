@@ -35,6 +35,15 @@ class SwiftSourceSymbol {
     /// 惟一标识
     var identifier: String = ""
     
+    /// 惟一标识名称
+    var identifierName: String {
+        if let identifier = self.identifier.split(separator: "|").first {
+            return String(identifier)
+        }
+        
+        return ""
+    }
+    
     /// 文件路径
     var symbolFilePath: String?
     
@@ -76,7 +85,7 @@ class SwiftSourceSymbol {
     var isMember: Bool = false
     
     /// 子声明
-    lazy var children: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
+    lazy var children: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
     
     init(nodeKind: SwiftNodeKind) {
         self.nodeKind = nodeKind

@@ -1,15 +1,23 @@
 class Test2 {
-    var test: Test = Test()
+    func test() -> Test {
+        return Test()
+    }
     
     init() {
         
     }
+    
+    func testInt() -> Int {
+        return 4
+    }
 }
 
 class Test {
-    var test2: Test2 = Test2()
+    func test() -> Test2 {
+        return Test2()
+    }
     
     func testFunc() {
-        let a = self.test2.test
+        let a = self.test().test().test().test().test().testInt()
     }
 }

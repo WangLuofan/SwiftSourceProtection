@@ -38,7 +38,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
         
-        parentStack.last?.children[classSymbol.identifier] = classSymbol
+        parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
         
         return super.visit(node)
@@ -65,7 +65,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
         
-        parentStack.last?.children[classSymbol.identifier] = classSymbol
+        parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
         
         return super.visit(node)
@@ -92,7 +92,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
         
-        parentStack.last?.children[classSymbol.identifier] = classSymbol
+        parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
         
         return super.visit(node)
@@ -153,7 +153,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
         
-        parentStack.last?.children[funcSymbol.identifier] = funcSymbol
+        parentStack.last?.children.append(funcSymbol)
         parentStack.append(funcSymbol)
         
         return super.visit(node)
@@ -192,7 +192,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
-        parentStack.last?.children[variableSymbol.identifier] = variableSymbol
+        parentStack.last?.children.append(variableSymbol)
         
         return super.visit(node)
     }
@@ -369,7 +369,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             enumInfo.isOverride = modifier.isOverride
         }
         
-        parentStack.last?.children[enumInfo.identifier] = enumInfo
+        parentStack.last?.children.append(enumInfo)
         parentStack.append(enumInfo)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumInfo)

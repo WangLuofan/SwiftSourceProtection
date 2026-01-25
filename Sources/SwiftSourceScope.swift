@@ -34,12 +34,18 @@ class SwiftSourceScopeManager {
     
     func findSymbol(
         _ nodeKind: SwiftNodeKind,
+        symbolName: String? = nil,
         inScope scope: SwiftSourceScope? = nil
     ) -> SwiftSourceSymbol? {
         var scope = (scope ?? self.currentScope)
         while scope != nil {
             for symbol in scope!.symbols {
                 if symbol.nodeKind == nodeKind {
+                    if let symbolName,
+                       symbolName != symbol.originalSymbol {
+                        continue
+                    }
+                    
                     return symbol
                 }
             }
@@ -59,8 +65,8 @@ class SwiftSourceScopeManager {
         var scope = (scope ?? self.currentScope)
         while scope != nil {
             for symbol in scope!.symbols {
-                let prefix: String = String(symbol.originalSymbol.prefix(symbolName.count))
-                if prefix == symbolName {
+                
+                if symbol.identifierName == symbolName {
                     if symbol.isStatic == isIntance || symbol.isClass == isIntance {
                         continue
                     }
