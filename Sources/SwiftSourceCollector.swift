@@ -37,6 +37,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        parentStack.last?.children[classSymbol.identifier] = classSymbol
         parentStack.append(classSymbol)
         
         return super.visit(node)
@@ -62,6 +64,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        parentStack.last?.children[classSymbol.identifier] = classSymbol
         parentStack.append(classSymbol)
         
         return super.visit(node)
@@ -87,6 +91,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        parentStack.last?.children[classSymbol.identifier] = classSymbol
         parentStack.append(classSymbol)
         
         return super.visit(node)
@@ -146,7 +152,10 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        parentStack.last?.children[funcSymbol.identifier] = funcSymbol
         parentStack.append(funcSymbol)
+        
         return super.visit(node)
     }
     
@@ -176,12 +185,14 @@ class SwiftSourceCollector: SyntaxVisitor {
                 variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
             } else if let initializer: InitializerClauseSyntax = patternBinding.initializer?.as(InitializerClauseSyntax.self) {
                 variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+                print(variableSymbol.symbolType)
             }
         }
         variableSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        parentStack.last?.children[variableSymbol.identifier] = variableSymbol
         
         return super.visit(node)
     }
@@ -358,9 +369,12 @@ class SwiftSourceCollector: SyntaxVisitor {
             enumInfo.isOverride = modifier.isOverride
         }
         
+        parentStack.last?.children[enumInfo.identifier] = enumInfo
         parentStack.append(enumInfo)
+        
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumInfo)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        
         return super.visit(node)
     }
     

@@ -38,7 +38,7 @@ class SwiftSourceScopeManager {
     ) -> SwiftSourceSymbol? {
         var scope = (scope ?? self.currentScope)
         while scope != nil {
-            for (_, symbol) in scope!.symbols {
+            for symbol in scope!.symbols {
                 if symbol.nodeKind == nodeKind {
                     return symbol
                 }
@@ -58,8 +58,8 @@ class SwiftSourceScopeManager {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
-            for (key, symbol) in scope!.symbols {
-                let prefix: String = String(key.prefix(symbolName.count))
+            for symbol in scope!.symbols {
+                let prefix: String = String(symbol.originalSymbol.prefix(symbolName.count))
                 if prefix == symbolName {
                     if symbol.isStatic == isIntance || symbol.isClass == isIntance {
                         continue
@@ -78,17 +78,17 @@ class SwiftSourceScopeManager {
 
 class SwiftSourceScope {
     
-    lazy var symbols: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
+    lazy var symbols: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
     
     var prev: SwiftSourceScope?
     lazy var next: [SwiftSourceScope] = [SwiftSourceScope]()
     
     func pushSymbol(_ symbol: SwiftSourceSymbol) {
-        guard let identifier = symbol.identifier else {
+        guard !symbol.identifier.isEmpty else {
             return
         }
         
-        self.symbols[identifier] = symbol
+        self.symbols.insert(symbol, at: 0)
     }
     
 }

@@ -81,10 +81,67 @@ extension SwiftConfusedHelper {
             if baseExpr.baseName.text == "Self" {
                 isStaticType = true
             }
+            
             symbol = SwiftSourceScopeManager.sharedManager.findSymbol(.class)
         }
         
+        if let declName: DeclReferenceExprSyntax = memberAccessExpr.declName.as(DeclReferenceExprSyntax.self),
+           let children = symbol?.children {
+            for (name, child) in children {
+                if name == declName.baseName.text && (child.isStatic == isStaticType || child.isClass == isStaticType) {
+                    return child.symbolType
+                }
+            }
+        }
         
+        return nil
+    }
+    
+    private static func lookupSymbolNodeForExpr(_ expr: ExprSyntaxProtocol?, baseSymbol: SwiftSourceSymbol? = nil) -> SwiftSourceSymbol? {
+        
+        if let baseExpr: DeclReferenceExprSyntax = expr?.as(DeclReferenceExprSyntax.self) {
+            if baseExpr.baseName.text == "self" {
+                return SwiftSourceScopeManager.sharedManager.findSymbol(.class)
+            } else if baseExpr.baseName.text == "Self" {
+                return SwiftSourceScopeManager.sharedManager.findSymbol(.class)
+            } else {
+                if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
+                    for (name, child) in baseSymbol.children {
+                        if String(name.prefix(baseExpr.baseName.text.count)) == baseExpr.baseName.text {
+                            return child
+                        }
+                    }
+                } else {
+                    let symbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseExpr.baseName.text)
+                    if symbol?.nodeKind == .class {
+                        
+                    }
+                    
+                    return symbol
+                }
+                
+                return nil
+            }
+        } else if let baseExpr: FunctionCallExprSyntax = expr?.as(FunctionCallExprSyntax.self) {
+            if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
+                if let calledExpr: DeclReferenceExprSyntax = baseExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
+                    for (name, child) in baseSymbol.children {
+                        if String(name.prefix(calledExpr.baseName.text.count)) == calledExpr.baseName.text {
+                            return child
+                        }
+                    }
+                }
+            } else if let calledExpr: MemberAccessExprSyntax = baseExpr.calledExpression.as(MemberAccessExprSyntax.self) {
+                let symbol = self.lookupSymbolNodeForExpr(calledExpr, baseSymbol: baseSymbol)
+                if symbol?.nodeKind == .function,
+                   let symbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
+                    return SwiftSourceScopeManager.sharedManager.findSymbol(symbol.returnType)
+                }
+            }
+        } else if let baseExpr: MemberAccessExprSyntax = expr?.as(MemberAccessExprSyntax.self) {
+            let baseSymbol = self.lookupSymbolNodeForExpr(baseExpr.base, baseSymbol: baseSymbol) as? SwiftSourceClassSymbol
+            return self.lookupSymbolNodeForExpr(baseExpr.declName, baseSymbol: baseSymbol)
+        }
         
         return nil
     }
@@ -98,7 +155,21 @@ extension SwiftConfusedHelper {
                 return symbol.symbolType
             }
         } else if let callExpr: MemberAccessExprSyntax = functionCallExpr.calledExpression.as(MemberAccessExprSyntax.self) {
-            self.inferMemberAccessExprSyntaxType(callExpr)
+            let symbol = self.lookupSymbolNodeForExpr(callExpr.base)
+            if let declName: DeclReferenceExprSyntax = callExpr.declName.as(DeclReferenceExprSyntax.self) {
+                if symbol?.nodeKind == .class,
+                   let children = symbol?.children {
+                    for (name, child) in children {
+                        if child.nodeKind != .function {
+                            continue
+                        }
+                        
+                        if String(name.prefix(declName.baseName.text.count)) == declName.baseName.text {
+                            return (child as? SwiftSourceFunctionSymbol)?.returnType
+                        }
+                    }
+                }
+            }
         }
         
         return nil

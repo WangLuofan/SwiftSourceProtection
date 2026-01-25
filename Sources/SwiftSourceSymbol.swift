@@ -33,13 +33,13 @@ class SwiftSourceSymbol {
     var nodeKind: SwiftNodeKind = .unknown
     
     /// 惟一标识
-    var identifier: String?
+    var identifier: String = ""
     
     /// 文件路径
     var symbolFilePath: String?
     
     /// 原始符号
-    var originalSymbol: String? {
+    var originalSymbol: String = "" {
         didSet {
             self.identifier = originalSymbol
         }
