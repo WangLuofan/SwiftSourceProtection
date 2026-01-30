@@ -15,13 +15,14 @@ class SwiftSourceScopeManager {
         self.currentScope = self.globalScope
     }
     
-    func pushScope() {
+    func pushScope(symbol: SwiftSourceSymbol?) {
         let scope: SwiftSourceScope = SwiftSourceScope()
         
         scope.prev = self.currentScope
         self.currentScope?.next.append(scope)
         
         self.currentScope = scope
+        symbol?.childScope = scope
     }
     
     func popScope() {

@@ -55,6 +55,13 @@ class SwiftConfusedHelper {
 }
 
 extension SwiftConfusedHelper {
+    static func mergeSymbol(from fromSymbol: SwiftSourceSymbol, to toSymbol: SwiftSourceSymbol) {
+        toSymbol.children.append(contentsOf: fromSymbol.children)
+        fromSymbol.children.forEach { toSymbol.childScope?.pushSymbol($0) }
+    }
+}
+
+extension SwiftConfusedHelper {
     static func promoteBuiltInType(left: String, right: String) -> String {
         if left == right {
             return left
