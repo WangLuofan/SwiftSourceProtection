@@ -8,7 +8,6 @@
 import Foundation
 import SwiftSyntax
 import SwiftParser
-import SwiftOperators
 
 // 查找项目根目录
 func findProjectPath(for filePath: String) -> String? {
@@ -59,11 +58,8 @@ func main() {
         SwiftSourceScopeManager.sharedManager.pushScope()
         let sourceTree = Parser.parse(source: sourceCode)
         
-        let foldedTree = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
-        let parsedTree: SourceFileSyntax = foldedTree != nil ? foldedTree! : sourceTree
-
         let sourceCollector: SwiftSourceCollector = SwiftSourceCollector(sourceFile: sourceFile)
-        sourceCollector.walk(parsedTree)
+        sourceCollector.walk(sourceTree)
         SwiftSourceScopeManager.sharedManager.popScope()
         
         sourceTreeDict[sourceFile] = sourceTree

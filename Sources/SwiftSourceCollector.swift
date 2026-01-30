@@ -176,7 +176,11 @@ class SwiftSourceCollector: SyntaxVisitor {
             variableSymbol.isClass = modifier.isClass
             variableSymbol.isOverride = modifier.isOverride
         }
-        node.bindings.forEach { patternBinding in
+        node.bindings.forEach { [weak variableSymbol] patternBinding in
+            guard let variableSymbol else {
+                return
+            }
+            
             if let identPatternBinding: IdentifierPatternSyntax = patternBinding.pattern.as(IdentifierPatternSyntax.self) {
                 variableSymbol.originalSymbol = identPatternBinding.identifier.text
             }
@@ -184,7 +188,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             if let typeAnnontation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
                 variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
             } else if let initializer: InitializerClauseSyntax = patternBinding.initializer?.as(InitializerClauseSyntax.self) {
-                variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+                variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value, forSymbol: variableSymbol)
                 print(variableSymbol.symbolType)
             }
         }
@@ -419,5 +423,14 @@ class SwiftSourceCollector: SyntaxVisitor {
     
     override func visitPost(_ node: SwitchCaseSyntax) {
         SwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+//        guard let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(<#T##symbolName: String##String#>)
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ExtensionDeclSyntax) {
+        
     }
 }

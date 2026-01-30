@@ -10,6 +10,7 @@ import SwiftSyntax
 enum SwiftNodeKind {
     case unknown
     case `class`
+    case `extension`
     case variable
     case `function`
     case label
