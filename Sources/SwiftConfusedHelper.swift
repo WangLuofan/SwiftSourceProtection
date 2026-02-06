@@ -9,6 +9,9 @@ import SwiftSyntax
 import SwiftOperators
 
 class SwiftConfusedHelper {
+    nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
+    nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
+    
     static func isMemberVariable(_ node: DeclSyntaxProtocol) -> Bool {
         var currentNode: Syntax? = node.as(Syntax.self)
         
@@ -25,7 +28,23 @@ class SwiftConfusedHelper {
         return false
     }
     
-    static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+    static func confusedSymbol(_ symbol: SwiftSourceSymbol?) -> String? {
+        guard let symbol else {
+            return nil
+        }
+        
+        if symbol.confusedSymbol != nil {
+            return symbol.confusedSymbol
+        }
+        
+        return self.confusedSymbolName(symbol.originalSymbol)
+    }
+    
+    private static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+        if let confusedSymbolName: String = self.confusedTable[symbol] {
+            return confusedSymbolName
+        }
+        
         let lowercase: String = "abcdefghijklmnopqrstuvwxyz"
         let uppercase: String = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         let digital: String = "0123456789"
@@ -49,6 +68,13 @@ class SwiftConfusedHelper {
             let stringArr: [String.Element] = Array(allCharacters[randomIndex])
             randomSymbolName += String(stringArr[randomItem])
         }
+        
+        if self.reversedTable[randomSymbolName] != nil {
+            return self.confusedSymbolName(symbol)
+        }
+        
+        self.confusedTable[symbol] = randomSymbolName
+        self.reversedTable[randomSymbolName] = symbol
         
         return randomSymbolName
     }

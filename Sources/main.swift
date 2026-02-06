@@ -8,6 +8,7 @@
 import Foundation
 import SwiftSyntax
 import SwiftParser
+import SwiftOperators
 
 // 查找项目根目录
 func findProjectPath(for filePath: String) -> String? {
@@ -55,12 +56,13 @@ func main() {
         guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
             return
         }
-        SwiftSourceScopeManager.sharedManager.pushScope()
-        let sourceTree = Parser.parse(source: sourceCode)
         
+        let sourceTree: SourceFileSyntax = Parser.parse(source: sourceCode)
+        let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
+        
+        let parsedSourceTree = foldedSourceTree ?? sourceTree
         let sourceCollector: SwiftSourceCollector = SwiftSourceCollector(sourceFile: sourceFile)
-        sourceCollector.walk(sourceTree)
-        SwiftSourceScopeManager.sharedManager.popScope()
+        sourceCollector.walk(parsedSourceTree)
         
         sourceTreeDict[sourceFile] = sourceTree
     }
@@ -68,15 +70,15 @@ func main() {
 //    let isCurrentGlobalScope = SwiftSourceScopeManager.shared.isCurrentGlobalScope()
 //    let scope = SwiftSourceScopeManager.shared.currentScope
 //    
-//    sourceTreeDict.forEach { sourceFile, sourceTree in
-//        if let confusedFileContent: String =
-//            SwiftSourceProtection(sourceFile: sourceFile,
-//                                  sourceTree: sourceTree,
-//                                  projectPath: projectPath).confuse() {
-//            
-//            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
-//        }
-//    }
+    sourceTreeDict.forEach { sourceFile, sourceTree in
+        if let confusedFileContent: String =
+            SwiftSourceProtector(sourceFile: sourceFile,
+                                  sourceTree: sourceTree,
+                                  projectPath: projectPath).confuse() {
+            
+            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+        }
+    }
     
 }
 
