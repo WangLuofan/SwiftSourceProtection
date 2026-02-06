@@ -41,8 +41,18 @@ class SwiftConfusedHelper {
         return self.confusedSymbolName(symbol.originalSymbol)
     }
     
-    private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol?) -> Bool {
-        return false
+    private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol) -> Bool {
+        if symbol.originalSymbol.isSwiftKeyWord {
+            return false
+        }
+        
+        if let sourceSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(symbol.originalSymbol) {
+            if sourceSymbol.nodeKind == .extension {
+                return false
+            }
+        }
+        
+        return true
     }
     
     private static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
@@ -379,7 +389,7 @@ extension DeclModifierSyntax {
 extension String {
     var isSwiftKeyWord: Bool {
         let swiftKeywords = [
-            "_",
+            "_", "$",
             
             // 声明关键字
             "associatedtype", "class", "deinit", "enum", "extension",
