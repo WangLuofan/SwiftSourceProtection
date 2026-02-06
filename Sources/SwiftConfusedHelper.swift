@@ -29,8 +29,9 @@ class SwiftConfusedHelper {
     }
     
     static func confusedSymbol(_ symbol: SwiftSourceSymbol?) -> String? {
-        guard let symbol else {
-            return nil
+        guard let symbol,
+              self.shouldConfuseSymbol(symbol) else {
+            return symbol?.originalSymbol
         }
         
         if symbol.confusedSymbol != nil {
@@ -38,6 +39,10 @@ class SwiftConfusedHelper {
         }
         
         return self.confusedSymbolName(symbol.originalSymbol)
+    }
+    
+    private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol?) -> Bool {
+        return false
     }
     
     private static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {

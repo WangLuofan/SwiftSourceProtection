@@ -25,12 +25,16 @@ class SwiftSourceScopeManager {
         symbol?.childScope = scope
     }
     
-    func popScope() {
+    func popScope(_ bRemoved: Bool = false) {
         if self.currentScope?.prev == nil {
             return
         }
         
         self.currentScope = self.currentScope?.prev
+        
+        if bRemoved {
+            self.currentScope?.next.removeFirst()
+        }
     }
     
     func findSymbol(
