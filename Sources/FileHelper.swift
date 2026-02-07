@@ -39,7 +39,7 @@ extension FileHelper {
     }
     
     private func shouldTreatASSrouce(_ path: String) -> Bool {
-        if (path as NSString).pathExtension.compare("swift", options: .caseInsensitive) != .orderedSame {
+        if (path as NSString).pathExtension.lowercased() != "swift" {
             return false
         }
 

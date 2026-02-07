@@ -10,6 +10,7 @@ import SwiftSyntax
 enum SwiftNodeKind {
     case unknown
     case `class`
+    case `extension`
     case variable
     case `function`
     case label
@@ -83,6 +84,9 @@ class SwiftSourceSymbol {
     
     /// 成员
     var isMember: Bool = false
+    
+    /// 子作用域
+    var childScope: SwiftSourceScope?
     
     /// 子声明
     lazy var children: [SwiftSourceSymbol] = [SwiftSourceSymbol]()

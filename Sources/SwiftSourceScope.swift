@@ -15,45 +15,26 @@ class SwiftSourceScopeManager {
         self.currentScope = self.globalScope
     }
     
-    func pushScope() {
+    func pushScope(symbol: SwiftSourceSymbol?) {
         let scope: SwiftSourceScope = SwiftSourceScope()
         
         scope.prev = self.currentScope
         self.currentScope?.next.append(scope)
         
         self.currentScope = scope
+        symbol?.childScope = scope
     }
     
-    func popScope() {
+    func popScope(_ bRemoved: Bool = false) {
         if self.currentScope?.prev == nil {
             return
         }
         
         self.currentScope = self.currentScope?.prev
-    }
-    
-    func findSymbol(
-        _ nodeKind: SwiftNodeKind,
-        symbolName: String? = nil,
-        inScope scope: SwiftSourceScope? = nil
-    ) -> SwiftSourceSymbol? {
-        var scope = (scope ?? self.currentScope)
-        while scope != nil {
-            for symbol in scope!.symbols {
-                if symbol.nodeKind == nodeKind {
-                    if let symbolName,
-                       symbolName != symbol.originalSymbol {
-                        continue
-                    }
-                    
-                    return symbol
-                }
-            }
-            
-            scope = scope?.prev
-        }
         
-        return nil
+        if bRemoved {
+            self.currentScope?.next.removeFirst()
+        }
     }
     
     func findSymbol(
@@ -64,10 +45,10 @@ class SwiftSourceScopeManager {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
-            for symbol in scope!.symbols {
+            for (_, symbol) in scope!.symbols {
                 
                 if symbol.identifierName == symbolName {
-                    if symbol.isStatic == isIntance || symbol.isClass == isIntance {
+                    if symbol.isStatic == isIntance && symbol.isClass == isIntance {
                         continue
                     }
                     
@@ -84,7 +65,7 @@ class SwiftSourceScopeManager {
 
 class SwiftSourceScope {
     
-    lazy var symbols: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
+    lazy var symbols: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
     
     var prev: SwiftSourceScope?
     lazy var next: [SwiftSourceScope] = [SwiftSourceScope]()
@@ -94,7 +75,7 @@ class SwiftSourceScope {
             return
         }
         
-        self.symbols.insert(symbol, at: 0)
+        self.symbols[symbol.identifier] = symbol
     }
     
 }
