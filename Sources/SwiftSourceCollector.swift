@@ -123,7 +123,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             funcSymbol.returnType = identSyntax.name.text
         }
         
-        funcSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)
+        funcSymbol.isMember = node.isMemberDecl
         
         // symbol|static|return|parameter
         var funcSignature: String = "\(node.name.text)|\(funcSymbol.isStatic ? "static" : "")|\(funcSymbol.returnType)|("
@@ -190,10 +190,11 @@ class SwiftSourceCollector: SyntaxVisitor {
                 variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
             }
         }
-        variableSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)
+        variableSymbol.isMember = node.isMemberDecl
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope(symbol: variableSymbol)
+        
         parentStack.last?.children.append(variableSymbol)
         
         return super.visit(node)
@@ -359,7 +360,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         enumInfo.originalSymbol = node.name.text
         enumInfo.symbolFilePath = self.sourceFile
-        enumInfo.isMember = SwiftConfusedHelper.isMemberVariable(node)
+        enumInfo.isMember = node.isMemberDecl
         enumInfo.ASTNode = node
         enumInfo.parent = parentStack.last
         
@@ -390,7 +391,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             let enumCaseInfo: SwiftSourceEnumCaseSymbol = SwiftSourceEnumCaseSymbol(nodeKind: .enumCase)
             enumCaseInfo.originalSymbol = enumCaseElemSyntax.name.text
             enumCaseInfo.symbolFilePath = self.sourceFile
-            enumCaseInfo.isMember = SwiftConfusedHelper.isMemberVariable(node)
+            enumCaseInfo.isMember = node.isMemberDecl
             enumCaseInfo.ASTNode = enumCaseElemSyntax
             enumCaseElemSyntax.parameterClause?.parameters.forEach { enumCaseParamDecl in
                 if let identTypeSyntax: IdentifierTypeSyntax = enumCaseParamDecl.type.as(IdentifierTypeSyntax.self) {

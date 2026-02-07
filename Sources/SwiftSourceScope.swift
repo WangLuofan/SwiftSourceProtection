@@ -15,6 +15,10 @@ class SwiftSourceScopeManager {
         self.currentScope = self.globalScope
     }
     
+    func pushScope() {
+        self.currentScope = self.currentScope?.next.first
+    }
+    
     func pushScope(symbol: SwiftSourceSymbol?) {
         let scope: SwiftSourceScope = SwiftSourceScope()
         

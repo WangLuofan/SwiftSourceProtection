@@ -1,9 +1,9 @@
-class Test {
-    func test() {
-        
-    }
+class Test2 {
+    
 }
 
-extension Test {
-    
+class Test {
+    func test() {
+        var a: Test2 = Test2()
+    }
 }
