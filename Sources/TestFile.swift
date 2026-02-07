@@ -1,23 +1,15 @@
 class Test2 {
-    func test() -> Test {
-        return Test()
-    }
-    
-    init() {
-        
-    }
-    
-    func testInt() -> Int {
-        return 4
+    static func test() -> Test.Type {
+        return Test.self
     }
 }
 
 class Test {
-    func test() -> Test2 {
-        return Test2()
+    static func test2() -> Test2.Type {
+        return Test2.self
     }
     
-    func testFunc() {
-        let a = self.test().test().test().test().test().testInt()
+    static func test() {
+        let t = Test.test2().test().test2().test().test()
     }
 }

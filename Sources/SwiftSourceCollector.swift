@@ -185,7 +185,6 @@ class SwiftSourceCollector: SyntaxVisitor {
                 variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
             } else if let initializer: InitializerClauseSyntax = patternBinding.initializer?.as(InitializerClauseSyntax.self) {
                 variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
-                print(variableSymbol.symbolType)
             }
         }
         variableSymbol.isMember = SwiftConfusedHelper.isMemberVariable(node)

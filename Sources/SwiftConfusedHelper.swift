@@ -261,13 +261,22 @@ extension SwiftConfusedHelper {
                     return self.promoteBuiltInType(left: leftOperand, right: rightOperand)
                 }
                 
-                return leftOperand
+                return leftOperand ?? rightOperand
             }
         } else if let _ = expr.as(IsExprSyntax.self) {
             return "Bool"
         } else if let prefixOper: PrefixOperatorExprSyntax = expr.as(PrefixOperatorExprSyntax.self) {
             if prefixOper.operator.text == "!" {
                 return "Bool"
+            }
+            
+            return self.inferExprSyntaxType(prefixOper.expression)
+        } else if let asExpr: AsExprSyntax = expr.as(AsExprSyntax.self) {
+            if let typeAnnon: IdentifierTypeSyntax = asExpr.type.as(IdentifierTypeSyntax.self) {
+                return typeAnnon.name.text
+            } else if let typeAnnon: OptionalTypeSyntax = asExpr.type.as(OptionalTypeSyntax.self),
+                      let idTypeSyntax: IdentifierTypeSyntax = typeAnnon.wrappedType.as(IdentifierTypeSyntax.self) {
+                return idTypeSyntax.name.text
             }
         }
         
