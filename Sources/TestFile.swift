@@ -1,5 +1,9 @@
+class Test2 {
+    
+}
+
 class Test {
-    func test(num: Int, str: String) {
+    func test(num: Test2, str: String) {
         
     }
 }

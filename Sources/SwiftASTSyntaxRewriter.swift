@@ -115,6 +115,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             }
         }
         
+        if let typeAnnon: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeAnnon.name.text),
+           let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
+            
+            newNode = newNode.with(\.type, TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeName)))
+                .with(\.leadingTrivia, node.type.leadingTrivia)
+                .with(\.trailingTrivia, node.type.trailingTrivia))
+        }
+        
         return super.visit(newNode)
     }
     
