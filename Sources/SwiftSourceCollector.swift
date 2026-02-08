@@ -226,7 +226,6 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
         
         node.conditions.forEach { condSyntax in
             if let optBindingCondSyntax: OptionalBindingConditionSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self),

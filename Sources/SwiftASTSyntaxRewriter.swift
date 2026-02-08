@@ -127,6 +127,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: DoStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         var newNode = node
         
@@ -135,48 +140,36 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             if let patternBinding: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self),
                let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(patternBinding.identifier.text),
                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(symbol) {
-                let newPattern: IdentifierPatternSyntax = IdentifierPatternSyntax(identifier: TokenSyntax(stringLiteral: confusedSymbolName)
+                
+                let newPattern: IdentifierPatternSyntax = patternBinding.with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
                     .with(\.leadingTrivia, patternBinding.identifier.leadingTrivia)
-                    .with(\.trailingTrivia, patternBinding.identifier.trailingTrivia)
-                )
+                    .with(\.trailingTrivia, patternBinding.identifier.trailingTrivia))
                 
                 if let newPattern: PatternSyntax = PatternSyntax(newPattern) {
-                    var newBinding = binding
-                    newBinding = newBinding.with(\.pattern, newPattern)
-                        .with(\.leadingTrivia, patternBinding.leadingTrivia)
-                        .with(\.trailingTrivia, patternBinding.trailingTrivia)
+                    var newBinding = binding.with(\.pattern, newPattern)
                     
                     var confusedTypeAnnotation: TypeAnnotationSyntax?
                     if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation {
                         if let idTypeSyntax: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
                            let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text),
                            let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
-                            confusedTypeAnnotation = TypeAnnotationSyntax(
-                                type: IdentifierTypeSyntax(
-                                    name: TokenSyntax(stringLiteral: confusedTypeName)
-                                        .with(\.leadingTrivia, idTypeSyntax.leadingTrivia)
-                                        .with(\.trailingTrivia, idTypeSyntax.trailingTrivia))
-                                    .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-                                    .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))
-                                .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
-                                .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
+                            
+                            confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
+                                idTypeSyntax.with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
+                                    .with(\.leadingTrivia, idTypeSyntax.leadingTrivia)
+                                    .with(\.trailingTrivia, idTypeSyntax.trailingTrivia)))
+                            )
                             
                         } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
                                   let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
                                   let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text),
                                   let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol) {
-                            confusedTypeAnnotation = TypeAnnotationSyntax(
-                                type: OptionalTypeSyntax(
-                                    wrappedType: IdentifierTypeSyntax(
-                                        name: TokenSyntax(stringLiteral: confusedTypeAnnotationName)
-                                            .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
-                                            .with(\.trailingTrivia, wrappedType.name.trailingTrivia))
-                                    .with(\.leadingTrivia, optTypeAnnotation.wrappedType.leadingTrivia)
-                                    .with(\.trailingTrivia, optTypeAnnotation.wrappedType.trailingTrivia))
-                                .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-                                .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))
-                            .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
-                            .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
+                            
+                            confusedTypeAnnotation = TypeAnnotationSyntax(optTypeAnnotation
+                                .with(\.wrappedType, TypeSyntax(wrappedType
+                                    .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName)
+                                        .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
+                                        .with(\.trailingTrivia, wrappedType.name.trailingTrivia)))))
                         }
                         
                         if let confusedTypeAnnotation {
@@ -203,15 +196,59 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    // TODO: guard let test = test 还有问题，暂不处理，仅记录
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
         var newNode = node
         
+        var newConds: [ConditionElementSyntax] = [ConditionElementSyntax]()
         node.conditions.forEach { condition in
+            var newCondition = condition
             
+            if let optBindingCondSyntax: OptionalBindingConditionSyntax = newCondition.condition.as(OptionalBindingConditionSyntax.self) {
+                var newOptBindingCondSyntax: OptionalBindingConditionSyntax = optBindingCondSyntax
+                
+                if let idPattern: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self),
+                   let confusedCondSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idPattern.identifier.text),
+                   let confusedCondSymbolName: String = SwiftConfusedHelper.confusedSymbol(confusedCondSymbol) {
+                    
+                    let newIdPattern: IdentifierPatternSyntax = idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedCondSymbolName)
+                        .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
+                        .with(\.trailingTrivia, idPattern.identifier.trailingTrivia)
+                    )
+                    
+                    newOptBindingCondSyntax = newOptBindingCondSyntax.with(\.pattern, PatternSyntax(newIdPattern))
+                }
+                
+                if let typeAnnotation = optBindingCondSyntax.typeAnnotation {
+                    if let type: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
+                       let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(type.name.text),
+                       let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol) {
+                        newOptBindingCondSyntax = newOptBindingCondSyntax
+                            .with(\.typeAnnotation, typeAnnotation
+                                .with(\.type, TypeSyntax(type
+                                    .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
+                            .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))))
+                        )
+                    }
+                }
+                
+                newCondition = condition.with(\.condition, ConditionElementSyntax.Condition(newOptBindingCondSyntax))
+            }
+            
+            newConds.append(newCondition)
         }
         
+        newNode = newNode.with(\.conditions, ConditionElementListSyntax(newConds)
+            .with(\.leadingTrivia, newNode.conditions.leadingTrivia)
+            .with(\.trailingTrivia, newNode.conditions.trailingTrivia))
         
         return super.visit(newNode)
+    }
+    
+    override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
     }
     
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
@@ -246,6 +283,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if let _ = node.as(GuardStmtSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
         } else if let _ = node.as(ForStmtSyntax.self) {
+            SwiftSourceScopeManager.sharedManager.popScope(true)
+        } else if let _ = node.as(RepeatStmtSyntax.self) {
+            SwiftSourceScopeManager.sharedManager.popScope(true)
+        } else if let _ = node.as(DoStmtSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
         }
     }
