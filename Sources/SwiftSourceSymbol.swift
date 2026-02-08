@@ -108,7 +108,7 @@ class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
     var returnType: String = "Void"
     
     /// 标签
-    lazy var labels: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
+    lazy var labels: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
 }
 
 class SwiftSourceEnumCaseSymbol: SwiftSourceSymbol {

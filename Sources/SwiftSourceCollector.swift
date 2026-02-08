@@ -134,7 +134,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             funcLabel.parent = parentStack.last
             funcLabel.originalSymbol = parameterSyntax.firstName.text
             funcLabel.symbolFilePath = self.sourceFile
-            funcSymbol.labels.append(funcLabel)
+            funcSymbol.labels[parameterSyntax.firstName.text] = funcLabel
             
             if !isFirstParameter {
                 funcSignature.append(", ")

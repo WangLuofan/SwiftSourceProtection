@@ -22,6 +22,8 @@ class FileHelper {
         let dupPath: String = self.prepareForBackup(FileManager.default.currentDirectoryPath)
         
         self.duplicateProject(path, dupPath)
+        self.sourceFiles.sort()
+        
         print("count: \(self.sourceFiles.count)")
     }
 }

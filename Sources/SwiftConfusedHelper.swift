@@ -27,7 +27,7 @@ class SwiftConfusedHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
-            for label in funcSymbol.labels {
+            for (_, label) in funcSymbol.labels {
                 let confusedLabel: String = self.confusedSymbolName(label.originalSymbol)
                 label.confusedSymbol = confusedLabel
             }
