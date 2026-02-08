@@ -64,7 +64,7 @@ func main() {
         let sourceCollector: SwiftSourceCollector = SwiftSourceCollector(sourceFile: sourceFile)
         sourceCollector.walk(parsedSourceTree)
         
-        sourceTreeDict[sourceFile] = sourceTree
+        sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
     sourceTreeDict.forEach { sourceFile, sourceTree in

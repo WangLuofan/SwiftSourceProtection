@@ -214,6 +214,26 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        var newNode = node
+        
+        if let pattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self),
+           let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(pattern.identifier.text),
+           let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol) {
+            let newPattern = pattern.with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol)
+                .with(\.leadingTrivia, pattern.identifier.leadingTrivia)
+                .with(\.trailingTrivia, pattern.identifier.trailingTrivia))
+                .with(\.leadingTrivia, pattern.leadingTrivia)
+                .with(\.trailingTrivia, pattern.trailingTrivia)
+            
+            newNode = newNode.with(\.pattern, PatternSyntax(newPattern))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visitPost(_ node: Syntax) {
         if let _ = node.as(ClassDeclSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
@@ -224,6 +244,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if let _ = node.as(StructDeclSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
         } else if let _ = node.as(GuardStmtSyntax.self) {
+            SwiftSourceScopeManager.sharedManager.popScope(true)
+        } else if let _ = node.as(ForStmtSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
         }
     }
