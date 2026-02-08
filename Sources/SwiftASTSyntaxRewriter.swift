@@ -141,29 +141,42 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 )
                 
                 if let newPattern: PatternSyntax = PatternSyntax(newPattern) {
-                    var newBinding = binding.with(\.pattern, newPattern).with(\.leadingTrivia, patternBinding.leadingTrivia).with(\.trailingTrivia, patternBinding.trailingTrivia)
+                    var newBinding = binding
+                    newBinding = newBinding.with(\.pattern, newPattern)
+                        .with(\.leadingTrivia, patternBinding.leadingTrivia)
+                        .with(\.trailingTrivia, patternBinding.trailingTrivia)
                     
                     var confusedTypeAnnotation: TypeAnnotationSyntax?
                     if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation {
-                        if let typeName: String = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
-                           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeName),
+                        if let idTypeSyntax: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
+                           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text),
                            let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
                             confusedTypeAnnotation = TypeAnnotationSyntax(
-                                type: IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeName)
+                                type: IdentifierTypeSyntax(
+                                    name: TokenSyntax(stringLiteral: confusedTypeName)
+                                        .with(\.leadingTrivia, idTypeSyntax.leadingTrivia)
+                                        .with(\.trailingTrivia, idTypeSyntax.trailingTrivia))
                                     .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-                                    .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia)))
+                                    .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))
                                 .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
                                 .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
                             
                         } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
-                                  let wrappedTypeName: String = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self)?.name.text,
-                                  let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedTypeName),
+                                  let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
+                                  let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text),
                                   let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol) {
-                            confusedTypeAnnotation = TypeAnnotationSyntax(type: OptionalTypeSyntax(wrappedType: IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeAnnotationName)
+                            confusedTypeAnnotation = TypeAnnotationSyntax(
+                                type: OptionalTypeSyntax(
+                                    wrappedType: IdentifierTypeSyntax(
+                                        name: TokenSyntax(stringLiteral: confusedTypeAnnotationName)
+                                            .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
+                                            .with(\.trailingTrivia, wrappedType.name.trailingTrivia))
+                                    .with(\.leadingTrivia, optTypeAnnotation.wrappedType.leadingTrivia)
+                                    .with(\.trailingTrivia, optTypeAnnotation.wrappedType.trailingTrivia))
                                 .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-                                .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))))
-                                .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
-                                .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
+                                .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))
+                            .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
+                            .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
                         }
                         
                         if let confusedTypeAnnotation {
