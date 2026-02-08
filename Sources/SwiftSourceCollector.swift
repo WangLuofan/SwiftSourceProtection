@@ -248,6 +248,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             }
         }
         
+        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
         return super.visit(node)
     }
     

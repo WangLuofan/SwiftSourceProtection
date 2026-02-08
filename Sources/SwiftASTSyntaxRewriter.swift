@@ -203,6 +203,17 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        
+        node.conditions.forEach { condition in
+            
+        }
+        
+        
+        return super.visit(newNode)
+    }
+    
     override func visitPost(_ node: Syntax) {
         if let _ = node.as(ClassDeclSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
@@ -211,6 +222,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         } else if let _ = node.as(VariableDeclSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
         } else if let _ = node.as(StructDeclSyntax.self) {
+            SwiftSourceScopeManager.sharedManager.popScope(true)
+        } else if let _ = node.as(GuardStmtSyntax.self) {
             SwiftSourceScopeManager.sharedManager.popScope(true)
         }
     }
