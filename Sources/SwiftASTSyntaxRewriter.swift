@@ -143,20 +143,34 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 if let newPattern: PatternSyntax = PatternSyntax(newPattern) {
                     var newBinding = binding.with(\.pattern, newPattern).with(\.leadingTrivia, patternBinding.leadingTrivia).with(\.trailingTrivia, patternBinding.trailingTrivia)
                     
-                    if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation,
-                       let typeName: String = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
-                       let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeName),
-                       let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
-                        let confusedTypeAnnotaton: TypeAnnotationSyntax = TypeAnnotationSyntax(
-                            type: IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeName)
-                            .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-                            .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia)))
-                            .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
-                            .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
+                    var confusedTypeAnnotation: TypeAnnotationSyntax?
+                    if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation {
+                        if let typeName: String = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
+                           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeName),
+                           let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
+                            confusedTypeAnnotation = TypeAnnotationSyntax(
+                                type: IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeName)
+                                    .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
+                                    .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia)))
+                                .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
+                                .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
+                            
+                        } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
+                                  let wrappedTypeName: String = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self)?.name.text,
+                                  let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedTypeName),
+                                  let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol) {
+                            confusedTypeAnnotation = TypeAnnotationSyntax(type: OptionalTypeSyntax(wrappedType: IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeAnnotationName)
+                                .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
+                                .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))))
+                                .with(\.leadingTrivia, typeAnnotation.leadingTrivia)
+                                .with(\.trailingTrivia, typeAnnotation.trailingTrivia)
+                        }
                         
-                        newBinding = newBinding.with(\.typeAnnotation, confusedTypeAnnotaton)
-                            .with(\.leadingTrivia, binding.leadingTrivia)
-                            .with(\.trailingTrivia, binding.trailingTrivia)
+                        if let confusedTypeAnnotation {
+                            newBinding = newBinding.with(\.typeAnnotation, confusedTypeAnnotation)
+                                .with(\.leadingTrivia, binding.leadingTrivia)
+                                .with(\.trailingTrivia, binding.trailingTrivia)
+                        }
                     }
                     
                     newBindings.append(newBinding)
