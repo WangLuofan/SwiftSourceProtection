@@ -12,9 +12,12 @@ import SwiftSyntaxBuilder
 
 class SwiftASTSyntaxRewriter: SyntaxRewriter {
     private let projectPath: String
+    private let sourceFile: String
     
-    init(projectPath: String) {
+    init(projectPath: String, sourceFile: String) {
         self.projectPath = projectPath
+        self.sourceFile = sourceFile
+        
         super.init(viewMode: .sourceAccurate)
     }
     
@@ -26,7 +29,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        SwiftSourceScopeManager.sharedManager.pushScope()
+        SwiftSourceScopeManager.sharedManager.pushScope(false)
         
         let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
             .with(\.leadingTrivia, node.name.leadingTrivia)
@@ -75,6 +78,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
+        
+        if node.isLocalDecl {
+            let funcSymbol: SwiftSourceFunctionSymbol = node.funcSymbol(self.sourceFile)
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
+        }
         
         if let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol,
            let confusedFuncSymbol: String = SwiftConfusedHelper.confusedSymbol(funcSymbol) {
@@ -135,6 +143,12 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         var newNode = node
         
+        /// 如果是局部变量，先收集信息，添加作用域，再进行混淆
+        if node.isLocalDecl {
+            let localSymbol: SwiftSourceSymbol = node.variableSymbol(self.projectPath)
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(localSymbol)
+        }
+        
         var newBindings: [PatternBindingSyntax] = [PatternBindingSyntax]()
         node.bindings.forEach { binding in
             if let patternBinding: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self),
@@ -187,12 +201,12 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             }
         }
         
-        SwiftSourceScopeManager.sharedManager.pushScope()
-        
         newNode = node.with(\.bindings, PatternBindingListSyntax(newBindings)
             .with(\.leadingTrivia, node.bindings.leadingTrivia)
             .with(\.trailingTrivia, node.bindings.trailingTrivia))
         
+        SwiftSourceScopeManager.sharedManager.pushScope()
+
         return super.visit(newNode)
     }
     

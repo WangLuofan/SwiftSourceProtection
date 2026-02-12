@@ -231,9 +231,10 @@ extension DeclSyntaxProtocol {
             switch parent.kind {
             case .sourceFile:
                 return true
-            case .classDecl, .structDecl, .enumDecl, .extensionDecl, .protocolDecl,
-                 .functionDecl, .closureExpr, .initializerDecl, .deinitializerDecl,
-                 .subscriptDecl, .accessorDecl, .variableDecl:
+            case .classDecl, .structDecl, .enumDecl,
+                    .extensionDecl, .protocolDecl, .functionDecl,
+                    .closureExpr, .initializerDecl, .deinitializerDecl,
+                    .subscriptDecl, .accessorDecl, .variableDecl:
                 return false
             default:
                 currentNode = parent
@@ -249,8 +250,8 @@ extension DeclSyntaxProtocol {
 
         while let parent = currentNode?.parent {
             switch parent.kind {
-            case .functionDecl, .closureExpr, .initializerDecl, .deinitializerDecl,
-                 .subscriptDecl, .accessorDecl:
+            case .functionDecl, .closureExpr, .initializerDecl,
+                    .deinitializerDecl, .subscriptDecl, .accessorDecl:
                 return true
             case .sourceFile:
                 return false
@@ -261,5 +262,88 @@ extension DeclSyntaxProtocol {
         }
 
         return false
+    }
+}
+
+extension FunctionDeclSyntax {
+    func funcSymbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol {
+        let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol(nodeKind: .function)
+        funcSymbol.symbolFilePath = sourceFile
+        funcSymbol.parent = parentStack.last
+        funcSymbol.originalSymbol = self.name.text
+        self.modifiers.forEach { modifier in
+            funcSymbol.accessControl = modifier.accessControl
+            funcSymbol.isStatic = modifier.isStatic
+            funcSymbol.isFinal = modifier.isFinal
+            funcSymbol.isClass = modifier.isClass
+            funcSymbol.isOverride = modifier.isOverride
+        }
+        
+        funcSymbol.returnType = "Void"
+        if let identSyntax: IdentifierTypeSyntax = self.signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
+            funcSymbol.returnType = identSyntax.name.text
+        }
+        
+        funcSymbol.isMember = self.isMemberDecl
+        
+        // symbol|static|return|parameter
+        var funcSignature: String = "\(self.name.text)|\(funcSymbol.isStatic ? "static" : "")|\(funcSymbol.returnType)|("
+        var isFirstParameter: Bool = true
+        self.signature.parameterClause.parameters.forEach { [weak funcSymbol] parameterSyntax in
+            
+            let funcLabel: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .label)
+            funcLabel.parent = funcSymbol
+            funcLabel.originalSymbol = parameterSyntax.firstName.text
+            funcLabel.symbolFilePath = sourceFile
+            
+            funcSymbol?.labels[parameterSyntax.firstName.text] = funcLabel
+            
+            if !isFirstParameter {
+                funcSignature.append(", ")
+            }
+            
+            funcSignature.append("\(parameterSyntax.firstName.text)")
+            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
+                funcSignature.append(": \(typeSyntax.name.text)")
+            }
+            
+            isFirstParameter = false
+        }
+        
+        funcSignature.append(")")
+        funcSymbol.identifier = funcSignature
+        
+        return funcSymbol
+    }
+}
+
+extension VariableDeclSyntax {
+    func variableSymbol(_ sourceFile: String) -> SwiftSourceSymbol {
+        let variableSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        variableSymbol.symbolFilePath = sourceFile
+        variableSymbol.parent = parentStack.last
+        self.modifiers.forEach { modifier in
+            variableSymbol.accessControl = modifier.accessControl
+            variableSymbol.isStatic = modifier.isStatic
+            variableSymbol.isFinal = modifier.isFinal
+            variableSymbol.isClass = modifier.isClass
+            variableSymbol.isOverride = modifier.isOverride
+        }
+        self.bindings.forEach { [weak variableSymbol] patternBinding in
+            guard let variableSymbol else {
+                return
+            }
+            
+            if let identPatternBinding: IdentifierPatternSyntax = patternBinding.pattern.as(IdentifierPatternSyntax.self) {
+                variableSymbol.originalSymbol = identPatternBinding.identifier.text
+            }
+            
+            if let typeAnnontation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
+                variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
+            }
+        }
+        
+        variableSymbol.isMember = self.isMemberDecl
+        return variableSymbol
     }
 }

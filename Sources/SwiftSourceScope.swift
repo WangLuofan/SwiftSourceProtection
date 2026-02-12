@@ -15,20 +15,15 @@ class SwiftSourceScopeManager {
         self.currentScope = self.globalScope
     }
 
-    func pushScope() {
+    func pushScope(_ bCreate: Bool = true) {
         
-        guard let nextScope: SwiftSourceScope = self.currentScope?.next.first else {
+        if bCreate {
             let scope: SwiftSourceScope = SwiftSourceScope()
-            
             scope.prev = self.currentScope
             self.currentScope?.next.append(scope)
-            
-            self.currentScope = scope
-            
-            return
         }
         
-        self.currentScope = self.currentScope?.next.first
+        self.currentScope = self.currentScope?.next.last
     }
     
     func popScope(_ bRemoved: Bool = false) {
@@ -39,7 +34,7 @@ class SwiftSourceScopeManager {
         self.currentScope = self.currentScope?.prev
         
         if bRemoved {
-            self.currentScope?.next.removeFirst()
+            self.currentScope?.next.removeLast()
         }
     }
     

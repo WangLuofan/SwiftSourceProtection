@@ -61,9 +61,6 @@ class SwiftSourceSymbol {
     /// 符号类型
     var symbolType: String?
     
-    /// AST结点
-    var ASTNode: SyntaxProtocol?
-    
     /// 父结点
     var parent: SwiftSourceSymbol?
     
