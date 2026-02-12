@@ -9,7 +9,6 @@ import SwiftSyntax
 import Foundation
 
 nonisolated(unsafe) var parentStack: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
-nonisolated(unsafe) var extendedSymbolStack: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
 
 class SwiftSourceCollector: SyntaxVisitor {
     var sourceFile: String
@@ -37,7 +36,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: classSymbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         
         parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
@@ -64,7 +63,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: classSymbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         
         parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
@@ -91,7 +90,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: classSymbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         
         parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
@@ -220,7 +219,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         parentStack.append(enumInfo)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumInfo)
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: enumInfo)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         
         return super.visit(node)
     }
@@ -248,26 +247,5 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         return super.visit(node)
-    }
-    
-    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        let extensionSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .extension)
-        
-        extendedSymbolStack.append(extensionSymbol)
-        return super.visit(node)
-    }
-    
-    /// 需要合并的合并到扩展符号
-    /// 未查找到暂时不处理
-    /// 后续需要合并则继续合并
-    /// 未合并的加入到作用域
-    override func visitPost(_ node: ExtensionDeclSyntax) {
-        if let extendedType = node.extendedType.as(IdentifierTypeSyntax.self)?.name.text,
-           let extendedSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType) {
-            if let extensionSymbol: SwiftSourceClassSymbol = extendedSymbolStack.last as? SwiftSourceClassSymbol {
-                SwiftConfusedHelper.mergeSymbol(from: extensionSymbol, to: extendedSymbol)
-                extendedSymbolStack.removeLast()
-            }
-        }
     }
 }

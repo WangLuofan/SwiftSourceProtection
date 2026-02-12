@@ -85,9 +85,6 @@ class SwiftSourceSymbol {
     /// 成员
     var isMember: Bool = false
     
-    /// 子作用域
-    var childScope: SwiftSourceScope?
-    
     /// 子声明
     lazy var children: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
     
