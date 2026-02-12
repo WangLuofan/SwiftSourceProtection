@@ -213,6 +213,8 @@ extension DeclSyntaxProtocol {
             switch parent.kind {
             case .classDecl, .structDecl, .enumDecl, .extensionDecl, .protocolDecl:
                 return true
+            case .functionDecl, .variableDecl:
+                return false
             default:
                 currentNode = parent
                 break
@@ -231,7 +233,7 @@ extension DeclSyntaxProtocol {
                 return true
             case .classDecl, .structDecl, .enumDecl, .extensionDecl, .protocolDecl,
                  .functionDecl, .closureExpr, .initializerDecl, .deinitializerDecl,
-                 .subscriptDecl, .accessorDecl:
+                 .subscriptDecl, .accessorDecl, .variableDecl:
                 return false
             default:
                 currentNode = parent
