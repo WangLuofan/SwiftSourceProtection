@@ -67,6 +67,7 @@ func main() {
         sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
+    let currentScope = SwiftSourceScopeManager.sharedManager.currentScope
     sourceTreeDict.forEach { sourceFile, sourceTree in
         if let confusedFileContent: String =
             SwiftSourceProtector(sourceFile: sourceFile,

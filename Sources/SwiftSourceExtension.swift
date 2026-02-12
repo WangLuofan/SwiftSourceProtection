@@ -208,17 +208,56 @@ extension DeclModifierSyntax {
 extension DeclSyntaxProtocol {
     var isMemberDecl: Bool {
         var currentNode: Syntax? = self.as(Syntax.self)
-        
+
         while let parent = currentNode?.parent {
             switch parent.kind {
-            case .classDecl, .structDecl, .enumDecl, .extensionDecl:
+            case .classDecl, .structDecl, .enumDecl, .extensionDecl, .protocolDecl:
                 return true
             default:
                 currentNode = parent
                 break
             }
         }
-        
+
+        return false
+    }
+
+    var isGlobalDecl: Bool {
+        var currentNode: Syntax? = self.as(Syntax.self)
+
+        while let parent = currentNode?.parent {
+            switch parent.kind {
+            case .sourceFile:
+                return true
+            case .classDecl, .structDecl, .enumDecl, .extensionDecl, .protocolDecl,
+                 .functionDecl, .closureExpr, .initializerDecl, .deinitializerDecl,
+                 .subscriptDecl, .accessorDecl:
+                return false
+            default:
+                currentNode = parent
+                break
+            }
+        }
+
+        return false
+    }
+
+    var isLocalDecl: Bool {
+        var currentNode: Syntax? = self.as(Syntax.self)
+
+        while let parent = currentNode?.parent {
+            switch parent.kind {
+            case .functionDecl, .closureExpr, .initializerDecl, .deinitializerDecl,
+                 .subscriptDecl, .accessorDecl:
+                return true
+            case .sourceFile:
+                return false
+            default:
+                currentNode = parent
+                break
+            }
+        }
+
         return false
     }
 }

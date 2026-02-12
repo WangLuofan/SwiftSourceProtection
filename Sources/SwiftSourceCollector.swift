@@ -105,6 +105,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        
         let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol(nodeKind: .function)
         funcSymbol.symbolFilePath = self.sourceFile
         funcSymbol.ASTNode = node
@@ -150,22 +151,18 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         funcSignature.append(")")
         funcSymbol.identifier = funcSignature
-        
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: funcSymbol)
-        
-        parentStack.last?.children.append(funcSymbol)
-        parentStack.append(funcSymbol)
-        
+
+        // 收集成员方法和全局方法，排除局部方法
+        if node.isMemberDecl || node.isGlobalDecl {
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
+            parentStack.last?.children.append(funcSymbol)
+        }
+
         return super.visit(node)
     }
-    
-    override func visitPost(_ node: FunctionDeclSyntax) {
-        parentStack.removeLast()
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
+
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+        
         let variableSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
         variableSymbol.symbolFilePath = self.sourceFile
         variableSymbol.ASTNode = node
@@ -191,170 +188,17 @@ class SwiftSourceCollector: SyntaxVisitor {
             }
         }
         variableSymbol.isMember = node.isMemberDecl
-        
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: variableSymbol)
-        
-        parentStack.last?.children.append(variableSymbol)
-        
+
+        // 收集成员变量和全局变量，排除局部变量
+        if node.isMemberDecl || node.isGlobalDecl {
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
+
+            parentStack.last?.children.append(variableSymbol)
+        }
+
         return super.visit(node)
     }
-    
-    override func visitPost(_ node: VariableDeclSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-        let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-        variableInfo.symbolFilePath = self.sourceFile
-        variableInfo.ASTNode = node
-        variableInfo.parent = parentStack.last
-        variableInfo.symbolFilePath = self.sourceFile
-        
-        if let secondName = node.secondName {
-            variableInfo.originalSymbol = secondName.text
-        } else {
-            variableInfo.originalSymbol = node.firstName.text
-        }
-        
-        if let type: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self) {
-            variableInfo.symbolType = type.name.text
-        }
-        
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-        return super.visit(node)
-    }
-    
-    override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
-        
-        node.conditions.forEach { condSyntax in
-            if let optBindingCondSyntax: OptionalBindingConditionSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self),
-               let identPatternSyntax: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
-                
-                let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-                variableInfo.symbolFilePath = self.sourceFile
-                variableInfo.ASTNode = identPatternSyntax
-                variableInfo.parent = parentStack.last
-                variableInfo.symbolFilePath = self.sourceFile
-                
-                variableInfo.originalSymbol = identPatternSyntax.identifier.text
-                if let typeAnnotation = optBindingCondSyntax.typeAnnotation,
-                   let idPatternSyntax: IdentifierPatternSyntax = typeAnnotation.type.as(IdentifierPatternSyntax.self) {
-                    variableInfo.symbolType = idPatternSyntax.identifier.text
-                }
-                
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-            }
-        }
-        
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: GuardStmtSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        
-        node.conditions.forEach { condSyntax in
-            if let optBindingCondSyntax: OptionalBindingConditionSyntax = condSyntax.condition.as(OptionalBindingConditionSyntax.self),
-               let idPatternSyntax: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
-                let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-                
-                variableInfo.originalSymbol = idPatternSyntax.identifier.text
-                variableInfo.symbolFilePath = self.sourceFile
-                variableInfo.ASTNode = idPatternSyntax
-                variableInfo.parent = parentStack.last
-                variableInfo.symbolFilePath = self.sourceFile
-                
-                if let typeAnnSyntax: TypeAnnotationSyntax = optBindingCondSyntax.typeAnnotation,
-                   let idPatternSyntax: IdentifierPatternSyntax = typeAnnSyntax.type.as(IdentifierPatternSyntax.self) {
-                    variableInfo.symbolType = idPatternSyntax.identifier.text
-                }
-                
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-            }
-        }
-        
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: WhileStmtSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        
-        if let identifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-            
-            let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-            variableInfo.symbolFilePath = self.sourceFile
-            variableInfo.originalSymbol = identifierPatternSyntax.identifier.text
-            variableInfo.ASTNode = identifierPatternSyntax
-            variableInfo.parent = parentStack.last
-            
-            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-        }
-        
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: ForStmtSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        
-        if let captureClause: ClosureCaptureClauseSyntax = node.signature?.capture?.as(ClosureCaptureClauseSyntax.self) {
-            captureClause.items.forEach { captureSyntax in
-                let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-                variableInfo.originalSymbol = captureSyntax.name.text
-                variableInfo.symbolFilePath = self.sourceFile
-                variableInfo.ASTNode = captureSyntax
-                variableInfo.parent = parentStack.last
-                variableInfo.symbolFilePath = self.sourceFile
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-            }
-        }
-        
-        if let paramClause: ClosureShorthandParameterListSyntax = node.signature?.parameterClause?.as(ClosureShorthandParameterListSyntax.self) {
-            paramClause.forEach { parameterSyntax in
-                let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-                variableInfo.originalSymbol = parameterSyntax.name.text
-                variableInfo.symbolFilePath = self.sourceFile
-                variableInfo.ASTNode = parameterSyntax
-                variableInfo.parent = parentStack.last
-                variableInfo.symbolFilePath = self.sourceFile
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-            }
-        } else if let paramClause: ClosureParameterClauseSyntax = node.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
-            paramClause.parameters.forEach { parameterSyntax in
-                let variableInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-                variableInfo.symbolFilePath = self.sourceFile
-                variableInfo.ASTNode = parameterSyntax
-                variableInfo.parent = parentStack.last
-                variableInfo.symbolFilePath = self.sourceFile
-                if let secondName = parameterSyntax.secondName {
-                    variableInfo.originalSymbol = secondName.text
-                } else {
-                    variableInfo.originalSymbol = parameterSyntax.firstName.text
-                }
-                
-                if let type: IdentifierTypeSyntax = parameterSyntax.type?.as(IdentifierTypeSyntax.self) {
-                    variableInfo.symbolType = type.name.text
-                }
-                
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableInfo)
-            }
-        }
-        
-        return super.visit(node)
-    }
-    
+
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         let enumInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .enum)
         
@@ -395,7 +239,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             enumCaseInfo.ASTNode = enumCaseElemSyntax
             enumCaseElemSyntax.parameterClause?.parameters.forEach { enumCaseParamDecl in
                 if let identTypeSyntax: IdentifierTypeSyntax = enumCaseParamDecl.type.as(IdentifierTypeSyntax.self) {
-                    enumCaseInfo.relatedType.append(identTypeSyntax.name.text)
+                    enumCaseInfo.associatedType.append(identTypeSyntax.name.text)
                 }
             }
             
@@ -404,33 +248,6 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         return super.visit(node)
-    }
-    
-    override func visit(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: DoStmtSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visit(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: RepeatStmtSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope(symbol: nil)
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: SwitchCaseSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope()
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
