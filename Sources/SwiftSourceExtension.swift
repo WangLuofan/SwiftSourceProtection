@@ -347,3 +347,21 @@ extension VariableDeclSyntax {
         return variableSymbol
     }
 }
+
+extension FunctionParameterSyntax {
+    func funcParameterSymbol(_ sourceFile: String) -> SwiftSourceSymbol {
+        let paramSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        if let secondName {
+            paramSymbol.originalSymbol = secondName.text
+        } else {
+            paramSymbol.originalSymbol = firstName.text
+        }
+        
+        if let typeIdent: IdentifierTypeSyntax = self.type.as(IdentifierTypeSyntax.self) {
+            paramSymbol.symbolType = typeIdent.name.text
+        }
+        paramSymbol.parent = parentStack.last
+        
+        return paramSymbol
+    }
+}
