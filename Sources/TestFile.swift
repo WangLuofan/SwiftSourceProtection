@@ -16,6 +16,9 @@ class MyClass {
         let localVar = 5
         
         // 局部函数 - 不应该收集
-        func localFunction() {}
+        func localFunction(num: Int) {
+            var a = 3
+            a += 4
+        }
     }
 }

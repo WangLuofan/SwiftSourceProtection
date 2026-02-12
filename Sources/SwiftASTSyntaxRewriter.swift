@@ -59,6 +59,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+        return super.visit(node)
+    }
+    
 //    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
 //        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self),
 //              let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol,
