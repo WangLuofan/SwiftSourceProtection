@@ -64,7 +64,18 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-        return super.visit(node)
+        
+        var newNode = node
+        let refName: String = node.baseName.text
+        
+        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName) {
+            newNode = node.with(\.baseName, TokenSyntax(stringLiteral: refSymbol.confusedSymbol ?? refSymbol.originalSymbol)
+                .with(\.leadingTrivia, node.baseName.leadingTrivia)
+                .with(\.trailingTrivia, node.baseName.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
     }
     
 //    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
@@ -115,11 +126,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var newNode = node
         
-        let paramSymbol: SwiftSourceSymbol = node.funcParameterSymbol(self.sourceFile)
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
-        
-        if let funcSymbol: SwiftSourceFunctionSymbol = paramSymbol.parent as? SwiftSourceFunctionSymbol {
+        if let funcSymbol: SwiftSourceFunctionSymbol = parentStack.last as? SwiftSourceFunctionSymbol {
             if let secondName = node.secondName {
+                let paramSymbol: SwiftSourceSymbol = node.funcParameterSymbol(self.sourceFile)
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+                
                 if let confusedSecondName: String = SwiftConfusedHelper.confusedSymbol(paramSymbol) {
                     newNode = node.with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
                         .with(\.leadingTrivia, secondName.leadingTrivia)
@@ -127,11 +138,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 }
             }
             
-            if let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[node.firstName.text] {
-                if let confusedLabelSymbolName: String = labelSymbol.confusedSymbol {
+            if let firstSymbol: SwiftSourceSymbol = funcSymbol.labels[node.firstName.text] {
+                if let confusedLabelSymbolName: String = firstSymbol.confusedSymbol {
                     newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedLabelSymbolName)
                         .with(\.leadingTrivia, node.firstName.leadingTrivia)
                         .with(\.trailingTrivia, node.firstName.trailingTrivia))
+                }
+                
+                if node.secondName == nil {
+                    SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(firstSymbol)
                 }
             }
         }

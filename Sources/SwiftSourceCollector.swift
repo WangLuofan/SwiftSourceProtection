@@ -101,10 +101,10 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        let funcSymbol: SwiftSourceFunctionSymbol = node.funcSymbol(self.sourceFile)
-
         // 收集成员方法和全局方法，排除局部方法
         if node.isMemberDecl || node.isGlobalDecl {
+            let funcSymbol: SwiftSourceFunctionSymbol = node.funcSymbol(self.sourceFile)
+            
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
             parentStack.last?.children.append(funcSymbol)
         }

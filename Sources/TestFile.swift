@@ -18,7 +18,7 @@ class MyClass {
         // 局部函数 - 不应该收集
         func localFunction(num: Int) {
             var a = 3
-            a += 4
+            let nums = a + num
         }
     }
 }
