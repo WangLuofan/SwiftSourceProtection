@@ -100,7 +100,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         var funcSymbol: SwiftSourceFunctionSymbol? = nil
         if node.isLocalDecl {
-            funcSymbol = node.funcSymbol(self.sourceFile)
+            funcSymbol = node.functionSymbol(self.sourceFile)
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol!)
         }
         
@@ -167,6 +167,59 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: DoStmtSyntax) -> StmtSyntax {
         SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        let enumTokenStr: String = node.name.text
+        
+        if let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(enumTokenStr) as? SwiftSourceClassSymbol,
+           let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumSymbol) {
+            newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName))
+            
+            parentStack.append(enumSymbol)
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        if let enumSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
+            var newElements: [EnumCaseElementSyntax] = [EnumCaseElementSyntax]()
+            node.elements.forEach { enumCaseElemSyntax in
+                var enumCaseSymbol: SwiftSourceEnumCaseSymbol?
+                for child in enumSymbol.children {
+                    if child.originalSymbol == enumCaseElemSyntax.name.text {
+                        enumCaseSymbol = child as? SwiftSourceEnumCaseSymbol
+                        break
+                    }
+                }
+                
+                if let enumCaseSymbol,
+                   let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumCaseSymbol) {
+                    let element = enumCaseElemSyntax
+                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                            .with(\.leadingTrivia, enumCaseElemSyntax.name.leadingTrivia)
+                            .with(\.trailingTrivia, enumCaseElemSyntax.name.trailingTrivia))
+                        .with(\.leadingTrivia, enumCaseElemSyntax.leadingTrivia)
+                        .with(\.trailingTrivia, enumCaseElemSyntax.trailingTrivia)
+                    newElements.append(element)
+                }
+            }
+            
+            newNode = node.with(\.elements, EnumCaseElementListSyntax(newElements)
+                .with(\.leadingTrivia, node.elements.leadingTrivia)
+                .with(\.trailingTrivia, node.elements.trailingTrivia))
+        }
+        
+        return super.visit(newNode)
     }
     
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {

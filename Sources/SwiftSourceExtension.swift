@@ -265,8 +265,76 @@ extension DeclSyntaxProtocol {
     }
 }
 
+extension ClassDeclSyntax {
+    func classSymbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
+        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .class)
+        
+        classSymbol.symbolFilePath = sourceFile
+        classSymbol.parent = parentStack.last
+        classSymbol.originalSymbol = self.name.text
+        classSymbol.inheritedType = self.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
+        self.modifiers.forEach { modifier in
+            classSymbol.accessControl = modifier.accessControl
+            classSymbol.isFinal = modifier.isFinal
+        }
+        
+        return classSymbol
+    }
+}
+
+extension StructDeclSyntax {
+    func structSymbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
+        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .struct)
+        
+        classSymbol.symbolFilePath = sourceFile
+        classSymbol.parent = parentStack.last
+        classSymbol.originalSymbol = self.name.text
+        classSymbol.inheritedType = self.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
+        self.modifiers.forEach { modifier in
+            classSymbol.accessControl = modifier.accessControl
+            classSymbol.isFinal = modifier.isFinal
+        }
+        
+        return classSymbol
+    }
+}
+
+extension EnumDeclSyntax {
+    func enumSymbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
+        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .enum)
+        
+        classSymbol.symbolFilePath = sourceFile
+        classSymbol.parent = parentStack.last
+        classSymbol.originalSymbol = self.name.text
+        classSymbol.inheritedType = self.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
+        self.modifiers.forEach { modifier in
+            classSymbol.accessControl = modifier.accessControl
+            classSymbol.isFinal = modifier.isFinal
+        }
+        
+        return classSymbol
+    }
+}
+
+extension ProtocolDeclSyntax {
+    func protocolSymbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
+        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .protocol)
+        
+        classSymbol.symbolFilePath = sourceFile
+        classSymbol.parent = parentStack.last
+        classSymbol.originalSymbol = self.name.text
+        classSymbol.inheritedType = self.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
+        self.modifiers.forEach { modifier in
+            classSymbol.accessControl = modifier.accessControl
+            classSymbol.isFinal = modifier.isFinal
+        }
+        
+        return classSymbol
+    }
+}
+
 extension FunctionDeclSyntax {
-    func funcSymbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol {
+    func functionSymbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol {
         let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol(nodeKind: .function)
         funcSymbol.symbolFilePath = sourceFile
         funcSymbol.parent = parentStack.last

@@ -1,3 +1,9 @@
+enum TestEnum: Int {
+    case test1
+    case test2
+    case test3
+}
+
 // 全局变量 - 应该收集
 let globalConstant = 10
 nonisolated(unsafe) var globalVariable: String = "test"
@@ -7,7 +13,7 @@ func globalFunction() {}
 
 class MyClass {
     // 成员变量 - 应该收集
-    var memberVar: Int = 0    
+    var memberVar: Int = 0
     
     // 成员方法 - 应该收集
     func memberMethod() {

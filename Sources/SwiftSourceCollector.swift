@@ -23,22 +23,13 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .class)
+        let clsSymbol: SwiftSourceClassSymbol = node.classSymbol(self.sourceFile)
         
-        classSymbol.symbolFilePath = self.sourceFile
-        classSymbol.parent = parentStack.last
-        classSymbol.originalSymbol = node.name.text
-        classSymbol.inheritedType = node.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
-        node.modifiers.forEach { modifier in
-            classSymbol.accessControl = modifier.accessControl
-            classSymbol.isFinal = modifier.isFinal
-        }
-        
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
         
-        parentStack.last?.children.append(classSymbol)
-        parentStack.append(classSymbol)
+        parentStack.last?.children.append(clsSymbol)
+        parentStack.append(clsSymbol)
         
         return super.visit(node)
     }
@@ -103,7 +94,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         // 收集成员方法和全局方法，排除局部方法
         if node.isMemberDecl || node.isGlobalDecl {
-            let funcSymbol: SwiftSourceFunctionSymbol = node.funcSymbol(self.sourceFile)
+            let funcSymbol: SwiftSourceFunctionSymbol = node.functionSymbol(self.sourceFile)
             
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
             parentStack.last?.children.append(funcSymbol)
@@ -125,20 +116,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        let enumInfo: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .enum)
-        
-        enumInfo.originalSymbol = node.name.text
-        enumInfo.symbolFilePath = self.sourceFile
-        enumInfo.isMember = node.isMemberDecl
-        enumInfo.parent = parentStack.last
-        
-        node.modifiers.forEach { modifier in
-            enumInfo.accessControl = modifier.accessControl
-            enumInfo.isStatic = modifier.isStatic
-            enumInfo.isFinal = modifier.isFinal
-            enumInfo.isClass = modifier.isClass
-            enumInfo.isOverride = modifier.isOverride
-        }
+        let enumInfo: SwiftSourceClassSymbol = node.enumSymbol(self.sourceFile)
         
         parentStack.last?.children.append(enumInfo)
         parentStack.append(enumInfo)
@@ -167,6 +145,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             }
             
             enumCaseInfo.parent = parentStack.last
+            parentStack.last?.children.append(enumCaseInfo)
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumCaseInfo)
         }
         
