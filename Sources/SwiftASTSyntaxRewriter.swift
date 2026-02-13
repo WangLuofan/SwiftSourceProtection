@@ -414,6 +414,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 SwiftSourceScopeManager.sharedManager.pushScope()
                 break
             }
+            
+            parent = parent?.parent
         }
         
         return super.visit(node)
@@ -540,8 +542,20 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()
-        case .forStmt, .repeatStmt, .doStmt, .whileStmt, .codeBlock:
+        case .forStmt, .repeatStmt, .doStmt, .whileStmt:
             SwiftSourceScopeManager.sharedManager.popScope(true)
+        case .codeBlock: do {
+            var parent = node.parent
+            
+            while parent != nil {
+                if let _: GuardStmtSyntax = parent?.as(GuardStmtSyntax.self) {
+                    SwiftSourceScopeManager.sharedManager.pushScope()
+                    break
+                }
+                
+                parent = parent?.parent
+            }
+        }
         default:
             break
         }
