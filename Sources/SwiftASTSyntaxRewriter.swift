@@ -142,6 +142,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 if let confusedLabelSymbolName: String = firstSymbol.confusedSymbol {
                     newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedLabelSymbolName)
                         .with(\.leadingTrivia, node.firstName.leadingTrivia)
+                        .with(\.leadingTrivia, node.firstName.leadingTrivia)
                         .with(\.trailingTrivia, node.firstName.trailingTrivia))
                 }
                 
@@ -406,7 +407,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-        SwiftSourceScopeManager.sharedManager.pushScope()
+        var parent = node.parent
+        
+        while parent != nil {
+            if let _: GuardStmtSyntax = parent?.as(GuardStmtSyntax.self) {
+                SwiftSourceScopeManager.sharedManager.pushScope()
+                break
+            }
+        }
+        
         return super.visit(node)
     }
     
