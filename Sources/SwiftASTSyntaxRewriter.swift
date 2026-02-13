@@ -330,6 +330,20 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             newNode = newNode.with(\.pattern, PatternSyntax(newPattern))
         }
         
+        if let typeAnnotation = node.typeAnnotation,
+           let typeIdent: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeIdent.name.text),
+           let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
+            newNode = newNode.with(\.typeAnnotation,
+                                    newNode.typeAnnotation?
+                .with(\.type, TypeSyntax(IdentifierTypeSyntax(
+                    leadingTrivia: newNode.typeAnnotation?.type.leadingTrivia,
+                    name: TokenSyntax(stringLiteral: confusedSymbol),
+                    trailingTrivia: newNode.typeAnnotation?.type.trailingTrivia)
+                ))
+            )
+        }
+        
         return super.visit(newNode)
     }
     
