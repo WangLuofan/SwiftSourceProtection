@@ -171,6 +171,43 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
         var newNode = node
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        var confusedConds: [ConditionElementSyntax] = [ConditionElementSyntax]()
+        node.conditions.forEach { condElemSyntax in
+            if let optBindCondSyntax: OptionalBindingConditionSyntax = condElemSyntax.condition.as(OptionalBindingConditionSyntax.self),
+               let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                varSymbol.originalSymbol = idPattern.identifier.text
+                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                
+                var confusedCondition = optBindCondSyntax.with(\.pattern, PatternSyntax(idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol ?? idPattern.identifier.text))))
+                
+                if let typeAnnotation = optBindCondSyntax.typeAnnotation,
+                   let idType: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
+                    varSymbol.symbolType = idType.name.text
+                    
+                    if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text),
+                       let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
+                        confusedCondition = confusedCondition.with(
+                            \.typeAnnotation, optBindCondSyntax.typeAnnotation?
+                                .with(\.type, TypeSyntax(IdentifierTypeSyntax(
+                                    leadingTrivia: idType.leadingTrivia,
+                                    name: TokenSyntax(stringLiteral: confusedSymbolName),
+                                    trailingTrivia: idType.trailingTrivia)
+                                ))
+                        )
+                    }
+                }
+                
+                confusedConds.append(condElemSyntax.with(\.condition, ConditionElementSyntax.Condition(confusedCondition)))
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+            }
+        }
+        
+        newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConds))
+        
         return super.visit(newNode)
     }
     

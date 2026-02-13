@@ -45,6 +45,10 @@ class SwiftConfusedHelper {
             return true
         }
         
+        if !symbol.isMember {
+            return true
+        }
+        
         if let sourceSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(symbol.originalSymbol) {
             if sourceSymbol.nodeKind == .extension {
                 return false

@@ -1,9 +1,5 @@
 enum TestEnum {
-    typealias RawValue = Int
-    
-    case test1(MyClass)
-    case test2
-    case test3
+    case test1, test2(MyClass), test3, test4
 }
 
 // 全局变量 - 应该收集
@@ -28,11 +24,11 @@ class MyClass {
             let test: MyClass? = MyClass()
             let a: Int? = 3
             
-            guard let test = a else{
-                return
+            if let test: MyClass = test {
+                test.memberVar
             }
             
-            print("\(test)")
+            test?.memberVar
         }
     }
 }
