@@ -428,7 +428,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         if let calledExpression = newNode.calledExpression.as(DeclReferenceExprSyntax.self),
            let baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
             if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
-                /// init方法
+                /// MyClass.init()
+                
+                /// MyCalss()
+                let i = 0
             } else if baseSymbol.nodeKind == .function,
                       let funcSymbol: SwiftSourceFunctionSymbol = baseSymbol as? SwiftSourceFunctionSymbol {
                 let confusedFuncName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)

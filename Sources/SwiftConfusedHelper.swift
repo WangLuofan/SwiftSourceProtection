@@ -296,12 +296,7 @@ extension SwiftConfusedHelper {
                 
                 return parentSymbol?.originalSymbol
             } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExpr.baseName.text, isIntance: isIntance) {
-                if symbol.nodeKind == .class ||
-                    symbol.nodeKind == .enum ||
-                    symbol.nodeKind == .struct ||
-                    symbol.nodeKind == .extension {
-                    return symbol.originalSymbol
-                } else if symbol.nodeKind == .function {
+                if symbol.nodeKind == .function {
                     return (symbol as? SwiftSourceFunctionSymbol)?.returnType
                 }
                 

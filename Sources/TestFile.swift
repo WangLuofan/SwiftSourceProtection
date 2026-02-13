@@ -13,30 +13,38 @@ class MyClass {
     // 成员变量 - 应该收集
     var memberVar: Int = 0
     
+    init() {
+        self.memberVar = 0
+    }
+    
+    init(memberVar: Int) {
+        self.memberVar = memberVar
+    }
+    
     // 成员方法 - 应该收集
-    func memberMethod() {
+    func memberMethod(num: Int) {
         
         // 局部变量 - 不应该收集
         let localVar = 5
         
         // 局部函数 - 不应该收集
-        func localFunction(num: Int) {
-            let test: MyClass? = MyClass()
+        func localFunction(num: Int, str s: String) {
+            let test: MyClass? = MyClass(memberVar: 3)
             let a: Int? = 3
             
             if let test: MyClass = test {
                 test.memberVar
             }
             
-            // 待处理
+            let t = s + "World"
             let b: TestEnum = .test1
         }
         
         // 待处理
-        localFunction(num: 3)
+        localFunction(num: 3, str: "Hello")
     }
     
     func testMemberMethod() {
-        self.memberMethod()
+        self.memberMethod(num: 3)
     }
 }
