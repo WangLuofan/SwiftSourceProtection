@@ -24,6 +24,7 @@ extension SwiftClassDeclProtocol {
         classSymbol.originalSymbol = self.name.text
         classSymbol.inheritedType = self.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
         classSymbol.symbolType = self.name.text
+        classSymbol.ASTNode = self as? SyntaxProtocol
         
         self.modifiers.forEach { modifier in
             classSymbol.accessControl = modifier.accessControl
@@ -62,34 +63,21 @@ extension SwiftFunctionDeclProtocol {
             funcSymbol.returnType = identSyntax.name.text
         }
         
+        funcSymbol.ASTNode = self as? SyntaxProtocol
         funcSymbol.isMember = self.isMemberDecl
         
         // symbol|static|return|signature
-        var funcSignature: String = "\(self.name.text)|\(funcSymbol.isStatic ? "static" : "")|\(funcSymbol.returnType)|("
-        var isFirstParameter: Bool = true
-        self.signature.parameterClause.parameters.forEach { [weak funcSymbol] parameterSyntax in
+        self.signature.parameterClause.parameters.forEach { parameterSyntax in
             
             let funcLabel: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .label)
             funcLabel.parent = funcSymbol
             funcLabel.originalSymbol = parameterSyntax.firstName.text
             funcLabel.symbolFilePath = sourceFile
             
-            funcSymbol?.labels[parameterSyntax.firstName.text] = funcLabel
-            
-            if !isFirstParameter {
-                funcSignature.append(", ")
-            }
-            
-            funcSignature.append("\(parameterSyntax.firstName.text)")
-            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
-                funcSignature.append(": \(typeSyntax.name.text)")
-            }
-            
-            isFirstParameter = false
+            funcSymbol.labels[parameterSyntax.firstName.text] = funcLabel
         }
         
-        funcSignature.append(")")
-        funcSymbol.identifier = funcSignature
+        funcSymbol.identifier = SwiftConfusedHelper.generateFunctionIdentifier(self)
         
         return funcSymbol
     }
@@ -391,6 +379,8 @@ extension VariableDeclSyntax {
             variableSymbol.isClass = modifier.isClass
             variableSymbol.isOverride = modifier.isOverride
         }
+        
+        variableSymbol.ASTNode = self
         self.bindings.forEach { [weak variableSymbol] patternBinding in
             guard let variableSymbol else {
                 return
@@ -427,6 +417,8 @@ extension FunctionParameterSyntax {
         if let typeIdent: IdentifierTypeSyntax = self.type.as(IdentifierTypeSyntax.self) {
             paramSymbol.symbolType = typeIdent.name.text
         }
+        
+        paramSymbol.ASTNode = self
         paramSymbol.parent = parentStack.last
         
         return paramSymbol

@@ -42,6 +42,16 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        node.signature.parameterClause.parameters.forEach { funcParamSyntax in
+            
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
         let clsName: String = node.name.text
         

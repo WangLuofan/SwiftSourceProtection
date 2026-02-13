@@ -82,6 +82,9 @@ class SwiftSourceSymbol {
     /// 成员
     var isMember: Bool = false
     
+    /// AST结点
+    var ASTNode: SyntaxProtocol?
+    
     /// 子声明
     lazy var children: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
     

@@ -362,4 +362,38 @@ extension SwiftConfusedHelper {
         
         return nil  // 暂时无法推导
     }
+    
+    static func generateFunctionIdentifier(_ node: SwiftFunctionDeclProtocol) -> String {
+        var isStatic: Bool = false
+        var returnType: String = "Void"
+        
+        if let node: FunctionDeclSyntax = node as? FunctionDeclSyntax {
+            node.modifiers.forEach { modifier in
+                isStatic = modifier.isStatic
+            }
+            
+            returnType = node.signature.returnClause?.trimmedDescription ?? "Void"
+        }
+        
+        // symbol|static|return|signature
+        var funcSignature: String = "\(node.name.text)|\(isStatic ? "static" : "")|\(returnType)|("
+        var isFirstParameter: Bool = true
+        node.signature.parameterClause.parameters.forEach { parameterSyntax in
+            
+            if !isFirstParameter {
+                funcSignature.append(", ")
+            }
+            
+            funcSignature.append("\(parameterSyntax.firstName.text)")
+            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
+                funcSignature.append(": \(typeSyntax.name.text)")
+            }
+            
+            isFirstParameter = false
+        }
+        
+        funcSignature.append(")")
+        
+        return funcSignature
+    }
 }

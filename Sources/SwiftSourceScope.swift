@@ -5,6 +5,8 @@
 //  Created by wangluofan on 2026/1/12.
 //
 
+import SwiftSyntax
+
 class SwiftSourceScopeManager {
     nonisolated(unsafe) static let sharedManager: SwiftSourceScopeManager = SwiftSourceScopeManager()
     
@@ -38,11 +40,22 @@ class SwiftSourceScopeManager {
         }
     }
     
-    func findSymbol(
-        _ symbolName: String,
-        inScope scope: SwiftSourceScope? = nil,
-        isIntance: Bool = true
-    ) -> SwiftSourceSymbol? {
+    func findSymbol( _ node: SyntaxProtocol?, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
+        var scope = (scope ?? self.currentScope)
+        while scope != nil {
+            for (_, symbol) in scope!.symbols {
+                if symbol.ASTNode === node {
+                    return symbol
+                }
+            }
+            
+            scope = scope?.prev
+        }
+        
+        return nil
+    }
+    
+    func findSymbol(_ symbolName: String, inScope scope: SwiftSourceScope? = nil, isIntance: Bool = true) -> SwiftSourceSymbol? {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
