@@ -7,7 +7,7 @@ func globalFunction() {}
 
 class MyClass {
     // 成员变量 - 应该收集
-    var memberVar: Int = 0
+    var memberVar: Int = 0    
     
     // 成员方法 - 应该收集
     func memberMethod() {

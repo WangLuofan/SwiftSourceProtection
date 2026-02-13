@@ -237,8 +237,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         newNode = node.with(\.bindings, PatternBindingListSyntax(newBindings)
             .with(\.leadingTrivia, node.bindings.leadingTrivia)
             .with(\.trailingTrivia, node.bindings.trailingTrivia))
-        
-        SwiftSourceScopeManager.sharedManager.pushScope()
 
         return super.visit(newNode)
     }
@@ -420,7 +418,9 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visitPost(_ node: Syntax) {
         switch node.kind {
-        case .classDecl, .functionDecl, .protocolDecl, .variableDecl,
+        case .variableDecl:
+            parentStack.removeLast()
+        case .classDecl, .functionDecl, .protocolDecl,
                 .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()

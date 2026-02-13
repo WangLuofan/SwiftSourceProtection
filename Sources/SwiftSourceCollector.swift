@@ -118,7 +118,6 @@ class SwiftSourceCollector: SyntaxVisitor {
         // 收集成员变量和全局变量，排除局部变量
         if node.isMemberDecl || node.isGlobalDecl {
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
-
             parentStack.last?.children.append(variableSymbol)
         }
 
