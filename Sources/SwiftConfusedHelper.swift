@@ -99,7 +99,7 @@ class SwiftConfusedHelper {
             randomSymbolName += String(stringArr[randomItem])
         }
         
-        if self.reversedTable[randomSymbolName] != nil {
+        if self.reversedTable[randomSymbolName] != nil || randomSymbolName.isSwiftKeyWord {
             return self.confusedSymbolName(symbol)
         }
         
