@@ -12,14 +12,13 @@ class SwiftConfusedHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
     
-    static func confusedSymbol(_ symbol: SwiftSourceSymbol?) -> String? {
-        guard let symbol,
-              self.shouldConfuseSymbol(symbol) else {
-            return symbol?.originalSymbol
+    static func confusedSymbol(_ symbol: SwiftSourceSymbol) -> String {
+        guard self.shouldConfuseSymbol(symbol) else {
+            return symbol.originalSymbol
         }
         
-        if symbol.confusedSymbol != nil {
-            return symbol.confusedSymbol
+        if let confusedSymbol = symbol.confusedSymbol {
+            return confusedSymbol
         }
         
         let confusedSymbolName: String = self.confusedSymbolName(symbol.originalSymbol)
@@ -297,6 +296,15 @@ extension SwiftConfusedHelper {
                 
                 return parentSymbol?.originalSymbol
             } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExpr.baseName.text, isIntance: isIntance) {
+                if symbol.nodeKind == .class ||
+                    symbol.nodeKind == .enum ||
+                    symbol.nodeKind == .struct ||
+                    symbol.nodeKind == .extension {
+                    return symbol.originalSymbol
+                } else if symbol.nodeKind == .function {
+                    return (symbol as? SwiftSourceFunctionSymbol)?.returnType
+                }
+                
                 return symbol.symbolType
             }
         } else if let macroExpr: MacroExpansionExprSyntax = expr.as(MacroExpansionExprSyntax.self) {

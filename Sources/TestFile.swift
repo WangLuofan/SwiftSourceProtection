@@ -28,7 +28,15 @@ class MyClass {
                 test.memberVar
             }
             
-            test?.memberVar
+            // 待处理
+            let b: TestEnum = .test1
         }
+        
+        // 待处理
+        localFunction(num: 3)
+    }
+    
+    func testMemberMethod() {
+        self.memberMethod()
     }
 }
