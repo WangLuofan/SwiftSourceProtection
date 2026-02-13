@@ -1,5 +1,7 @@
-enum TestEnum: Int {
-    case test1
+enum TestEnum {
+    typealias RawValue = Int
+    
+    case test1(MyClass)
     case test2
     case test3
 }

@@ -204,12 +204,29 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 
                 if let enumCaseSymbol,
                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumCaseSymbol) {
-                    let element = enumCaseElemSyntax
+                    var element = enumCaseElemSyntax
                         .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
                             .with(\.leadingTrivia, enumCaseElemSyntax.name.leadingTrivia)
                             .with(\.trailingTrivia, enumCaseElemSyntax.name.trailingTrivia))
                         .with(\.leadingTrivia, enumCaseElemSyntax.leadingTrivia)
                         .with(\.trailingTrivia, enumCaseElemSyntax.trailingTrivia)
+
+                    if let parameterClause: EnumCaseParameterClauseSyntax = enumCaseElemSyntax.parameterClause {
+                        var confusedParameters: [EnumCaseParameterSyntax] = [EnumCaseParameterSyntax]()
+                        parameterClause.parameters.forEach { paramElemSyntax in
+                            if let typeIdent: IdentifierTypeSyntax = paramElemSyntax.type.as(IdentifierTypeSyntax.self),
+                               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeIdent.name.text),
+                               let confusedTypeSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
+                                let confusedParam = EnumCaseParameterSyntax(stringLiteral: confusedTypeSymbolName)
+                                    .with(\.leadingTrivia, paramElemSyntax.leadingTrivia)
+                                    .with(\.trailingTrivia, paramElemSyntax.trailingTrivia)
+                                confusedParameters.append(confusedParam)
+                            }
+                        }
+                        
+                        element = element.with(\.parameterClause, parameterClause.with(\.parameters, EnumCaseParameterListSyntax(confusedParameters)))
+                    }
+                    
                     newElements.append(element)
                 }
             }
