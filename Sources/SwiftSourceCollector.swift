@@ -40,8 +40,11 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        var funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol()
-        funcSymbol.originalSymbol = "init"
+        var funcSymbol: SwiftSourceFunctionSymbol = node.symbol(self.sourceFile)
+        
+        if let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
+            clsSymbol.initializers.append(funcSymbol)
+        }
         
         return super.visit(node)
     }
