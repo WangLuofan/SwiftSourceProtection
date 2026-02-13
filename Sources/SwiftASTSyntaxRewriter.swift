@@ -348,26 +348,15 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visitPost(_ node: Syntax) {
-        if let _ = node.as(ClassDeclSyntax.self) {
+        switch node.kind {
+        case .classDecl, .functionDecl, .protocolDecl, .variableDecl,
+                .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()
-        } else if let _ = node.as(FunctionDeclSyntax.self) {
+        case .guardStmt, .forStmt, .repeatStmt, .doStmt:
             SwiftSourceScopeManager.sharedManager.popScope(true)
-            parentStack.removeLast()
-        } else if let _ = node.as(VariableDeclSyntax.self) {
-            SwiftSourceScopeManager.sharedManager.popScope(true)
-            parentStack.removeLast()
-        } else if let _ = node.as(StructDeclSyntax.self) {
-            SwiftSourceScopeManager.sharedManager.popScope(true)
-            parentStack.removeLast()
-        } else if let _ = node.as(GuardStmtSyntax.self) {
-            SwiftSourceScopeManager.sharedManager.popScope(true)
-        } else if let _ = node.as(ForStmtSyntax.self) {
-            SwiftSourceScopeManager.sharedManager.popScope(true)
-        } else if let _ = node.as(RepeatStmtSyntax.self) {
-            SwiftSourceScopeManager.sharedManager.popScope(true)
-        } else if let _ = node.as(DoStmtSyntax.self) {
-            SwiftSourceScopeManager.sharedManager.popScope(true)
+        default:
+            break
         }
     }
 }
