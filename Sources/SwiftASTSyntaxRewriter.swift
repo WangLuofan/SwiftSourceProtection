@@ -300,6 +300,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
         var newNode = node
         
@@ -308,7 +313,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             var newCondition = condition
             
             if let optBindingCondSyntax: OptionalBindingConditionSyntax = newCondition.condition.as(OptionalBindingConditionSyntax.self) {
-                var varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
                 
                 var newOptBindingCondSyntax: OptionalBindingConditionSyntax = optBindingCondSyntax
                 
@@ -419,7 +424,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()
-        case .forStmt, .repeatStmt, .doStmt, .whileStmt:
+        case .forStmt, .repeatStmt, .doStmt, .whileStmt, .codeBlock:
             SwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break

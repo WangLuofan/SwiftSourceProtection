@@ -23,6 +23,8 @@ class MyClass {
             guard let test = a else{
                 return
             }
+            
+            print("\(test)")
         }
     }
 }
