@@ -18,8 +18,10 @@ class MyClass {
         // 局部函数 - 不应该收集
         func localFunction(num: Int) {
             let test: MyClass? = MyClass()
-            while let t: MyClass = test {
-                
+            let a: Int? = 3
+            
+            guard let test = a else{
+                return
             }
         }
     }

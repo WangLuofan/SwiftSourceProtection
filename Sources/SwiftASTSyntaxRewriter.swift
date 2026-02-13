@@ -308,11 +308,16 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             var newCondition = condition
             
             if let optBindingCondSyntax: OptionalBindingConditionSyntax = newCondition.condition.as(OptionalBindingConditionSyntax.self) {
+                var varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                
                 var newOptBindingCondSyntax: OptionalBindingConditionSyntax = optBindingCondSyntax
                 
                 if let idPattern: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self),
                    let confusedCondSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idPattern.identifier.text),
                    let confusedCondSymbolName: String = SwiftConfusedHelper.confusedSymbol(confusedCondSymbol) {
+                    
+                    varSymbol.originalSymbol = idPattern.identifier.text
+                    varSymbol.confusedSymbol = confusedCondSymbolName
                     
                     let newIdPattern: IdentifierPatternSyntax = idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedCondSymbolName)
                         .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
@@ -326,6 +331,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                     if let type: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
                        let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(type.name.text),
                        let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol) {
+                        varSymbol.symbolType = type.name.text
+                        
                         newOptBindingCondSyntax = newOptBindingCondSyntax
                             .with(\.typeAnnotation, typeAnnotation
                                 .with(\.type, TypeSyntax(type
@@ -336,6 +343,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                     }
                 }
                 
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
                 newCondition = condition.with(\.condition, ConditionElementSyntax.Condition(newOptBindingCondSyntax))
             }
             
@@ -411,7 +419,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()
-        case .guardStmt, .forStmt, .repeatStmt, .doStmt, .whileStmt:
+        case .forStmt, .repeatStmt, .doStmt, .whileStmt:
             SwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break
