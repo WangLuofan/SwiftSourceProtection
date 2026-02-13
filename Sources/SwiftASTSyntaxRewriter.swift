@@ -299,6 +299,23 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
         SwiftSourceScopeManager.sharedManager.pushScope()
         
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            if idPattern.identifier.kind != .wildcardPattern {
+                let tokenName: String = idPattern.identifier.text
+                
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                varSymbol.originalSymbol = tokenName
+                varSymbol.parent = parentStack.last
+                
+                if let typeAnnotation = node.typeAnnotation,
+                   let typeIdent: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
+                    varSymbol.symbolType = typeIdent.name.text
+                }
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+            }
+        }
+        
         var newNode = node
         
         if let pattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self),

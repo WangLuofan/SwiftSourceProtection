@@ -19,6 +19,11 @@ class MyClass {
         func localFunction(num: Int) {
             var a = 3
             let nums = a + num
+            
+            print("\(num)")
+            for i: Int in 0...nums {
+                
+            }
         }
     }
 }
