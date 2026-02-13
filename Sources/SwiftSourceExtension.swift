@@ -338,8 +338,13 @@ extension VariableDeclSyntax {
                 variableSymbol.originalSymbol = identPatternBinding.identifier.text
             }
             
-            if let typeAnnontation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
-                variableSymbol.symbolType = typeAnnontation.type.trimmedDescription
+            if let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
+                if let typeId: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
+                    variableSymbol.symbolType = typeId.name.text
+                } else if let optType: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
+                          let wrappedType: IdentifierTypeSyntax = optType.wrappedType.as(IdentifierTypeSyntax.self) {
+                    variableSymbol.symbolType = wrappedType.name.text
+                }
             }
         }
         

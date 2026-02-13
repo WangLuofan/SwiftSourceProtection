@@ -210,11 +210,13 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                   let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text),
                                   let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol) {
                             
-                            confusedTypeAnnotation = TypeAnnotationSyntax(optTypeAnnotation
-                                .with(\.wrappedType, TypeSyntax(wrappedType
-                                    .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName)
-                                        .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
-                                        .with(\.trailingTrivia, wrappedType.name.trailingTrivia)))))
+                            confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
+                                optTypeAnnotation.with(
+                                    \.wrappedType, TypeSyntax(wrappedType
+                                        .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName))
+                                    )
+                                ))
+                            )
                         }
                         
                         if let confusedTypeAnnotation {
