@@ -56,6 +56,7 @@ func main() {
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
+    /// 第一步：收集全局符号、成员符号
     sourceFiles.forEach { sourceFile in
         guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
             return
@@ -71,6 +72,7 @@ func main() {
         sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
+    /// 第三步：类型推导、符号混淆
     sourceTreeDict.forEach { sourceFile, sourceTree in
         if let confusedFileContent: String =
             SwiftSourceProtector(sourceFile: sourceFile,
