@@ -241,7 +241,63 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    // TODO: guard let test = test 还有问题，暂不处理，仅记录
+    override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        var confusedConditions: [ConditionElementSyntax] = [ConditionElementSyntax]()
+        node.conditions.forEach { conditionElem in
+            var newCondition: ConditionElementSyntax? = conditionElem
+            
+            if let condition: OptionalBindingConditionSyntax = conditionElem.condition.as(OptionalBindingConditionSyntax.self),
+               let idPattern: IdentifierPatternSyntax = condition.pattern.as(IdentifierPatternSyntax.self) {
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                
+                varSymbol.originalSymbol = idPattern.identifier.text
+                varSymbol.parent = parentStack.last
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                if let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol) {
+                    let optConfusedPattern: IdentifierPatternSyntax = idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol))
+                    
+                    var confusedTypeAnno = condition.typeAnnotation
+                    if let typeAnnotation = condition.typeAnnotation,
+                       let typeId: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
+                        varSymbol.symbolType = typeId.name.text
+                        if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeId.name.text),
+                           let confusedType: String = SwiftConfusedHelper.confusedSymbol(typeSymbol) {
+                            confusedTypeAnno = typeAnnotation.with(
+                                \.type, TypeSyntax(IdentifierTypeSyntax(
+                                    leadingTrivia: typeId.leadingTrivia,
+                                    name: TokenSyntax(
+                                        stringLiteral: confusedType),
+                                    trailingTrivia: typeId.trailingTrivia
+                                ))
+                            )
+                        }
+                    }
+                    
+                    var confusedCondition = condition.with(\.pattern, PatternSyntax(optConfusedPattern))
+                    if let confusedTypeAnno {
+                        confusedCondition = confusedCondition.with(\.typeAnnotation, confusedTypeAnno)
+                    }
+                    
+                    newCondition = conditionElem.with(\.condition, ConditionElementSyntax.Condition(confusedCondition))
+                }
+            }
+            
+            if let newCondition {
+                confusedConditions.append(newCondition)
+            }
+        }
+        
+        newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConditions)
+            .with(\.leadingTrivia, node.conditions.leadingTrivia)
+            .with(\.trailingTrivia, node.conditions.trailingTrivia))
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
         var newNode = node
         
@@ -353,7 +409,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()
-        case .guardStmt, .forStmt, .repeatStmt, .doStmt:
+        case .guardStmt, .forStmt, .repeatStmt, .doStmt, .whileStmt:
             SwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break

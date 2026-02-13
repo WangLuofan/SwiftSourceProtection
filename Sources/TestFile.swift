@@ -17,11 +17,8 @@ class MyClass {
         
         // 局部函数 - 不应该收集
         func localFunction(num: Int) {
-            var a = 3
-            let nums = a + num
-            
-            print("\(num)")
-            for i: Int in 0...nums {
+            let test: MyClass? = MyClass()
+            while let t: MyClass = test {
                 
             }
         }
