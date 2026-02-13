@@ -5,6 +5,10 @@
 //  Created by 王落凡 on 2025/10/28.
 //
 
+/// 第一步：收集全局符号、成员符号
+/// 第二步：合并extension
+/// 第三步：类型推导、符号混淆
+
 import Foundation
 import SwiftSyntax
 import SwiftParser
@@ -67,7 +71,6 @@ func main() {
         sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
-    let currentScope = SwiftSourceScopeManager.sharedManager.currentScope
     sourceTreeDict.forEach { sourceFile, sourceTree in
         if let confusedFileContent: String =
             SwiftSourceProtector(sourceFile: sourceFile,
