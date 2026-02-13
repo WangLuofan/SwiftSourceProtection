@@ -100,7 +100,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         var funcSymbol: SwiftSourceFunctionSymbol? = nil
         if node.isLocalDecl {
-            funcSymbol = node.functionSymbol(self.sourceFile)
+            funcSymbol = node.symbol(self.sourceFile)
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol!)
         }
         

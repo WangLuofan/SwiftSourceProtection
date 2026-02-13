@@ -23,7 +23,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        let clsSymbol: SwiftSourceClassSymbol = node.classSymbol(self.sourceFile)
+        let clsSymbol: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -47,7 +47,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        let classSymbol: SwiftSourceClassSymbol = node.classSymbol(self.sourceFile)
+        let classSymbol: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -64,7 +64,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        let classSymbol: SwiftSourceClassSymbol = node.classSymbol(self.sourceFile)
+        let classSymbol: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -83,7 +83,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         // 收集成员方法和全局方法，排除局部方法
         if node.isMemberDecl || node.isGlobalDecl {
-            let funcSymbol: SwiftSourceFunctionSymbol = node.functionSymbol(self.sourceFile)
+            let funcSymbol: SwiftSourceFunctionSymbol = node.symbol(self.sourceFile)
             
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
             parentStack.last?.children.append(funcSymbol)
@@ -105,7 +105,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        let enumInfo: SwiftSourceClassSymbol = node.classSymbol(self.sourceFile)
+        let enumInfo: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
         
         parentStack.last?.children.append(enumInfo)
         parentStack.append(enumInfo)

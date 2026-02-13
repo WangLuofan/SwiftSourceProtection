@@ -12,11 +12,11 @@ protocol SwiftClassDeclProtocol {
     var inheritanceClause: InheritanceClauseSyntax? { get }
     var modifiers: DeclModifierListSyntax { get }
     
-    func classSymbol(_ sourceFile: String) -> SwiftSourceClassSymbol
+    func symbol(_ sourceFile: String) -> SwiftSourceClassSymbol
 }
 
 extension SwiftClassDeclProtocol {
-    func classSymbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
+    func symbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
         let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .protocol)
         
         classSymbol.symbolFilePath = sourceFile
@@ -31,6 +31,67 @@ extension SwiftClassDeclProtocol {
         }
         
         return classSymbol
+    }
+}
+
+protocol SwiftFunctionDeclProtocol {
+    var name: TokenSyntax { get }
+    var modifiers: DeclModifierListSyntax { get }
+    var signature: FunctionSignatureSyntax { get }
+    var isMemberDecl: Bool { get }
+    
+    func symbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol
+}
+
+extension SwiftFunctionDeclProtocol {
+    func symbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol {
+        let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol()
+        funcSymbol.symbolFilePath = sourceFile
+        funcSymbol.parent = parentStack.last
+        funcSymbol.originalSymbol = self.name.text
+        self.modifiers.forEach { modifier in
+            funcSymbol.accessControl = modifier.accessControl
+            funcSymbol.isStatic = modifier.isStatic
+            funcSymbol.isFinal = modifier.isFinal
+            funcSymbol.isClass = modifier.isClass
+            funcSymbol.isOverride = modifier.isOverride
+        }
+        
+        funcSymbol.returnType = "Void"
+        if let identSyntax: IdentifierTypeSyntax = self.signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
+            funcSymbol.returnType = identSyntax.name.text
+        }
+        
+        funcSymbol.isMember = self.isMemberDecl
+        
+        // symbol|static|return|signature
+        var funcSignature: String = "\(self.name.text)|\(funcSymbol.isStatic ? "static" : "")|\(funcSymbol.returnType)|("
+        var isFirstParameter: Bool = true
+        self.signature.parameterClause.parameters.forEach { [weak funcSymbol] parameterSyntax in
+            
+            let funcLabel: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .label)
+            funcLabel.parent = funcSymbol
+            funcLabel.originalSymbol = parameterSyntax.firstName.text
+            funcLabel.symbolFilePath = sourceFile
+            
+            funcSymbol?.labels[parameterSyntax.firstName.text] = funcLabel
+            
+            if !isFirstParameter {
+                funcSignature.append(", ")
+            }
+            
+            funcSignature.append("\(parameterSyntax.firstName.text)")
+            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
+                funcSignature.append(": \(typeSyntax.name.text)")
+            }
+            
+            isFirstParameter = false
+        }
+        
+        funcSignature.append(")")
+        funcSymbol.identifier = funcSignature
+        
+        return funcSymbol
     }
 }
 
@@ -308,55 +369,13 @@ extension ProtocolDeclSyntax: SwiftClassDeclProtocol {
     
 }
 
-extension FunctionDeclSyntax {
-    func functionSymbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol {
-        let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol()
-        funcSymbol.symbolFilePath = sourceFile
-        funcSymbol.parent = parentStack.last
-        funcSymbol.originalSymbol = self.name.text
-        self.modifiers.forEach { modifier in
-            funcSymbol.accessControl = modifier.accessControl
-            funcSymbol.isStatic = modifier.isStatic
-            funcSymbol.isFinal = modifier.isFinal
-            funcSymbol.isClass = modifier.isClass
-            funcSymbol.isOverride = modifier.isOverride
-        }
-        
-        funcSymbol.returnType = "Void"
-        if let identSyntax: IdentifierTypeSyntax = self.signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
-            funcSymbol.returnType = identSyntax.name.text
-        }
-        
-        funcSymbol.isMember = self.isMemberDecl
-        
-        // symbol|static|return|signature
-        var funcSignature: String = "\(self.name.text)|\(funcSymbol.isStatic ? "static" : "")|\(funcSymbol.returnType)|("
-        var isFirstParameter: Bool = true
-        self.signature.parameterClause.parameters.forEach { [weak funcSymbol] parameterSyntax in
-            
-            let funcLabel: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .label)
-            funcLabel.parent = funcSymbol
-            funcLabel.originalSymbol = parameterSyntax.firstName.text
-            funcLabel.symbolFilePath = sourceFile
-            
-            funcSymbol?.labels[parameterSyntax.firstName.text] = funcLabel
-            
-            if !isFirstParameter {
-                funcSignature.append(", ")
-            }
-            
-            funcSignature.append("\(parameterSyntax.firstName.text)")
-            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
-                funcSignature.append(": \(typeSyntax.name.text)")
-            }
-            
-            isFirstParameter = false
-        }
-        
-        funcSignature.append(")")
-        funcSymbol.identifier = funcSignature
-        
-        return funcSymbol
+extension FunctionDeclSyntax: SwiftFunctionDeclProtocol {
+    
+}
+
+extension InitializerDeclSyntax: SwiftFunctionDeclProtocol {
+    var name: SwiftSyntax.TokenSyntax {
+        return "init"
     }
 }
 
