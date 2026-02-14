@@ -40,11 +40,13 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        var funcSymbol: SwiftSourceFunctionSymbol = node.symbol(self.sourceFile)
+        let funcSymbol: SwiftSourceFunctionSymbol = node.symbol(self.sourceFile)
         
         if let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
             clsSymbol.initializers.append(funcSymbol)
         }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
         
         return super.visit(node)
     }

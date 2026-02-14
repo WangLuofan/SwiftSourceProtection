@@ -45,6 +45,12 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
         var newNode = node
         
+        let scope = SwiftSourceScopeManager.sharedManager.currentScope
+        
+        if let funSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol {
+            print("Hello")
+        }
+        
         node.signature.parameterClause.parameters.forEach { funcParamSyntax in
             
         }
@@ -438,10 +444,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         if let calledExpression = newNode.calledExpression.as(DeclReferenceExprSyntax.self),
            let baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
             if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
-                /// MyClass.init()
+                /// MyClass
                 
-                /// MyCalss()
-                let i = 0
             } else if baseSymbol.nodeKind == .function,
                       let funcSymbol: SwiftSourceFunctionSymbol = baseSymbol as? SwiftSourceFunctionSymbol {
                 let confusedFuncName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)

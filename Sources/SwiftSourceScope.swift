@@ -48,7 +48,7 @@ class SwiftSourceScopeManager {
         while scope != nil {
             for (_, symbol) in scope!.symbols {
                 if let astNode = symbol.ASTNode {
-                    if astNode.id == nodeID {
+                    if astNode.id.indexInTree == nodeID.indexInTree {
                         return symbol
                     }
                 }
