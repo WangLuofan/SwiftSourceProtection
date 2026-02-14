@@ -8,8 +8,8 @@ nonisolated(unsafe) var globalVariable: String = "test"
 
 // 全局函数 - 应该收集
 func globalFunction() {
-    let closure = { (num: Int, str: String) -> Void in
-        
+    let closure = { (num: Int, str: String) -> MyClass in
+        return MyClass()
     }
 }
 

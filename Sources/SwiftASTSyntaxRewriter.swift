@@ -586,8 +586,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 let confusedName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
                 let parameterSyntax = closureShorthandParameterSyntax
                     .with(\.name, TokenSyntax(stringLiteral: confusedName))
-                    .with(\.leadingTrivia, closureShorthandParameterSyntax.leadingTrivia)
-                    .with(\.trailingTrivia, closureShorthandParameterSyntax.trailingTrivia)
                 
                 parameterSyntaxs.append(parameterSyntax)
             }
@@ -595,6 +593,69 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             let confusedParameterClause: ClosureShorthandParameterListSyntax = ClosureShorthandParameterListSyntax(parameterSyntaxs)
             
             newNode = node.with(\.signature, node.signature?.with(\.parameterClause, ClosureSignatureSyntax.ParameterClause(confusedParameterClause)))
+        } else if let parameterClause: ClosureParameterClauseSyntax = node.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
+            
+            var confusedParameters: [ClosureParameterSyntax] = [ClosureParameterSyntax]()
+            parameterClause.parameters.forEach { closureParameterSyntax in
+                var confusedParameter = closureParameterSyntax
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                
+                if let secondName: TokenSyntax = closureParameterSyntax.secondName {
+                    varSymbol.originalSymbol = secondName.text
+                } else {
+                    varSymbol.originalSymbol = closureParameterSyntax.firstName.text
+                }
+                
+                let confusedName = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                if let secondName: TokenSyntax = closureParameterSyntax.secondName {
+                    confusedParameter = closureParameterSyntax
+                        .with(\.secondName, TokenSyntax(stringLiteral: confusedName)
+                        .with(\.leadingTrivia, secondName.leadingTrivia)
+                        .with(\.trailingTrivia, secondName.trailingTrivia))
+                } else {
+                    confusedParameter = closureParameterSyntax
+                        .with(\.firstName, TokenSyntax(stringLiteral: confusedName)
+                            .with(\.leadingTrivia, closureParameterSyntax.firstName.leadingTrivia)
+                            .with(\.trailingTrivia, closureParameterSyntax.firstName.trailingTrivia))
+                }
+                
+                if let idType: IdentifierTypeSyntax = closureParameterSyntax.type?.as(IdentifierTypeSyntax.self),
+                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text)
+                {
+                    varSymbol.symbolType = idType.name.text
+                    
+                    let confusedTypeSymbol: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                    confusedParameter = closureParameterSyntax.with(\.type, TypeSyntax(idType.with(\.name, TokenSyntax(stringLiteral: confusedTypeSymbol)))
+                    )
+                }
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                confusedParameters.append(confusedParameter)
+            }
+            
+            newNode = node.with(\.signature, node.signature?.with(
+                \.parameterClause, ClosureSignatureSyntax.ParameterClause(parameterClause
+                    .with(\.parameters, ClosureParameterListSyntax(confusedParameters))
+                    .with(\.leadingTrivia, parameterClause.parameters.leadingTrivia)
+                    .with(\.trailingTrivia, parameterClause.parameters.trailingTrivia))
+            ))
+        }
+        
+        if let returnClause: ReturnClauseSyntax = node.signature?.returnClause {
+            if let idType: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self),
+               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text) {
+                let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                newNode = newNode.with(
+                    \.signature, newNode.signature?
+                        .with(\.returnClause, newNode.signature?.returnClause?
+                            .with(\.type, TypeSyntax(idType
+                                .with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
+                                    .with(\.leadingTrivia, idType.name.leadingTrivia)
+                                    .with(\.trailingTrivia, idType.name.trailingTrivia))
+                            ))
+                        )
+                )
+            }
         }
         
         return super.visit(newNode)
