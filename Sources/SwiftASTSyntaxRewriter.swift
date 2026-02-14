@@ -112,22 +112,22 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-//    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-//        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self),
-//              let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol,
-//              let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol) else {
-//            return super.visit(node)
-//        }
-//        
-//        let newNode = node.with(\.extendedType,
-//                                 TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
-//            .with(\.leadingTrivia, node.extendedType.leadingTrivia)
-//            .with(\.trailingTrivia, node.extendedType.trailingTrivia))
-//            .with(\.leadingTrivia, node.leadingTrivia)
-//            .with(\.trailingTrivia, node.trailingTrivia)
-//        
-//        return super.visit(newNode)
-//    }
+    //    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+    //        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self),
+    //              let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol,
+    //              let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol) else {
+    //            return super.visit(node)
+    //        }
+    //
+    //        let newNode = node.with(\.extendedType,
+    //                                 TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
+    //            .with(\.leadingTrivia, node.extendedType.leadingTrivia)
+    //            .with(\.trailingTrivia, node.extendedType.trailingTrivia))
+    //            .with(\.leadingTrivia, node.leadingTrivia)
+    //            .with(\.trailingTrivia, node.trailingTrivia)
+    //
+    //        return super.visit(newNode)
+    //    }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
@@ -283,7 +283,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                             .with(\.trailingTrivia, enumCaseElemSyntax.name.trailingTrivia))
                         .with(\.leadingTrivia, enumCaseElemSyntax.leadingTrivia)
                         .with(\.trailingTrivia, enumCaseElemSyntax.trailingTrivia)
-
+                    
                     if let parameterClause: EnumCaseParameterClauseSyntax = enumCaseElemSyntax.parameterClause {
                         var confusedParameters: [EnumCaseParameterSyntax] = [EnumCaseParameterSyntax]()
                         parameterClause.parameters.forEach { paramElemSyntax in
@@ -381,7 +381,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         newNode = node.with(\.bindings, PatternBindingListSyntax(newBindings)
             .with(\.leadingTrivia, node.bindings.leadingTrivia)
             .with(\.trailingTrivia, node.bindings.trailingTrivia))
-
+        
         return super.visit(newNode)
     }
     
@@ -469,8 +469,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 let confusedFuncName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
                 newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
                     .with(\.baseName, TokenSyntax(stringLiteral: confusedFuncName)
-                    .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
-                    .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia))
+                        .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
+                        .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia))
                 ))
                 
                 var confusedArgList: [LabeledExprSyntax] = [LabeledExprSyntax]()
@@ -479,8 +479,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                        let confusedLabelName: String = funcSymbol.labels[label.text]?.confusedSymbol {
                         confusedArgList.append(
                             labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-                            .with(\.leadingTrivia, label.leadingTrivia)
-                            .with(\.trailingTrivia, label.trailingTrivia))
+                                .with(\.leadingTrivia, label.leadingTrivia)
+                                .with(\.trailingTrivia, label.trailingTrivia))
                         )
                     } else {
                         confusedArgList.append(labeledExprSyntax)
@@ -534,9 +534,9 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                             .with(\.typeAnnotation, typeAnnotation
                                 .with(\.type, TypeSyntax(type
                                     .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-                            .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-                            .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))))
-                        )
+                                        .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
+                                        .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))))
+                            )
                     }
                 }
                 
@@ -610,8 +610,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 if let secondName: TokenSyntax = closureParameterSyntax.secondName {
                     confusedParameter = closureParameterSyntax
                         .with(\.secondName, TokenSyntax(stringLiteral: confusedName)
-                        .with(\.leadingTrivia, secondName.leadingTrivia)
-                        .with(\.trailingTrivia, secondName.trailingTrivia))
+                            .with(\.leadingTrivia, secondName.leadingTrivia)
+                            .with(\.trailingTrivia, secondName.trailingTrivia))
                 } else {
                     confusedParameter = closureParameterSyntax
                         .with(\.firstName, TokenSyntax(stringLiteral: confusedName)
@@ -701,8 +701,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
            let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeIdent.name.text) {
             
             let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-            newNode = newNode.with(\.typeAnnotation,
-                                    newNode.typeAnnotation?
+            newNode = newNode.with(\.typeAnnotation,newNode.typeAnnotation?
                 .with(\.type, TypeSyntax(IdentifierTypeSyntax(
                     leadingTrivia: newNode.typeAnnotation?.type.leadingTrivia,
                     name: TokenSyntax(stringLiteral: confusedSymbol),
