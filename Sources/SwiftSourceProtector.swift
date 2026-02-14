@@ -14,7 +14,7 @@ class SwiftSourceProtector {
     private let projectPath: String
     
     private var sourceTree: SourceFileSyntax
-    private lazy var sourceRewritter: SwiftASTSyntaxRewriter = SwiftASTSyntaxRewriter(projectPath: self.projectPath, sourceFile: self.sourceFile)
+    private lazy var sourceRewritter: SwiftASTSyntaxRewriter = SwiftASTSyntaxRewriter(sourceFile: self.sourceFile)
     
     init(sourceFile: String, sourceTree: SourceFileSyntax, projectPath: String) {
         self.sourceFile = sourceFile

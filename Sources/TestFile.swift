@@ -7,7 +7,11 @@ let globalConstant = 10
 nonisolated(unsafe) var globalVariable: String = "test"
 
 // 全局函数 - 应该收集
-func globalFunction() {}
+func globalFunction() {
+    let closure = { (num: Int, str: String) -> Void in
+        
+    }
+}
 
 class MyClass {
     // 成员变量 - 应该收集

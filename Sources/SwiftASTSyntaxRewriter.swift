@@ -11,11 +11,9 @@ import SwiftParser
 import SwiftSyntaxBuilder
 
 class SwiftASTSyntaxRewriter: SyntaxRewriter {
-    private let projectPath: String
     private let sourceFile: String
     
-    init(projectPath: String, sourceFile: String) {
-        self.projectPath = projectPath
+    init(sourceFile: String) {
         self.sourceFile = sourceFile
         
         super.init(viewMode: .sourceAccurate)
@@ -319,7 +317,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         /// 如果是局部变量，先收集信息，添加作用域，再进行混淆
         if node.isLocalDecl {
-            let localSymbol: SwiftSourceSymbol = node.variableSymbol(self.projectPath)
+            let localSymbol: SwiftSourceSymbol = node.variableSymbol(self.sourceFile)
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(localSymbol)
         }
         
@@ -561,6 +559,47 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
+    override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        if let parameterClause: ClosureShorthandParameterListSyntax = node.signature?.parameterClause?.as(ClosureShorthandParameterListSyntax.self) {
+            
+            var parameterSyntaxs: [ClosureShorthandParameterSyntax] = [ClosureShorthandParameterSyntax]()
+            parameterClause.forEach { closureShorthandParameterSyntax in
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                
+                varSymbol.originalSymbol = closureShorthandParameterSyntax.name.text
+                varSymbol.symbolFilePath = self.sourceFile
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                
+                let confusedName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                let parameterSyntax = closureShorthandParameterSyntax
+                    .with(\.name, TokenSyntax(stringLiteral: confusedName))
+                    .with(\.leadingTrivia, closureShorthandParameterSyntax.leadingTrivia)
+                    .with(\.trailingTrivia, closureShorthandParameterSyntax.trailingTrivia)
+                
+                parameterSyntaxs.append(parameterSyntax)
+            }
+            
+            let confusedParameterClause: ClosureShorthandParameterListSyntax = ClosureShorthandParameterListSyntax(parameterSyntaxs)
+            
+            newNode = node.with(\.signature, node.signature?.with(\.parameterClause, ClosureSignatureSyntax.ParameterClause(confusedParameterClause)))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
         SwiftSourceScopeManager.sharedManager.pushScope()
         
@@ -622,7 +661,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 .structDecl, .enumDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             parentStack.removeLast()
-        case .forStmt, .repeatStmt, .doStmt, .whileStmt:
+        case .forStmt, .repeatStmt, .doStmt, .whileStmt, .closureExpr:
             SwiftSourceScopeManager.sharedManager.popScope(true)
         case .codeBlock: do {
             var parent = node.parent
