@@ -45,14 +45,34 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        let scope = SwiftSourceScopeManager.sharedManager.currentScope
-        
-        if let funSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol {
-            print("Hello")
-        }
-        
-        node.signature.parameterClause.parameters.forEach { funcParamSyntax in
+        if let funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol {
+            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
             
+            var confusedParameters: [FunctionParameterSyntax] = [FunctionParameterSyntax]()
+            node.signature.parameterClause.parameters.forEach { funcParamSyntax in
+                var confusedParameter: FunctionParameterSyntax = funcParamSyntax
+                if let confusedLabelName: String = funcSymbol.labels[funcParamSyntax.firstName.text]?.confusedSymbol {
+                    confusedParameter = funcParamSyntax
+                        .with(\.firstName, TokenSyntax(stringLiteral: confusedLabelName)
+                            .with(\.leadingTrivia, funcParamSyntax.firstName.leadingTrivia)
+                            .with(\.trailingTrivia, funcParamSyntax.firstName.trailingTrivia))
+                }
+                
+                if let idType: IdentifierTypeSyntax = funcParamSyntax.type.as(IdentifierTypeSyntax.self),
+                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text) {
+                    let confusedType: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                    confusedParameter = confusedParameter.with(\.type, TypeSyntax(
+                        IdentifierTypeSyntax(leadingTrivia: funcParamSyntax.type.leadingTrivia,
+                                             name: TokenSyntax(stringLiteral: confusedType),
+                                             trailingTrivia: funcParamSyntax.type.trailingTrivia)
+                    ))
+                }
+                
+                confusedParameters.append(confusedParameter)
+            }
+            
+            newNode = node.with(\.signature, node.signature.with(\.parameterClause, node.signature.parameterClause.with(\.parameters, FunctionParameterListSyntax(confusedParameters)))
+            )
         }
         
         return super.visit(newNode)
