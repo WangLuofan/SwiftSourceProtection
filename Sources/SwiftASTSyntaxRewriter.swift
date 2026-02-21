@@ -184,9 +184,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
                 
                 let confusedSecondName: String = SwiftConfusedHelper.confusedSymbol(paramSymbol)
-                newNode = node.with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
+                newNode = newNode.with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
                     .with(\.leadingTrivia, secondName.leadingTrivia)
-                    .with(\.trailingTrivia, secondName.trailingTrivia))
+                    .with(\.trailingTrivia, secondName.trailingTrivia)
+                )
             }
             
             if let firstSymbol: SwiftSourceSymbol = funcSymbol.labels[node.firstName.text] {
@@ -202,7 +203,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 }
             }
         }
-        
         
         if let typeAnnon: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self),
            let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeAnnon.name.text) {
@@ -341,6 +341,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         var newBindings: [PatternBindingSyntax] = [PatternBindingSyntax]()
         node.bindings.forEach { binding in
+            var newBinding = binding
+            
             if let patternBinding: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self),
                let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(patternBinding.identifier.text) {
                 
@@ -353,7 +355,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                         .with(\.trailingTrivia, patternBinding.identifier.trailingTrivia))
                 
                 if let newPattern: PatternSyntax = PatternSyntax(newPattern) {
-                    var newBinding = binding.with(\.pattern, newPattern)
+                    newBinding = newBinding.with(\.pattern, newPattern)
                     
                     var confusedTypeAnnotation: TypeAnnotationSyntax?
                     if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation {
@@ -387,12 +389,42 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                 .with(\.trailingTrivia, binding.trailingTrivia)
                         }
                     }
-                    
-                    newBindings.append(newBinding)
-                    return
                 }
                 
-                newBindings.append(binding)
+                if let initializer: InitializerClauseSyntax = newBinding.initializer {
+                    if let value = initializer.value.as(MemberAccessExprSyntax.self) {
+                        if let base = value.base {
+                            /// TODO
+                        } else {
+                            if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self)
+                            {
+                                if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeSyntax.name.text) {
+                                    switch typeSymbol.nodeKind {
+                                    case .class, .enum, .protocol, .extension:
+                                        for child in typeSymbol.children {
+                                            if child.originalSymbol == value.declName.baseName.text {
+                                                let confusedSymbol: String = SwiftConfusedHelper.confusedSymbol(child)
+                                                let newValue = value.with(\.declName, value.declName
+                                                    .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+                                                        .with(\.leadingTrivia, value.declName.baseName.leadingTrivia)
+                                                        .with(\.trailingTrivia, value.declName.baseName.trailingTrivia))
+                                                )
+                                                newBinding = newBinding.with(\.initializer, initializer
+                                                    .with(\.value, ExprSyntax(newValue))
+                                                )
+                                                break
+                                            }
+                                        }
+                                    default:
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                newBindings.append(newBinding)
             }
         }
         
