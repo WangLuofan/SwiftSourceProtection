@@ -496,8 +496,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                         node.arguments.forEach { labeledExprSyntax in
                             var confusedArg = labeledExprSyntax
                             if let label = labeledExprSyntax.label,
-                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text],
-                               let confusedLabel: String = labelSymbol.confusedSymbol {
+                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+                                let confusedLabel: String = SwiftConfusedHelper.confusedSymbol(labelSymbol)
                                 confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
                                     .with(\.leadingTrivia, label.leadingTrivia)
                                     .with(\.trailingTrivia, label.trailingTrivia)
