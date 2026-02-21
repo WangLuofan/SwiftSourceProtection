@@ -53,7 +53,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             node.signature.parameterClause.parameters.forEach { funcParamSyntax in
                 var confusedParameter: FunctionParameterSyntax = funcParamSyntax
                 
-                var varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
                 varSymbol.ASTNode = funcParamSyntax
                 
                 if let secondName = funcParamSyntax.secondName {
@@ -120,7 +120,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         let refName: String = node.baseName.text
         
         if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName) {
-            newNode = node.with(\.baseName, TokenSyntax(stringLiteral: refSymbol.confusedSymbol ?? refSymbol.originalSymbol)
+            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(refSymbol)
+            newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
                 .with(\.leadingTrivia, node.baseName.leadingTrivia)
                 .with(\.trailingTrivia, node.baseName.trailingTrivia)
             )
@@ -476,67 +477,110 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         var newNode = node
         
-        if let calledExpression = newNode.calledExpression.as(DeclReferenceExprSyntax.self),
-           let baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
-            if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
-                /// MyClass()
-                newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
-                    .with(\.baseName, TokenSyntax(stringLiteral: baseSymbol.confusedSymbol ?? baseSymbol.originalSymbol)
-                        .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
-                        .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia)
-                    ))
-                )
-                
-                /// 推导方法签名，匹配方法
-                if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(node) {
-                    let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+        if let calledExpression = newNode.calledExpression.as(DeclReferenceExprSyntax.self) {
+            if let baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
+                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
+                    /// MyClass()
+                    newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
+                        .with(\.baseName, TokenSyntax(stringLiteral: baseSymbol.confusedSymbol ?? baseSymbol.originalSymbol)
+                            .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia)
+                        ))
+                    )
                     
-                    var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
-                    node.arguments.forEach { labeledExprSyntax in
-                        var confusedArg = labeledExprSyntax
-                        if let label = labeledExprSyntax.label,
-                           let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text],
-                           let confusedLabel: String = labelSymbol.confusedSymbol {
-                            confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
-                                .with(\.leadingTrivia, label.leadingTrivia)
-                                .with(\.trailingTrivia, label.trailingTrivia)
-                            )
+                    /// 推导方法签名，匹配方法
+                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(node) {
+                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                        
+                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                        node.arguments.forEach { labeledExprSyntax in
+                            var confusedArg = labeledExprSyntax
+                            if let label = labeledExprSyntax.label,
+                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text],
+                               let confusedLabel: String = labelSymbol.confusedSymbol {
+                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+                                    .with(\.leadingTrivia, label.leadingTrivia)
+                                    .with(\.trailingTrivia, label.trailingTrivia)
+                                )
+                            }
+                            
+                            confusedArgs.append(confusedArg)
                         }
                         
-                        confusedArgs.append(confusedArg)
+                        newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
+                            .with(\.leadingTrivia, node.arguments.leadingTrivia)
+                            .with(\.trailingTrivia, node.arguments.trailingTrivia))
                     }
                     
-                    newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
+                } else if baseSymbol.nodeKind == .function,
+                          let funcSymbol: SwiftSourceFunctionSymbol = baseSymbol as? SwiftSourceFunctionSymbol {
+                    let confusedFuncName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                    newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
+                        .with(\.baseName, TokenSyntax(stringLiteral: confusedFuncName)
+                            .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia))
+                    ))
+                    
+                    var confusedArgList: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                    node.arguments.forEach { labeledExprSyntax in
+                        if let label: TokenSyntax = labeledExprSyntax.label,
+                           let confusedLabelName: String = funcSymbol.labels[label.text]?.confusedSymbol {
+                            confusedArgList.append(
+                                labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
+                                    .with(\.leadingTrivia, label.leadingTrivia)
+                                    .with(\.trailingTrivia, label.trailingTrivia))
+                            )
+                        } else {
+                            confusedArgList.append(labeledExprSyntax)
+                        }
+                    }
+                    
+                    newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgList)
                         .with(\.leadingTrivia, node.arguments.leadingTrivia)
                         .with(\.trailingTrivia, node.arguments.trailingTrivia))
                 }
-                
-            } else if baseSymbol.nodeKind == .function,
-                      let funcSymbol: SwiftSourceFunctionSymbol = baseSymbol as? SwiftSourceFunctionSymbol {
-                let confusedFuncName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-                newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
-                    .with(\.baseName, TokenSyntax(stringLiteral: confusedFuncName)
-                        .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
-                        .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia))
-                ))
-                
-                var confusedArgList: [LabeledExprSyntax] = [LabeledExprSyntax]()
-                node.arguments.forEach { labeledExprSyntax in
-                    if let label: TokenSyntax = labeledExprSyntax.label,
-                       let confusedLabelName: String = funcSymbol.labels[label.text]?.confusedSymbol {
-                        confusedArgList.append(
-                            labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-                                .with(\.leadingTrivia, label.leadingTrivia)
-                                .with(\.trailingTrivia, label.trailingTrivia))
-                        )
-                    } else {
-                        confusedArgList.append(labeledExprSyntax)
+            }
+        } else if let calledExpression = newNode.calledExpression.as(MemberAccessExprSyntax.self) {
+            if let base = calledExpression.base?.as(DeclReferenceExprSyntax.self) {
+                let baseName: String = base.baseName.text
+                if baseName == "self" || baseName == "Self" {
+                    if let clsDecl: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self),
+                       let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl) as? SwiftSourceClassSymbol {
+                        for child in clsSymbol.children {
+                            if let funcSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol,
+                               child.originalSymbol == calledExpression.declName.baseName.text && child.nodeKind == .function {
+                                let confusedFuncName = SwiftConfusedHelper.confusedSymbol(child)
+                                newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
+                                    .with(\.declName, DeclReferenceExprSyntax(
+                                        leadingTrivia: calledExpression.declName.leadingTrivia, baseName: TokenSyntax(stringLiteral: confusedFuncName)
+                                            .with(\.leadingTrivia, calledExpression.declName.baseName.leadingTrivia)
+                                            .with(\.trailingTrivia, calledExpression.declName.baseName.trailingTrivia), trailingTrivia: calledExpression.declName.trailingTrivia)
+                                    ))
+                                )
+                                
+                                var confusedArgList: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                                node.arguments.forEach { labeledExprSyntax in
+                                    if let label: TokenSyntax = labeledExprSyntax.label,
+                                       let confusedLabelName: String = funcSymbol.labels[label.text]?.confusedSymbol {
+                                        confusedArgList.append(
+                                            labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
+                                                .with(\.leadingTrivia, label.leadingTrivia)
+                                                .with(\.trailingTrivia, label.trailingTrivia))
+                                        )
+                                    } else {
+                                        confusedArgList.append(labeledExprSyntax)
+                                    }
+                                }
+                                
+                                newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgList)
+                                    .with(\.leadingTrivia, node.arguments.leadingTrivia)
+                                    .with(\.trailingTrivia, node.arguments.trailingTrivia))
+                                
+                                break
+                            }
+                        }
                     }
                 }
-                
-                newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgList)
-                    .with(\.leadingTrivia, node.arguments.leadingTrivia)
-                    .with(\.trailingTrivia, node.arguments.trailingTrivia))
             }
         }
         
@@ -610,6 +654,35 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         
         
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let declRefExprSyntax: DeclReferenceExprSyntax = node.base?.as(DeclReferenceExprSyntax.self) {
+            if declRefExprSyntax.baseName.text == "self" || declRefExprSyntax.baseName.text == "Self" {
+                if let clsDeclSyntax: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self),
+                   let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDeclSyntax) as? SwiftSourceClassSymbol {
+                    for child in clsSymbol.children {
+                        if child.originalSymbol == node.declName.baseName.text {
+                            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
+                            newNode = newNode.with(\.declName, newNode.declName.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol).with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia).with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
+                            )
+                        }
+                    }
+                }
+            } else if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExprSyntax.baseName) {
+                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(baseSymbol)
+                newNode = newNode.with(\.base, ExprSyntax(
+                    declRefExprSyntax
+                        .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, declRefExprSyntax.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, declRefExprSyntax.baseName.trailingTrivia))
+                ))
+            }
+        }
         
         return super.visit(newNode)
     }
@@ -771,15 +844,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         case .forStmt, .repeatStmt, .doStmt, .whileStmt, .closureExpr, .initializerDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
         case .codeBlock: do {
-            var parent = node.parent
-            
-            while parent != nil {
-                if let _: GuardStmtSyntax = parent?.as(GuardStmtSyntax.self) {
-                    SwiftSourceScopeManager.sharedManager.pushScope()
-                    break
-                }
-                
-                parent = parent?.parent
+            if let _ = SwiftConfusedHelper.findNodeParent(node, .guardStmt) {
+                SwiftSourceScopeManager.sharedManager.pushScope()
             }
         }
         default:

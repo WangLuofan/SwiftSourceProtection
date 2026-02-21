@@ -454,4 +454,17 @@ extension SwiftConfusedHelper {
         
         return funcSignature
     }
+    
+    static func findNodeParent(_ node: SyntaxProtocol, _ kind: SyntaxKind) -> SyntaxProtocol? {
+        var parent = node.parent
+        while parent != nil {
+            if parent?.kind == kind {
+                break
+            }
+            
+            parent = parent?.parent
+        }
+        
+        return parent
+    }
 }
