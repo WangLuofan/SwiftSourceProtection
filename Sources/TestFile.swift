@@ -9,7 +9,7 @@ nonisolated(unsafe) var globalVariable: String = "test"
 // 全局函数 - 应该收集
 func globalFunction() {
     let closure = { (num: Int, str: String) -> MyClass in
-        return MyClass()
+        return MyClass(memberVar: 3)
     }
 }
 
@@ -22,6 +22,10 @@ class MyClass {
     }
     
     init(memberVar: Int) {
+        self.memberVar = memberVar
+    }
+    
+    init(_ memberVar: Int) {
         self.memberVar = memberVar
     }
     

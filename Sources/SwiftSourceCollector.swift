@@ -23,7 +23,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        let clsSymbol: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
+        let clsSymbol: SwiftSourceClassSymbol = node.symbol(.class, self.sourceFile)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -43,7 +43,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         let funcSymbol: SwiftSourceFunctionSymbol = node.symbol(self.sourceFile)
         
         if let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
-            clsSymbol.initializers.append(funcSymbol)
+            clsSymbol.children.append(funcSymbol)
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
@@ -52,7 +52,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        let classSymbol: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
+        let classSymbol: SwiftSourceClassSymbol = node.symbol(.struct, self.sourceFile)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -69,7 +69,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        let classSymbol: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
+        let classSymbol: SwiftSourceClassSymbol = node.symbol(.protocol, self.sourceFile)
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
@@ -110,7 +110,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        let enumInfo: SwiftSourceClassSymbol = node.symbol(self.sourceFile)
+        let enumInfo: SwiftSourceClassSymbol = node.symbol(.enum, self.sourceFile)
         
         parentStack.last?.children.append(enumInfo)
         parentStack.append(enumInfo)

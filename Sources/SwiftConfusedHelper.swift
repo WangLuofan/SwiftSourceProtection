@@ -26,7 +26,11 @@ class SwiftConfusedHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
-            for (_, label) in funcSymbol.labels {
+            for (identifier, label) in funcSymbol.labels {
+                if identifier == "_" {
+                    continue
+                }
+                
                 let confusedLabel: String = self.confusedSymbolName(label.originalSymbol)
                 label.confusedSymbol = confusedLabel
             }
@@ -390,6 +394,62 @@ extension SwiftConfusedHelper {
             isFirstParameter = false
         }
         
+        funcSignature.append(")")
+        
+        return funcSignature
+    }
+}
+
+extension SwiftConfusedHelper {
+    static func matchMethodSymbol(_ node: FunctionCallExprSyntax) -> SwiftSourceFunctionSymbol? {
+        let methodSignature: String = self.inferMethodSignature(node)
+        if let declRefSyntax: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
+            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefSyntax.baseName.text),
+               baseSymbol.nodeKind == .class {
+                for child in baseSymbol.children {
+                    if child.nodeKind != .function {
+                        continue
+                    }
+                    
+                    if let funcSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol,
+                       funcSymbol.identifier == methodSignature {
+                        return funcSymbol
+                    }
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    private static func inferMethodSignature(_ node: FunctionCallExprSyntax) -> String {
+        // symbol|static|return|signature
+        var funcSignature: String = ""
+        if let declRefSyntax: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
+            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefSyntax.baseName.text),
+               baseSymbol.nodeKind == .class {
+                funcSignature = "init||Void|"
+            }
+        }
+        
+        var isFirstParameter: Bool = true
+        funcSignature.append("(")
+        node.arguments.forEach { labeledParamSyntax in
+            if let label = labeledParamSyntax.label {
+                funcSignature.append(label.text + ": ")
+            }
+            
+            if let argType = self.inferExprSyntaxType(labeledParamSyntax.expression, forSymbol: nil) {
+                funcSignature.append("\(argType)")
+            }
+            
+            if isFirstParameter {
+                isFirstParameter = false
+                return
+            }
+            
+            funcSignature.append(", ")
+        }
         funcSignature.append(")")
         
         return funcSignature

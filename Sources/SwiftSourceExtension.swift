@@ -12,12 +12,12 @@ protocol SwiftClassDeclProtocol {
     var inheritanceClause: InheritanceClauseSyntax? { get }
     var modifiers: DeclModifierListSyntax { get }
     
-    func symbol(_ sourceFile: String) -> SwiftSourceClassSymbol
+    func symbol(_ nodeKind: SwiftNodeKind, _ sourceFile: String) -> SwiftSourceClassSymbol
 }
 
 extension SwiftClassDeclProtocol {
-    func symbol(_ sourceFile: String) -> SwiftSourceClassSymbol {
-        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: .protocol)
+    func symbol(_ nodeKind: SwiftNodeKind, _ sourceFile: String) -> SwiftSourceClassSymbol {
+        let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: nodeKind)
         
         classSymbol.symbolFilePath = sourceFile
         classSymbol.parent = parentStack.last

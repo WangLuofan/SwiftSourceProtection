@@ -97,9 +97,6 @@ class SwiftSourceSymbol {
 class SwiftSourceClassSymbol: SwiftSourceSymbol {
     /// 继承列表
     var inheritedType: [String]?
-    
-    /// 初始化器
-    lazy var initializers: [SwiftSourceFunctionSymbol] = [SwiftSourceFunctionSymbol]()
 }
 
 /// 方法类型
