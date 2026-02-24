@@ -45,45 +45,35 @@ class SwiftConfusedHelper {
                     symbol.nodeKind == .protocol || symbol.nodeKind == .struct {
             return true
         }
-        
+
         if !symbol.isMember {
             return true
-        } else {
-            guard let parent: SwiftSourceClassSymbol = symbol.parent as? SwiftSourceClassSymbol else {
-                return false
-            }
-            
-            for child in parent.children {
-                if symbol.nodeKind == .function && symbol.identifier == child.identifier {
-                    return true
-                } else if symbol.originalSymbol == child.originalSymbol {
-                    return true
-                }
-            }
         }
-        
-        if let sourceSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(symbol.originalSymbol) {
-            if sourceSymbol.nodeKind == .extension {
-                return false
-            } else if sourceSymbol.nodeKind == .variable || sourceSymbol.nodeKind == .function {
-                if sourceSymbol.isOverride,
-                   let clsSymbol: SwiftSourceClassSymbol = sourceSymbol.parent as? SwiftSourceClassSymbol,
-                   let inheritedTypes = clsSymbol.inheritedType {
-                    for inheritedType in inheritedTypes {
-                        if let parentSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
-                            for child in parentSymbol.children {
-                                if child.originalSymbol == sourceSymbol.originalSymbol {
-                                    return self.shouldConfuseSymbol(parentSymbol)
-                                }
+
+        guard let parent: SwiftSourceClassSymbol = symbol.parent as? SwiftSourceClassSymbol else {
+            return false
+        }
+
+        for child in parent.children {
+            let matched = (symbol.nodeKind == .function && symbol.identifier == child.identifier)
+                       || (symbol.nodeKind != .function && symbol.originalSymbol == child.originalSymbol)
+            guard matched else { continue }
+
+            if symbol.isOverride, let inheritedTypes = parent.inheritedType {
+                for inheritedType in inheritedTypes {
+                    if let ancestorCls = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
+                        for ancestorChild in ancestorCls.children {
+                            if ancestorChild.identifierName == child.identifierName {
+                                return self.shouldConfuseSymbol(ancestorCls)
                             }
                         }
                     }
                 }
-                
-                return true
             }
+
+            return true
         }
-        
+
         return false
     }
     
