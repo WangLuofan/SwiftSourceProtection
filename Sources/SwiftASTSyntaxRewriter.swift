@@ -709,7 +709,71 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
         var newNode = node
         
+        var confusedParameters: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
+        node.parameters.forEach { tupleTypeElemSyntax in
+            var confusedTupleTypeElemSyntax = tupleTypeElemSyntax
+            if let secondName = tupleTypeElemSyntax.secondName {
+                let confusedSecondName: String = SwiftConfusedHelper.confusedSymbolName(secondName.text)
+                confusedTupleTypeElemSyntax = confusedTupleTypeElemSyntax
+                    .with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
+                        .with(\.leadingTrivia, secondName.leadingTrivia)
+                        .with(\.trailingTrivia, secondName.trailingTrivia)
+                    )
+            }
+            
+            if let optTypeSyntax: OptionalTypeSyntax = tupleTypeElemSyntax.type.as(OptionalTypeSyntax.self) {
+                if let idTypeSyntax: IdentifierTypeSyntax = optTypeSyntax.wrappedType.as(IdentifierTypeSyntax.self),
+                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                    confusedTupleTypeElemSyntax = confusedTupleTypeElemSyntax
+                        .with(\.type, TypeSyntax(optTypeSyntax
+                            .with(\.wrappedType, TypeSyntax(idTypeSyntax
+                                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
+                                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)
+                                ))
+                            )
+                        ))
+                }
+            } else if let idTypeSyntax: IdentifierTypeSyntax = tupleTypeElemSyntax.type.as(IdentifierTypeSyntax.self),
+                      let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                confusedTupleTypeElemSyntax = confusedTupleTypeElemSyntax
+                    .with(\.type, TypeSyntax(idTypeSyntax.with(\.name, TokenSyntax(stringLiteral: confusedSymbol).with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia).with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia))
+                                            ))
+            }
+            
+            confusedParameters.append(confusedTupleTypeElemSyntax)
+        }
         
+        newNode = newNode.with(\.parameters, TupleTypeElementListSyntax(confusedParameters)
+            .with(\.leadingTrivia, node.parameters.leadingTrivia)
+            .with(\.trailingTrivia, node.parameters.trailingTrivia)
+        )
+        
+        if let idTypeSyntax: IdentifierTypeSyntax = node.returnClause.type.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.returnClause, newNode.returnClause.with(\.type, TypeSyntax(idTypeSyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)
+                )
+            )))
+        } else if let optTypeSyntax: OptionalTypeSyntax = node.returnClause.type.as(OptionalTypeSyntax.self),
+                  let wrappedType = optTypeSyntax.wrappedType.as(IdentifierTypeSyntax.self),
+                  let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
+            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.returnClause, newNode.returnClause
+                .with(\.type, TypeSyntax(optTypeSyntax
+                    .with(\.wrappedType, TypeSyntax(wrappedType
+                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
+                            .with(\.trailingTrivia, wrappedType.name.trailingTrivia)))
+                    ))
+                )
+            )
+        }
         
         return super.visit(newNode)
     }

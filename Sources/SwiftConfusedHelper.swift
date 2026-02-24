@@ -77,7 +77,7 @@ class SwiftConfusedHelper {
         return false
     }
     
-    private static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+    static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
         if let confusedSymbolName: String = self.confusedTable[symbol] {
             return confusedSymbolName
         }

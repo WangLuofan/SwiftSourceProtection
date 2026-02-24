@@ -32,6 +32,8 @@ class MyClass {
     // 成员方法 - 应该收集
     func memberMethod(num: Int) {
         
+        let closure: ((_ cls: MyClass) -> MyClass?)
+        
         // 局部变量 - 不应该收集
         let localVar = 5
         
