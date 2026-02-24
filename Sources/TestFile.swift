@@ -8,9 +8,7 @@ nonisolated(unsafe) var globalVariable: String = "test"
 
 // 全局函数 - 应该收集
 func globalFunction() {
-    let closure = { (num: Int, str: String) -> MyClass in
-        return MyClass(memberVar: 3)
-    }
+    
 }
 
 class MyClass {
@@ -32,7 +30,9 @@ class MyClass {
     // 成员方法 - 应该收集
     func memberMethod(num: Int) {
         
-        let closure: ((_ cls: MyClass) -> MyClass?)
+        let closure: ((_ cls: MyClass) -> MyClass?) = { [weak self] cls in
+            MyClass()
+        }
         
         // 局部变量 - 不应该收集
         let localVar = 5

@@ -898,6 +898,13 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             }
         }
         
+        if let captureList: ClosureCaptureClauseSyntax = node.signature?.capture {
+            var confusedCaptureList: [ClosureCaptureSyntax] =
+            captureList.items.forEach { closureCaptureSyntax in
+                <#code#>
+            }
+        }
+        
         return super.visit(newNode)
     }
     
