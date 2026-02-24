@@ -393,8 +393,32 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 
                 if let initializer: InitializerClauseSyntax = newBinding.initializer {
                     if let value = initializer.value.as(MemberAccessExprSyntax.self) {
-                        if let base = value.base {
-                            /// TODO
+                        if let base: DeclReferenceExprSyntax = value.base?.as(DeclReferenceExprSyntax.self),
+                           let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(base.baseName.text) {
+                            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(baseSymbol)
+                            let newBase = base
+                                .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+                                    .with(\.leadingTrivia, base.baseName.leadingTrivia)
+                                    .with(\.trailingTrivia, base.baseName.trailingTrivia))
+                            switch baseSymbol.nodeKind {
+                            case .class, .enum, .protocol, .extension:
+                                for child in baseSymbol.children {
+                                    if child.originalSymbol == value.declName.baseName.text {
+                                        let confusedSymbol: String = SwiftConfusedHelper.confusedSymbol(child)
+                                        let newValue = value.with(\.declName, value.declName
+                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+                                                .with(\.leadingTrivia, value.declName.baseName.leadingTrivia)
+                                                .with(\.trailingTrivia, value.declName.baseName.trailingTrivia))
+                                        ).with(\.base, ExprSyntax(newBase))
+                                        newBinding = newBinding.with(\.initializer, initializer
+                                            .with(\.value, ExprSyntax(newValue))
+                                        )
+                                        break
+                                    }
+                                }
+                            default:
+                                break
+                            }
                         } else {
                             if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self)
                             {
@@ -529,7 +553,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                             var confusedArg = labeledExprSyntax
                             if let label = labeledExprSyntax.label,
                                let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
-                                let confusedLabel: String = SwiftConfusedHelper.confusedSymbol(labelSymbol)
+                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
                                 confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
                                     .with(\.leadingTrivia, label.leadingTrivia)
                                     .with(\.trailingTrivia, label.trailingTrivia)
