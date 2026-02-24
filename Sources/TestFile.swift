@@ -1,58 +1,58 @@
-enum q{
-    case w7CO8CR3t4adW9N40jUal3I, K259q33Khi3joYGiBKm(y5IsmqjWRDOoa), mMToA6680XsX0PpplH50vn0s9oY, WkFUym6X8F
+enum TestEnum {
+    case test1, test2(MyClass), test3, test4
 }
 
 // 全局变量 - 应该收集
-let dn7pLhkySw6N4Hh6h9 = 10
-nonisolated(unsafe) var zGBFx31v0: String = "test"
+let globalConstant = 10
+nonisolated(unsafe) var globalVariable: String = "test"
 
 // 全局函数 - 应该收集
-func djGI28S31uMGgTqwf6() {
-    let Ln1xX8qDcXMSuL04vcXBZ3u = { (Tf4V3pd5aW22Wn: Int, P7kg6Kpr448nS5xg: String)-> y5IsmqjWRDOoa in
-        return y5IsmqjWRDOoa(eG7sTrj7sfrxscC57j1M629iTJ5YW: 3)
+func globalFunction() {
+    let closure = { (num: Int, str: String) -> MyClass in
+        return MyClass(memberVar: 3)
     }
 }
 
-class y5IsmqjWRDOoa {
+class MyClass {
     // 成员变量 - 应该收集
-    var eG7sTrj7sfrxscC57j1M629iTJ5YW: Int = 0
+    var memberVar: Int = 0
     
     init() {
-        self.eG7sTrj7sfrxscC57j1M629iTJ5YW = 0
+        self.memberVar = 0
     }
     
-    init(eG7sTrj7sfrxscC57j1M629iTJ5YW: Int) {
-        self.eG7sTrj7sfrxscC57j1M629iTJ5YW = eG7sTrj7sfrxscC57j1M629iTJ5YW
+    init(memberVar: Int) {
+        self.memberVar = memberVar
     }
     
-    init(_ eG7sTrj7sfrxscC57j1M629iTJ5YW: Int) {
-        self.eG7sTrj7sfrxscC57j1M629iTJ5YW = eG7sTrj7sfrxscC57j1M629iTJ5YW
+    init(_ memberVar: Int) {
+        self.memberVar = memberVar
     }
     
     // 成员方法 - 应该收集
-    func TzqiwMdJ20D3e6N8cNG4T(Tf4V3pd5aW22Wn: Int) {
+    func memberMethod(num: Int) {
         
         // 局部变量 - 不应该收集
-        let te1KW1i = 5
+        let localVar = 5
         
         // 局部函数 - 不应该收集
-        func FeF8i7JnC68d7s0(Tf4V3pd5aW22Wn: Int, P7kg6Kpr448nS5xg NGjjTXEQ172krbj0vV9: String) {
-            let X8CS3FGJG4VdB7QW62Y161OC4NQ5fV: y5IsmqjWRDOoa? = y5IsmqjWRDOoa(eG7sTrj7sfrxscC57j1M629iTJ5YW: 3)
-            let KaF65pbKv4SzVcA88jkxY7Nr70tIY6: Int? = 3
+        func localFunction(num: Int, str s: String) {
+            let test: MyClass? = MyClass(memberVar: 3)
+            let a: Int? = 3
             
-            if let X8CS3FGJG4VdB7QW62Y161OC4NQ5fV: y5IsmqjWRDOoa = X8CS3FGJG4VdB7QW62Y161OC4NQ5fV {
-                X8CS3FGJG4VdB7QW62Y161OC4NQ5fV.eG7sTrj7sfrxscC57j1M629iTJ5YW
+            if let test: MyClass = test {
+                test.memberVar
             }
             
-            let c8X3ar2fNfJe = NGjjTXEQ172krbj0vV9 + "World"
-            let GjLj3p2muQnebW801B8Zv64x: q = .w7CO8CR3t4adW9N40jUal3I
+            let t = s + "World"
+            let b: TestEnum = .test1
         }
         
         // 待处理
-        FeF8i7JnC68d7s0(Tf4V3pd5aW22Wn: 3, P7kg6Kpr448nS5xg: "Hello")
+        localFunction(num: 3, str: "Hello")
     }
     
-    func c56t5epKcRGS4DZo74() {
-        self.TzqiwMdJ20D3e6N8cNG4T(Tf4V3pd5aW22Wn: 3)
+    func testMemberMethod() {
+        self.memberMethod(num: 3)
     }
 }
