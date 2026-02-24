@@ -48,6 +48,18 @@ class SwiftConfusedHelper {
         
         if !symbol.isMember {
             return true
+        } else {
+            guard let parent: SwiftSourceClassSymbol = symbol.parent as? SwiftSourceClassSymbol else {
+                return false
+            }
+            
+            for child in parent.children {
+                if symbol.nodeKind == .function && symbol.identifier == child.identifier {
+                    return true
+                } else if symbol.originalSymbol == child.originalSymbol {
+                    return true
+                }
+            }
         }
         
         if let sourceSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(symbol.originalSymbol) {
