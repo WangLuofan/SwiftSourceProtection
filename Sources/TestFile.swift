@@ -29,8 +29,8 @@ class MyClass {
     
     // 成员方法 - 应该收集
     func memberMethod(num: Int) {
-        
-        let closure: ((_ cls: MyClass) -> MyClass?) = { [weak self] cls in
+        let myCls: MyClass = MyClass()
+        let closure: ((_ cls: MyClass) -> MyClass?) = { [weak self, weak myCls] cls in
             MyClass()
         }
         

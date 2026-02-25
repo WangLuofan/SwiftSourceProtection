@@ -899,10 +899,26 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         }
         
         if let captureList: ClosureCaptureClauseSyntax = node.signature?.capture {
-            var confusedCaptureList: [ClosureCaptureSyntax] =
+            var confusedCaptureList: [ClosureCaptureSyntax] = [ClosureCaptureSyntax]()
             captureList.items.forEach { closureCaptureSyntax in
-                <#code#>
+                var confusedClosureCaptureSyntax = closureCaptureSyntax
+                if let tokenSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(closureCaptureSyntax.name.text),
+                   let confusedSymbol = tokenSymbol.confusedSymbol {
+                    confusedClosureCaptureSyntax = confusedClosureCaptureSyntax
+                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, closureCaptureSyntax.name.leadingTrivia)
+                            .with(\.trailingTrivia, closureCaptureSyntax.name.trailingTrivia)
+                        )
+                }
+                
+                confusedCaptureList.append(confusedClosureCaptureSyntax)
             }
+            
+            newNode = newNode.with(\.signature, newNode.signature?
+                .with(\.capture, newNode.signature?.capture?
+                    .with(\.items, ClosureCaptureListSyntax(confusedCaptureList))
+                )
+            )
         }
         
         return super.visit(newNode)
