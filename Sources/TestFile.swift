@@ -7,8 +7,8 @@ let globalConstant = 10
 nonisolated(unsafe) var globalVariable: String = "test"
 
 // 全局函数 - 应该收集
-func globalFunction() {
-    
+func globalFunction() -> MyClass {
+    return MyClass()
 }
 
 class MyClass {

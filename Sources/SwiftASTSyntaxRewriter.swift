@@ -157,7 +157,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         }
         
         if funcSymbol == nil {
-            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol
+            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol
         }
         
         if let funcSymbol {
@@ -165,6 +165,22 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedFuncSymbol)
                 .with(\.leadingTrivia, node.name.leadingTrivia)
                 .with(\.trailingTrivia, node.name.trailingTrivia))
+            
+            if let returnClause: ReturnClauseSyntax = node.signature.returnClause {
+                if let idTypeSyntax: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self),
+                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                    newNode = newNode.with(\.signature, newNode.signature
+                        .with(\.returnClause, returnClause
+                            .with(\.type, TypeSyntax(idTypeSyntax
+                                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
+                                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)))
+                            )
+                        )
+                    )
+                }
+            }
         }
         
         SwiftSourceScopeManager.sharedManager.pushScope()
