@@ -21,9 +21,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let clsName: String = node.name.text
         
-        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsName) as? SwiftSourceClassSymbol else {
+        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceClassSymbol else {
             return super.visit(node)
         }
         
@@ -37,6 +36,26 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             .with(\.trailingTrivia, node.trailingTrivia)
         
         parentStack.append(clsSymbol)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        
+        guard let proSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceClassSymbol else {
+            return super.visit(node)
+        }
+        
+        SwiftSourceScopeManager.sharedManager.pushScope(false)
+        
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(proSymbol)
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        parentStack.append(proSymbol)
         
         return super.visit(newNode)
     }
@@ -100,20 +119,20 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        SwiftSourceScopeManager.sharedManager.pushScope()
-        
+        SwiftSourceScopeManager.sharedManager.pushScope(false)
+
         let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
         let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
             .with(\.leadingTrivia, node.name.leadingTrivia)
             .with(\.trailingTrivia, node.name.trailingTrivia))
             .with(\.leadingTrivia, node.leadingTrivia)
             .with(\.trailingTrivia, node.trailingTrivia)
-        
+
         parentStack.append(clsSymbol)
-        
+
         return super.visit(newNode)
     }
-    
+
     override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
         
         var newNode = node
@@ -282,16 +301,19 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        let enumTokenStr: String = node.name.text
-        
-        if let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(enumTokenStr) as? SwiftSourceClassSymbol {
-            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumSymbol)
-            newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName))
-            
-            parentStack.append(enumSymbol)
+        guard let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceClassSymbol else {
+            return super.visit(node)
         }
-        
+
+        SwiftSourceScopeManager.sharedManager.pushScope(false)
+
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumSymbol)
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+
+        parentStack.append(enumSymbol)
+
         return super.visit(newNode)
     }
     

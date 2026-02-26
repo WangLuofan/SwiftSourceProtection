@@ -18,25 +18,25 @@ class SwiftSourceScopeManager {
     }
 
     func pushScope(_ bCreate: Bool = true) {
-        
+
         if bCreate {
             let scope: SwiftSourceScope = SwiftSourceScope()
             scope.prev = self.currentScope
             self.currentScope?.next.append(scope)
+            self.currentScope = scope          // 直接指向新建的 scope
+        } else {
+            self.currentScope = self.currentScope?.next.first  // FIFO：取第一个
         }
-        
-        self.currentScope = self.currentScope?.next.last
     }
-    
+
     func popScope(_ bRemoved: Bool = false) {
-        if self.currentScope?.prev == nil {
-            return
-        }
+        guard let prev = self.currentScope?.prev else { return }
         
-        self.currentScope = self.currentScope?.prev
+        let leavingScope = self.currentScope
+        self.currentScope = prev
         
-        if bRemoved {
-            self.currentScope?.next.removeLast()
+        if bRemoved, let leavingScope {
+            self.currentScope?.next.removeAll { $0 === leavingScope }
         }
     }
     

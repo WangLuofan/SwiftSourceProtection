@@ -2,6 +2,10 @@ enum TestEnum {
     case test1, test2(MyClass), test3, test4
 }
 
+protocol MyClassProtocol {
+    func testProtocolFunc() -> MyClass
+}
+
 // 全局变量 - 应该收集
 let globalConstant = 10
 nonisolated(unsafe) var globalVariable: String = "test"
