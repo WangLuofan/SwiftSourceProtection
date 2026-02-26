@@ -869,8 +869,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             }
             
             let confusedParameterClause: ClosureShorthandParameterListSyntax = ClosureShorthandParameterListSyntax(parameterSyntaxs)
+                .with(\.leadingTrivia, parameterClause.leadingTrivia)
+                .with(\.trailingTrivia, parameterClause.trailingTrivia)
             
-            newNode = node.with(\.signature, node.signature?.with(\.parameterClause, ClosureSignatureSyntax.ParameterClause(confusedParameterClause)))
+            newNode = newNode.with(\.signature, newNode.signature?.with(\.parameterClause, ClosureSignatureSyntax.ParameterClause(confusedParameterClause)))
         } else if let parameterClause: ClosureParameterClauseSyntax = node.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
             
             var confusedParameters: [ClosureParameterSyntax] = [ClosureParameterSyntax]()
@@ -911,7 +913,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 confusedParameters.append(confusedParameter)
             }
             
-            newNode = node.with(\.signature, node.signature?.with(
+            newNode = newNode.with(\.signature, node.signature?.with(
                 \.parameterClause, ClosureSignatureSyntax.ParameterClause(parameterClause
                     .with(\.parameters, ClosureParameterListSyntax(confusedParameters))
                     .with(\.leadingTrivia, parameterClause.parameters.leadingTrivia)
