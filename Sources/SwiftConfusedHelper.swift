@@ -316,7 +316,7 @@ extension SwiftConfusedHelper {
         } else if let _ = expr.as(RegexLiteralExprSyntax.self) {
             return "Regex"
         } else if let callExprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
-            return self.inferFunctionCallExprSyntaxType(callExprSyntax, forSymbol: symbol)
+//            return self.inferFunctionCallExprSyntaxType(callExprSyntax, forSymbol: symbol)
         } else if let declRefExpr: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
             if declRefExpr.baseName.text == "self" || declRefExpr.baseName.text == "Self" {
                 var parentSymbol: SwiftSourceSymbol? = symbol?.parent
@@ -326,7 +326,7 @@ extension SwiftConfusedHelper {
                 }
                 
                 return parentSymbol?.originalSymbol
-            } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExpr.baseName.text, isIntance: isIntance) {
+            } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExpr.baseName.text) {
                 if symbol.nodeKind == .function {
                     return (symbol as? SwiftSourceFunctionSymbol)?.returnType
                 }
