@@ -98,6 +98,8 @@ class SwiftConfusedHelper {
                         }
                     }
                 }
+                
+                return true
             }
         }
 
