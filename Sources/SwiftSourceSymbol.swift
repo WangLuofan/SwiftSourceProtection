@@ -33,27 +33,11 @@ class SwiftSourceSymbol {
     /// 结点类型
     var nodeKind: SwiftNodeKind = .unknown
     
-    /// 惟一标识
-    var identifier: String = ""
-    
-    /// 惟一标识名称
-    var identifierName: String {
-        if let identifier = self.identifier.split(separator: "|").first {
-            return String(identifier)
-        }
-        
-        return ""
-    }
-    
     /// 文件路径
     var symbolFilePath: String?
     
     /// 原始符号
-    var originalSymbol: String = "" {
-        didSet {
-            self.identifier = originalSymbol
-        }
-    }
+    var originalSymbol: String = ""
     
     /// 混淆符号
     var confusedSymbol: String?
@@ -103,6 +87,9 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
 class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
     /// 返回类型
     var returnType: String = "Void"
+    
+    /// 签名
+    var signature: String = ""
     
     /// 标签
     lazy var labels: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()

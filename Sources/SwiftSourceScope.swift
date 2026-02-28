@@ -60,17 +60,13 @@ class SwiftSourceScopeManager {
         return nil
     }
     
-    func findSymbol(_ symbolName: String, inScope scope: SwiftSourceScope? = nil, isIntance: Bool = true) -> SwiftSourceSymbol? {
+    func findSymbol(_ symbolName: String, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
             for (_, symbol) in scope!.symbols {
                 
-                if symbol.identifierName == symbolName {
-                    if symbol.isStatic == isIntance && symbol.isClass == isIntance {
-                        continue
-                    }
-                    
+                if symbol.originalSymbol == symbolName {
                     return symbol
                 }
             }
@@ -90,11 +86,20 @@ class SwiftSourceScope {
     lazy var next: [SwiftSourceScope] = [SwiftSourceScope]()
     
     func pushSymbol(_ symbol: SwiftSourceSymbol) {
-        guard !symbol.identifier.isEmpty else {
+        if symbol.nodeKind == .function,
+           let symbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
+            guard !symbol.signature.isEmpty else {
+                return
+            }
+            
+            self.symbols[symbol.signature] = symbol
+        }
+        
+        guard !symbol.originalSymbol.isEmpty else {
             return
         }
         
-        self.symbols[symbol.identifier] = symbol
+        self.symbols[symbol.originalSymbol] = symbol
     }
     
 }

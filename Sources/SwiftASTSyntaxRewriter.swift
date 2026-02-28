@@ -138,7 +138,12 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         let refName: String = node.baseName.text
         
-        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName) {
+        if refName.isSwiftKeyWord {
+            return super.visit(newNode)
+        }
+        
+        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName),
+           refSymbol.nodeKind == .variable {
             let confusedSymbol = SwiftConfusedHelper.confusedSymbol(refSymbol)
             newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
                 .with(\.leadingTrivia, node.baseName.leadingTrivia)
@@ -484,41 +489,80 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                             }
                         }
                     } else if let value = initializer.value.as(FunctionCallExprSyntax.self) {
-                        if let calledExprSyntax: DeclReferenceExprSyntax = value.calledExpression.as(DeclReferenceExprSyntax.self),
-                           let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExprSyntax.baseName.text) {
-                            if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
-                                
-                                /// 推导方法签名，匹配方法
-                                if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
-                                    let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                        if let calledExprSyntax: DeclReferenceExprSyntax = value.calledExpression.as(DeclReferenceExprSyntax.self) {
+                            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExprSyntax.baseName.text) {
+                                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
                                     
-                                    var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
-                                    value.arguments.forEach { labeledExprSyntax in
-                                        var confusedArg = labeledExprSyntax
-                                        if let label = labeledExprSyntax.label,
-                                           let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
-                                            let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
-                                            confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
-                                                .with(\.leadingTrivia, label.leadingTrivia)
-                                                .with(\.trailingTrivia, label.trailingTrivia)
-                                            )
+                                    /// 推导方法签名，匹配方法
+                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
+                                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                                        
+                                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                                        value.arguments.forEach { labeledExprSyntax in
+                                            var confusedArg = labeledExprSyntax
+                                            if let label = labeledExprSyntax.label,
+                                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+                                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
+                                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+                                                    .with(\.leadingTrivia, label.leadingTrivia)
+                                                    .with(\.trailingTrivia, label.trailingTrivia)
+                                                )
+                                            }
+                                            
+                                            confusedArgs.append(confusedArg)
                                         }
                                         
-                                        confusedArgs.append(confusedArg)
+                                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
+                                        
+                                        newBinding = newBinding.with(\.initializer, newBinding.initializer?
+                                            .with(\.value, ExprSyntax(value
+                                                .with(\.calledExpression, ExprSyntax(calledExprSyntax
+                                                    .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                                        .with(\.leadingTrivia, calledExprSyntax.baseName.leadingTrivia)
+                                                        .with(\.trailingTrivia, calledExprSyntax.baseName.trailingTrivia)
+                                                    )
+                                                )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
+                                            ))
+                                        )
                                     }
-                                    
-                                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
-                                    
-                                    newBinding = newBinding.with(\.initializer, newBinding.initializer?
-                                        .with(\.value, ExprSyntax(value
-                                            .with(\.calledExpression, ExprSyntax(calledExprSyntax
-                                                .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
-                                                    .with(\.leadingTrivia, calledExprSyntax.baseName.leadingTrivia)
-                                                    .with(\.trailingTrivia, calledExprSyntax.baseName.trailingTrivia)
+                                }
+                            }
+                        } else if let calledExprSyntax: MemberAccessExprSyntax = value.calledExpression.as(MemberAccessExprSyntax.self) {
+                            if let baseSyntax: DeclReferenceExprSyntax = calledExprSyntax.base?.as(DeclReferenceExprSyntax.self),
+                               let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
+                                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
+                                    /// 推导方法签名，匹配方法
+                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
+                                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                                        
+                                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                                        value.arguments.forEach { labeledExprSyntax in
+                                            var confusedArg = labeledExprSyntax
+                                            if let label = labeledExprSyntax.label,
+                                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+                                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
+                                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+                                                    .with(\.leadingTrivia, label.leadingTrivia)
+                                                    .with(\.trailingTrivia, label.trailingTrivia)
                                                 )
-                                            )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
-                                        ))
-                                    )
+                                            }
+                                            
+                                            confusedArgs.append(confusedArg)
+                                        }
+                                        
+                                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
+                                        
+                                        newBinding = newBinding.with(\.initializer, newBinding.initializer?
+                                            .with(\.value, ExprSyntax(value
+                                                .with(\.calledExpression, ExprSyntax(calledExprSyntax
+                                                    .with(\.base, ExprSyntax(baseSyntax.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                                        .with(\.leadingTrivia, baseSyntax.baseName.leadingTrivia)
+                                                        .with(\.trailingTrivia, baseSyntax.baseName.trailingTrivia)))
+                                                    )
+                                                )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
+                                            ))
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -42,6 +42,9 @@ class SwiftSourceCollector: SyntaxVisitor {
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         let funcSymbol: SwiftSourceFunctionSymbol = node.symbol(self.sourceFile)
         
+        /// init方法设置为static
+        funcSymbol.isStatic = true
+        
         if let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
             clsSymbol.children.append(funcSymbol)
         }

@@ -51,27 +51,54 @@ class SwiftConfusedHelper {
         }
 
         guard let parent: SwiftSourceClassSymbol = symbol.parent as? SwiftSourceClassSymbol else {
-            return false
+            return true
         }
 
         for child in parent.children {
-            let matched = (symbol.nodeKind == .function && symbol.identifier == child.identifier)
-                       || (symbol.nodeKind != .function && symbol.originalSymbol == child.originalSymbol)
-            guard matched else { continue }
-
-            if symbol.isOverride, let inheritedTypes = parent.inheritedType {
-                for inheritedType in inheritedTypes {
-                    if let ancestorCls = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
-                        for ancestorChild in ancestorCls.children {
-                            if ancestorChild.identifierName == child.identifierName {
-                                return self.shouldConfuseSymbol(ancestorCls)
+            if symbol.nodeKind != child.nodeKind {
+                continue
+            }
+            
+            if symbol.nodeKind == .function,
+               let funcSymbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol,
+               let childFuncSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol {
+                
+                if funcSymbol.signature != childFuncSymbol.signature {
+                    continue
+                }
+                
+                if symbol.isOverride, let inheritedTypes = parent.inheritedType {
+                    for inheritedType in inheritedTypes {
+                        if let ancestorCls = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
+                            for ancestorChild in ancestorCls.children {
+                                if ancestorChild.nodeKind != .function {
+                                    continue
+                                }
+                                if let ancestorChild: SwiftSourceFunctionSymbol = ancestorChild as? SwiftSourceFunctionSymbol,
+                                   ancestorChild.signature == childFuncSymbol.signature {
+                                    return self.shouldConfuseSymbol(ancestorCls)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                if symbol.originalSymbol != child.originalSymbol || symbol.nodeKind != child.nodeKind {
+                    continue
+                }
+                
+                if symbol.isOverride, let inheritedTypes = parent.inheritedType {
+                    for inheritedType in inheritedTypes {
+                        if let ancestorCls = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
+                            for ancestorChild in ancestorCls.children {
+                                if ancestorChild.originalSymbol == child.originalSymbol {
+                                    return self.shouldConfuseSymbol(ancestorCls)
+                                }
                             }
                         }
                     }
                 }
             }
-
-            return true
         }
 
         return false
@@ -147,7 +174,7 @@ extension SwiftConfusedHelper {
         if let declName: DeclReferenceExprSyntax = memberAccessExpr.declName.as(DeclReferenceExprSyntax.self),
            let children = baseSymbol?.children {
             for child in children {
-                if child.identifierName == declName.baseName.text {
+                if child.originalSymbol == declName.baseName.text {
                     return child.symbolType
                 }
             }
@@ -171,7 +198,7 @@ extension SwiftConfusedHelper {
                 if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
                     var symbol: SwiftSourceSymbol?
                     for child in baseSymbol.children {
-                        if child.identifierName == baseExpr.baseName.text {
+                        if child.originalSymbol == baseExpr.baseName.text {
                             symbol = child
                             break
                         }
@@ -197,7 +224,7 @@ extension SwiftConfusedHelper {
             if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
                 if let calledExpr: DeclReferenceExprSyntax = baseExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
                     for child in baseSymbol.children {
-                        if child.identifierName == calledExpr.baseName.text {
+                        if child.originalSymbol == calledExpr.baseName.text {
                             return child
                         }
                     }
@@ -217,34 +244,34 @@ extension SwiftConfusedHelper {
         return nil
     }
     
-    static func inferFunctionCallExprSyntaxType(_ functionCallExpr: FunctionCallExprSyntax, forSymbol symbol: SwiftSourceSymbol?, isIntance: Bool = false) -> String? {
-        if let callExpr: DeclReferenceExprSyntax = functionCallExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
-            if callExpr.baseName.text.isSwiftKeyWord {
-                /// 类型转换
-                return callExpr.baseName.text
-            } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(callExpr.baseName.text, isIntance: isIntance) {
-                return symbol.symbolType
-            }
-        } else if let callExpr: MemberAccessExprSyntax = functionCallExpr.calledExpression.as(MemberAccessExprSyntax.self) {
-            let symbol = self.lookupSymbolNodeForExpr(callExpr.base, forSymbol: symbol)
-            if let declName: DeclReferenceExprSyntax = callExpr.declName.as(DeclReferenceExprSyntax.self) {
-                if symbol?.nodeKind == .class,
-                   let children = symbol?.children {
-                    for child in children {
-                        if child.nodeKind != .function {
-                            continue
-                        }
-                        
-                        if child.identifierName == declName.baseName.text {
-                            return (child as? SwiftSourceFunctionSymbol)?.returnType
-                        }
-                    }
-                }
-            }
-        }
-        
-        return nil
-    }
+//    static func inferFunctionCallExprSyntaxType(_ functionCallExpr: FunctionCallExprSyntax, forSymbol symbol: SwiftSourceSymbol?, isIntance: Bool = false) -> String? {
+//        if let callExpr: DeclReferenceExprSyntax = functionCallExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
+//            if callExpr.baseName.text.isSwiftKeyWord {
+//                /// 类型转换
+//                return callExpr.baseName.text
+//            } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(callExpr.baseName.text, isIntance: isIntance) {
+//                return symbol.symbolType
+//            }
+//        } else if let callExpr: MemberAccessExprSyntax = functionCallExpr.calledExpression.as(MemberAccessExprSyntax.self) {
+//            let symbol = self.lookupSymbolNodeForExpr(callExpr.base, forSymbol: symbol)
+//            if let declName: DeclReferenceExprSyntax = callExpr.declName.as(DeclReferenceExprSyntax.self) {
+//                if symbol?.nodeKind == .class,
+//                   let children = symbol?.children {
+//                    for child in children {
+//                        if child.nodeKind != .function {
+//                            continue
+//                        }
+//                        
+//                        if child.originalSymbol == declName.baseName.text {
+//                            return (child as? SwiftSourceFunctionSymbol)?.returnType
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        return nil
+//    }
     
     static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax, forSymbol symbol: SwiftSourceSymbol?) -> String? {
         var typeString: String?
@@ -367,36 +394,11 @@ extension SwiftConfusedHelper {
         return nil  // 暂时无法推导
     }
     
-    static func generateFunctionIdentifier(_ node: SwiftFunctionDeclProtocol) -> String {
-        var isStatic: Bool = false
-        var returnType: String = "Void"
+    // funcName_label1_label2_...
+    static func generateFunctionSignature(_ node: SwiftFunctionDeclProtocol) -> String {
+        var funcSignature: String = "\(node.name.text)"
         
-        if let node: FunctionDeclSyntax = node as? FunctionDeclSyntax {
-            node.modifiers.forEach { modifier in
-                isStatic = modifier.isStatic
-            }
-            
-            returnType = node.signature.returnClause?.trimmedDescription ?? "Void"
-        }
-        
-        // symbol|static|return|signature
-        var funcSignature: String = "\(node.name.text)|\(isStatic ? "static" : "")|\(returnType)|("
-        var isFirstParameter: Bool = true
-        node.signature.parameterClause.parameters.forEach { parameterSyntax in
-            
-            if !isFirstParameter {
-                funcSignature.append(", ")
-            }
-            
-            funcSignature.append("\(parameterSyntax.firstName.text)")
-            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
-                funcSignature.append(": \(typeSyntax.name.text)")
-            }
-            
-            isFirstParameter = false
-        }
-        
-        funcSignature.append(")")
+        node.signature.parameterClause.parameters.forEach { funcSignature.append("_\($0.firstName.text)") }
         
         return funcSignature
     }
@@ -414,7 +416,7 @@ extension SwiftConfusedHelper {
                     }
                     
                     if let funcSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol,
-                       funcSymbol.identifier == methodSignature {
+                       funcSymbol.signature == methodSignature {
                         return funcSymbol
                     }
                 }
@@ -430,7 +432,19 @@ extension SwiftConfusedHelper {
         if let declRefSyntax: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
             if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefSyntax.baseName.text),
                baseSymbol.nodeKind == .class {
-                funcSignature = "init||Void|"
+                funcSignature = "init|static|Void|"
+            }
+        } else if let memberAccessExprSyntax: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            if let baseSyntax: DeclReferenceExprSyntax = memberAccessExprSyntax.base?.as(DeclReferenceExprSyntax.self) {
+                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
+                    if baseSymbol.nodeKind == .class {
+                        funcSignature = "\(memberAccessExprSyntax.declName.baseName.text)|static|"
+                    } else {
+                        funcSignature = "\(memberAccessExprSyntax.declName.baseName.text)||"
+                    }
+                } else {
+                    
+                }
             }
         }
         

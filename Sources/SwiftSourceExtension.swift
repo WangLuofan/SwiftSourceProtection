@@ -77,7 +77,7 @@ extension SwiftFunctionDeclProtocol {
             funcSymbol.labels[parameterSyntax.firstName.text] = funcLabel
         }
         
-        funcSymbol.identifier = SwiftConfusedHelper.generateFunctionIdentifier(self)
+        funcSymbol.signature = SwiftConfusedHelper.generateFunctionSignature(self)
         
         return funcSymbol
     }
