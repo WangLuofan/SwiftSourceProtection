@@ -41,8 +41,8 @@ class SwiftConfusedHelper {
     
     private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol) -> Bool {
         if symbol.nodeKind == .class ||
-                    symbol.nodeKind == .enum || symbol.nodeKind == .enumCase ||
-                    symbol.nodeKind == .protocol || symbol.nodeKind == .struct {
+            symbol.nodeKind == .enum || symbol.nodeKind == .enumCase ||
+            symbol.nodeKind == .protocol || symbol.nodeKind == .struct {
             return true
         }
 
@@ -82,6 +82,8 @@ class SwiftConfusedHelper {
                         }
                     }
                 }
+                
+                return true
             } else {
                 if symbol.originalSymbol != child.originalSymbol || symbol.nodeKind != child.nodeKind {
                     continue
@@ -429,48 +431,22 @@ extension SwiftConfusedHelper {
     }
     
     private static func inferMethodSignature(_ node: FunctionCallExprSyntax) -> String {
-        // symbol|static|return|signature
-        var funcSignature: String = ""
-        if let declRefSyntax: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
-            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefSyntax.baseName.text),
-               baseSymbol.nodeKind == .class {
-                funcSignature = "init|static|Void|"
-            }
-        } else if let memberAccessExprSyntax: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
-            if let baseSyntax: DeclReferenceExprSyntax = memberAccessExprSyntax.base?.as(DeclReferenceExprSyntax.self) {
-                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
-                    if baseSymbol.nodeKind == .class {
-                        funcSignature = "\(memberAccessExprSyntax.declName.baseName.text)|static|"
-                    } else {
-                        funcSignature = "\(memberAccessExprSyntax.declName.baseName.text)||"
+        var signature: String = ""
+        
+        if let calledExpression: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
+            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
+                if baseSymbol.isClassNodeKind {
+                    signature = "init"
+                    node.arguments.forEach { labeledExprSyntax in
+                        if let labelName: String = labeledExprSyntax.label?.text {
+                            signature += "_\(labelName)"
+                        }
                     }
-                } else {
-                    
                 }
             }
         }
         
-        var isFirstParameter: Bool = true
-        funcSignature.append("(")
-        node.arguments.forEach { labeledParamSyntax in
-            if let label = labeledParamSyntax.label {
-                funcSignature.append(label.text + ": ")
-            }
-            
-            if let argType = self.inferExprSyntaxType(labeledParamSyntax.expression, forSymbol: nil) {
-                funcSignature.append("\(argType)")
-            }
-            
-            if isFirstParameter {
-                isFirstParameter = false
-                return
-            }
-            
-            funcSignature.append(", ")
-        }
-        funcSignature.append(")")
-        
-        return funcSignature
+        return signature
     }
     
     static func findNodeParent(_ node: SyntaxProtocol, _ kind: SyntaxKind) -> SyntaxProtocol? {

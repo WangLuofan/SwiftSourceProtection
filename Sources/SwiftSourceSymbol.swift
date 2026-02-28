@@ -69,6 +69,18 @@ class SwiftSourceSymbol {
     /// AST结点
     var ASTNode: SyntaxProtocol?
     
+    /// 是否类声明结点
+    var isClassNodeKind: Bool {
+        switch self.nodeKind {
+        case .class, .protocol, .struct, .enum:
+            return true
+        default:
+            break
+        }
+        
+        return false
+    }
+    
     /// 子声明
     lazy var children: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
     
