@@ -409,7 +409,7 @@ extension SwiftConfusedHelper {
 }
 
 extension SwiftConfusedHelper {
-    static func matchMethodSymbol(_ node: FunctionCallExprSyntax) -> SwiftSourceFunctionSymbol? {
+    static func matchMethodSymbol(_ node: FunctionCallExprSyntax, _ symbol: SwiftSourceSymbol? = nil) -> SwiftSourceFunctionSymbol? {
         let methodSignature: String = self.inferMethodSignature(node)
         
         var baseSymbolName: String?
@@ -419,11 +419,17 @@ extension SwiftConfusedHelper {
         } else if let memberAccessExpSyntax: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
             if let base: DeclReferenceExprSyntax = memberAccessExpSyntax.base?.as(DeclReferenceExprSyntax.self) {
                 baseSymbolName = base.baseName.text
+            } else {
+                baseSymbol = symbol
+                baseSymbolName = symbol?.originalSymbol
             }
         }
         
         if let baseSymbolName {
-            baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSymbolName)
+            if baseSymbol == nil {
+                baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSymbolName)
+            }
+            
             if let baseSymbol, baseSymbol.isClassNodeKind {
                 for child in baseSymbol.children {
                     if child.nodeKind != .function {

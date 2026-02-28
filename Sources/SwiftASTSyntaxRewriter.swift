@@ -385,6 +385,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newBindings: [PatternBindingSyntax] = [PatternBindingSyntax]()
         node.bindings.forEach { binding in
             var newBinding = binding
+            var variableTypeSymbol: SwiftSourceSymbol?
             
             if let patternBinding: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self),
                let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(patternBinding.identifier.text) {
@@ -405,6 +406,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                         if let idTypeSyntax: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
                            let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
                             
+                            variableTypeSymbol = typeSymbol
+                            
                             let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
                             confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
                                 idTypeSyntax.with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
@@ -415,6 +418,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                         } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
                                   let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
                                   let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
+                            
+                            variableTypeSymbol = wrappedTypeSymbol
                             
                             let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol)
                             confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
@@ -528,13 +533,47 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                 }
                             }
                         } else if let calledExprSyntax: MemberAccessExprSyntax = value.calledExpression.as(MemberAccessExprSyntax.self) {
-                            if let baseSyntax: DeclReferenceExprSyntax = calledExprSyntax.base?.as(DeclReferenceExprSyntax.self),
-                               let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
-                                if baseSymbol.isClassNodeKind {
-                                    /// 推导方法签名，匹配方法
-                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
-                                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-                                        
+                            if let baseSyntax: DeclReferenceExprSyntax = calledExprSyntax.base?.as(DeclReferenceExprSyntax.self) {
+                                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
+                                    if baseSymbol.isClassNodeKind {
+                                        /// 推导方法签名，匹配方法
+                                        if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
+                                            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                                            
+                                            var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                                            value.arguments.forEach { labeledExprSyntax in
+                                                var confusedArg = labeledExprSyntax
+                                                if let label = labeledExprSyntax.label,
+                                                   let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+                                                    let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
+                                                    confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+                                                        .with(\.leadingTrivia, label.leadingTrivia)
+                                                        .with(\.trailingTrivia, label.trailingTrivia)
+                                                    )
+                                                }
+                                                
+                                                confusedArgs.append(confusedArg)
+                                            }
+                                            
+                                            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
+                                            
+                                            newBinding = newBinding.with(\.initializer, newBinding.initializer?
+                                                .with(\.value, ExprSyntax(value
+                                                    .with(\.calledExpression, ExprSyntax(calledExprSyntax
+                                                        .with(\.base, ExprSyntax(baseSyntax.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                                            .with(\.leadingTrivia, baseSyntax.baseName.leadingTrivia)
+                                                            .with(\.trailingTrivia, baseSyntax.baseName.trailingTrivia)))
+                                                        )
+                                                    )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
+                                                ))
+                                            )
+                                        }
+                                    }
+                                }
+                            }  else {
+                                /// nil base
+                                if let variableTypeSymbol {
+                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value, variableTypeSymbol) {
                                         var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
                                         value.arguments.forEach { labeledExprSyntax in
                                             var confusedArg = labeledExprSyntax
@@ -550,15 +589,9 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                             confusedArgs.append(confusedArg)
                                         }
                                         
-                                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
-                                        
                                         newBinding = newBinding.with(\.initializer, newBinding.initializer?
                                             .with(\.value, ExprSyntax(value
                                                 .with(\.calledExpression, ExprSyntax(calledExprSyntax
-                                                    .with(\.base, ExprSyntax(baseSyntax.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
-                                                        .with(\.leadingTrivia, baseSyntax.baseName.leadingTrivia)
-                                                        .with(\.trailingTrivia, baseSyntax.baseName.trailingTrivia)))
-                                                    )
                                                 )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
                                             ))
                                         )
