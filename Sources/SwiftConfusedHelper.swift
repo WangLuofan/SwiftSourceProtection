@@ -411,9 +411,20 @@ extension SwiftConfusedHelper {
 extension SwiftConfusedHelper {
     static func matchMethodSymbol(_ node: FunctionCallExprSyntax) -> SwiftSourceFunctionSymbol? {
         let methodSignature: String = self.inferMethodSignature(node)
+        
+        var baseSymbolName: String?
+        var baseSymbol: SwiftSourceSymbol?
         if let declRefSyntax: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
-            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefSyntax.baseName.text),
-               baseSymbol.nodeKind == .class {
+            baseSymbolName = declRefSyntax.baseName.text
+        } else if let memberAccessExpSyntax: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            if let base: DeclReferenceExprSyntax = memberAccessExpSyntax.base?.as(DeclReferenceExprSyntax.self) {
+                baseSymbolName = base.baseName.text
+            }
+        }
+        
+        if let baseSymbolName {
+            baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSymbolName)
+            if let baseSymbol, baseSymbol.isClassNodeKind {
                 for child in baseSymbol.children {
                     if child.nodeKind != .function {
                         continue
@@ -425,6 +436,8 @@ extension SwiftConfusedHelper {
                     }
                 }
             }
+        } else {
+            
         }
         
         return nil
@@ -437,12 +450,15 @@ extension SwiftConfusedHelper {
             if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
                 if baseSymbol.isClassNodeKind {
                     signature = "init"
-                    node.arguments.forEach { labeledExprSyntax in
-                        if let labelName: String = labeledExprSyntax.label?.text {
-                            signature += "_\(labelName)"
-                        }
-                    }
                 }
+            }
+        } else if let calledExpression: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            signature = calledExpression.declName.baseName.text
+        }
+        
+        node.arguments.forEach { labeledExprSyntax in
+            if let labelName: String = labeledExprSyntax.label?.text {
+                signature += "_\(labelName)"
             }
         }
         

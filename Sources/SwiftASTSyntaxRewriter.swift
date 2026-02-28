@@ -530,7 +530,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                         } else if let calledExprSyntax: MemberAccessExprSyntax = value.calledExpression.as(MemberAccessExprSyntax.self) {
                             if let baseSyntax: DeclReferenceExprSyntax = calledExprSyntax.base?.as(DeclReferenceExprSyntax.self),
                                let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
-                                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
+                                if baseSymbol.isClassNodeKind {
                                     /// 推导方法签名，匹配方法
                                     if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
                                         let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
