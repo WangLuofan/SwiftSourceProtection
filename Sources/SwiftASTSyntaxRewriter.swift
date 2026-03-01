@@ -1006,7 +1006,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                         }
                     }
                 }
-            } else if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExprSyntax.baseName) {
+            } else if let baseSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExprSyntax.baseName.text) as? SwiftSourceClassSymbol {
                 let confusedSymbol = SwiftConfusedHelper.confusedSymbol(baseSymbol)
                 newNode = newNode.with(\.base, ExprSyntax(
                     declRefExprSyntax
@@ -1014,6 +1014,26 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                             .with(\.leadingTrivia, declRefExprSyntax.baseName.leadingTrivia)
                             .with(\.trailingTrivia, declRefExprSyntax.baseName.trailingTrivia))
                 ))
+                
+                for child in baseSymbol.children {
+                    if child.originalSymbol == node.declName.baseName.text {
+                        let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
+                        newNode = newNode.with(\.declName, newNode.declName.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol).with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia).with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
+                        )
+                    }
+                }
+            }
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+        var newNode = node
+        
+        if let exprPattern: ExpressionPatternSyntax = newNode.pattern.as(ExpressionPatternSyntax.self) {
+            if let memberAccessExpr: MemberAccessExprSyntax = exprPattern.expression.as(MemberAccessExprSyntax.self) {
+                
             }
         }
         

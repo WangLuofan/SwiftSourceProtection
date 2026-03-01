@@ -61,7 +61,20 @@ class MyClass {
             }
             
             let t = s + "World"
-            let b: TestEnum = .test1
+            let b = TestEnum.test1
+            
+            switch b {
+            case .test1:
+                break
+            case .test2(let b):
+                break
+            case .test3:
+                break
+            case .test4:
+                break
+            default:
+                break
+            }
         }
         
         // 待处理
