@@ -1,3 +1,7 @@
+nonisolated(unsafe) let myCls: MyClass = MyClass.init(memberVar: 3)
+nonisolated(unsafe) let b: [String: MyClass] = [String: MyClass]()
+nonisolated(unsafe) let a: [MyClass] = [MyClass]()
+
 enum TestEnum {
     case test1, test2(MyClass), test3, test4
 }
@@ -34,6 +38,12 @@ class MyClass {
     // 成员方法 - 应该收集
     func memberMethod(num: Int) {
         let myCls: MyClass = MyClass.init(memberVar: 3)
+        let myCls2: MyClass = MyClass.init(memberVar: 3)
+        let myCls3: MyClass = MyClass.init(memberVar: 3)
+        let myCls4: MyClass = MyClass.init(memberVar: 3)
+        
+        let a = [myCls, myCls2, myCls3, myCls4]
+        
         let closure: ((_ cls: MyClass) -> MyClass?) = { [weak self, weak myCls] cls in
             MyClass()
         }

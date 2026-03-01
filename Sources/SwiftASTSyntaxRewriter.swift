@@ -142,8 +142,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             return super.visit(newNode)
         }
         
-        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName),
-           refSymbol.nodeKind == .variable {
+        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName) {
             let confusedSymbol = SwiftConfusedHelper.confusedSymbol(refSymbol)
             newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
                 .with(\.leadingTrivia, node.baseName.leadingTrivia)
@@ -373,6 +372,65 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                .with(\.leadingTrivia, newNode.leadingTrivia)
+                .with(\.trailingTrivia, newNode.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: DictionaryTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let keySyntax: IdentifierTypeSyntax = node.key.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(keySyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.key, TypeSyntax(keySyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, keySyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, keySyntax.name.trailingTrivia)
+                ))
+            )
+        }
+        
+        if let valueSyntax: IdentifierTypeSyntax = node.value.as(IdentifierTypeSyntax.self),
+            let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(valueSyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.value, TypeSyntax(valueSyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, valueSyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, valueSyntax.name.trailingTrivia)
+                ))
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ArrayTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let elemSyntax: IdentifierTypeSyntax = node.element.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(elemSyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.element, TypeSyntax(elemSyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, elemSyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, elemSyntax.name.trailingTrivia)
+                )
+            ))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         var newNode = node
         
@@ -415,20 +473,21 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                     .with(\.trailingTrivia, idTypeSyntax.trailingTrivia)))
                             )
                             
-                        } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
-                                  let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
-                                  let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
-                            
-                            variableTypeSymbol = wrappedTypeSymbol
-                            
-                            let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol)
-                            confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
-                                optTypeAnnotation.with(
-                                    \.wrappedType, TypeSyntax(wrappedType
-                                        .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName))
-                                    )
-                                ))
-                            )
+                        } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self) {
+                            if let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
+                               let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
+                                
+                                variableTypeSymbol = wrappedTypeSymbol
+                                
+                                let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol)
+                                confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
+                                    optTypeAnnotation.with(
+                                        \.wrappedType, TypeSyntax(wrappedType
+                                            .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName))
+                                        )
+                                    ))
+                                )
+                            }
                         }
                         
                         if let confusedTypeAnnotation {

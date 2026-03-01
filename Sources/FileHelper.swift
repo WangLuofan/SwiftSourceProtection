@@ -23,8 +23,6 @@ class FileHelper {
         
         self.duplicateProject(path, dupPath)
         self.sourceFiles.sort()
-        
-        print("count: \(self.sourceFiles.count)")
     }
 }
 
