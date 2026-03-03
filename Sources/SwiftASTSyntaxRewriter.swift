@@ -1029,6 +1029,11 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: TupleTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         self.switchExprStack.append(node)
         return super.visit(node)

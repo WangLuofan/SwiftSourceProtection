@@ -44,6 +44,10 @@ class MyClass {
         
         let a = [myCls, myCls2, myCls3, myCls4]
         
+        for (index, cls) in a.enumerated() {
+            
+        }
+        
         let closure: ((_ cls: MyClass) -> MyClass?) = { [weak self, weak myCls] cls in
             MyClass()
         }
