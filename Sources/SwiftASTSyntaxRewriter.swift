@@ -1339,7 +1339,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         }
         case .switchExpr:
             if !self.switchExprStack.isEmpty {
-                self.switchExprStack.removeFirst()
+                self.switchExprStack.removeLast()
             }
         default:
             break
