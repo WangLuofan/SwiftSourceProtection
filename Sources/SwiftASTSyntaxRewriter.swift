@@ -1066,7 +1066,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 var childSymbol: SwiftSourceSymbol?
                 
                 if let memberAccessExpr: MemberAccessExprSyntax = callExpr.calledExpression.as(MemberAccessExprSyntax.self),
-                   let currentSwitchExpr = self.switchExprStack.first, memberAccessExpr.base == nil,
+                   let currentSwitchExpr = self.switchExprStack.last, memberAccessExpr.base == nil,
                    let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(currentSwitchExpr),
                    let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inferType) {
                     if typeSymbol.isClassNodeKind {
