@@ -19,6 +19,12 @@ func globalFunction() -> MyClass {
     return MyClass()
 }
 
+extension MyClass {
+    func testPrint() {
+        print("Hello, World")
+    }
+}
+
 class MyClass {
     // 成员变量 - 应该收集
     var memberVar: Int = 0

@@ -154,22 +154,22 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    //    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-    //        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self),
-    //              let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol,
-    //              let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol) else {
-    //            return super.visit(node)
-    //        }
-    //
-    //        let newNode = node.with(\.extendedType,
-    //                                 TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
-    //            .with(\.leadingTrivia, node.extendedType.leadingTrivia)
-    //            .with(\.trailingTrivia, node.extendedType.trailingTrivia))
-    //            .with(\.leadingTrivia, node.leadingTrivia)
-    //            .with(\.trailingTrivia, node.trailingTrivia)
-    //
-    //        return super.visit(newNode)
-    //    }
+    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self),
+              let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol else {
+            return super.visit(node)
+        }
+        
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
+        let newNode = node.with(\.extendedType,
+                                 TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
+            .with(\.leadingTrivia, node.extendedType.leadingTrivia)
+            .with(\.trailingTrivia, node.extendedType.trailingTrivia))
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        return super.visit(newNode)
+    }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
@@ -1031,29 +1031,29 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-//    override func visit(_ node: TupleTypeSyntax) -> TypeSyntax {
-//        var newNode = node
-//        
-//        var confusedElements: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
-//        node.elements.forEach { tupleTypeElemSyntax in
-//            if let funcTypeSyntax: FunctionTypeSyntax = tupleTypeElemSyntax.type.as(FunctionTypeSyntax.self) {
-//                let newTypeNode = self.visit(funcTypeSyntax)
-//                confusedElements.append(tupleTypeElemSyntax
-//                    .with(\.type, newTypeNode
-//                        .with(\.leadingTrivia, funcTypeSyntax.leadingTrivia)
-//                        .with(\.trailingTrivia, funcTypeSyntax.trailingTrivia)
-//                    ))
-//            } else {
-//                confusedElements.append(tupleTypeElemSyntax)
-//            }
-//        }
-//        
-//        newNode = newNode.with(\.elements, TupleTypeElementListSyntax(confusedElements)
-//            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
-//            .with(\.trailingTrivia, newNode.elements.trailingTrivia))
-//        
-//        return super.visit(newNode)
-//    }
+    override func visit(_ node: TupleTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        var confusedElements: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
+        node.elements.forEach { tupleTypeElemSyntax in
+            if let funcTypeSyntax: FunctionTypeSyntax = tupleTypeElemSyntax.type.as(FunctionTypeSyntax.self) {
+                let newTypeNode = self.visit(funcTypeSyntax)
+                confusedElements.append(tupleTypeElemSyntax
+                    .with(\.type, newTypeNode
+                        .with(\.leadingTrivia, funcTypeSyntax.leadingTrivia)
+                        .with(\.trailingTrivia, funcTypeSyntax.trailingTrivia)
+                    ))
+            } else {
+                confusedElements.append(tupleTypeElemSyntax)
+            }
+        }
+        
+        newNode = newNode.with(\.elements, TupleTypeElementListSyntax(confusedElements)
+            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
+            .with(\.trailingTrivia, newNode.elements.trailingTrivia))
+        
+        return super.visit(newNode)
+    }
     
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         self.switchExprStack.append(node)
