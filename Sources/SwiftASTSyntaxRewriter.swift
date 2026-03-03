@@ -1042,7 +1042,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         if let exprPattern: ExpressionPatternSyntax = newNode.pattern.as(ExpressionPatternSyntax.self) {
             var confusedExpression = exprPattern.expression
             if let memberAccessExpr: MemberAccessExprSyntax = exprPattern.expression.as(MemberAccessExprSyntax.self),
-               let currentSwitchExpr = self.switchExprStack.first, memberAccessExpr.base == nil,
+               let currentSwitchExpr = self.switchExprStack.last, memberAccessExpr.base == nil,
                let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(currentSwitchExpr),
                let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inferType) {
                 if typeSymbol.isClassNodeKind {
