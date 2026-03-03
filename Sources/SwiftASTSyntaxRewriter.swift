@@ -1036,8 +1036,13 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
 //        
 //        var confusedElements: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
 //        node.elements.forEach { tupleTypeElemSyntax in
-//            if let funcTypeSyntax {
-//                
+//            if let funcTypeSyntax: FunctionTypeSyntax = tupleTypeElemSyntax.type.as(FunctionTypeSyntax.self) {
+//                let newTypeNode = self.visit(funcTypeSyntax)
+//                confusedElements.append(tupleTypeElemSyntax
+//                    .with(\.type, newTypeNode
+//                        .with(\.leadingTrivia, funcTypeSyntax.leadingTrivia)
+//                        .with(\.trailingTrivia, funcTypeSyntax.trailingTrivia)
+//                    ))
 //            } else {
 //                confusedElements.append(tupleTypeElemSyntax)
 //            }
@@ -1281,6 +1286,39 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 )
             )
         }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: TuplePatternSyntax) -> PatternSyntax {
+        var newNode = node
+        
+        var confusedElements: [TuplePatternElementSyntax] = [TuplePatternElementSyntax]()
+        node.elements.forEach { tuplePatternElemSyntax in
+            if let idPattern: IdentifierPatternSyntax = tuplePatternElemSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                varSymbol.isMember = false
+                varSymbol.symbolFilePath = self.sourceFile
+                
+                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                confusedElements.append(tuplePatternElemSyntax
+                    .with(\.pattern, PatternSyntax(idPattern
+                        .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
+                            .with(\.trailingTrivia, idPattern.identifier.trailingTrivia))
+                    ))
+                )
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+            } else {
+                confusedElements.append(tuplePatternElemSyntax)
+            }
+        }
+        
+        newNode = newNode.with(\.elements, TuplePatternElementListSyntax(confusedElements)
+            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
+            .with(\.trailingTrivia, newNode.elements.trailingTrivia)
+        )
         
         return super.visit(newNode)
     }
