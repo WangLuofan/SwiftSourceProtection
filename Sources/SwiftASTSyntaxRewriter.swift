@@ -155,20 +155,24 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        guard let extendedType = node.extendedType.as(IdentifierTypeSyntax.self),
-              let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol else {
-            return super.visit(node)
+        if let extendedType = node.extendedType.as(IdentifierTypeSyntax.self) {
+            if let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol {
+                
+                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
+                let newNode = node.with(\.extendedType,
+                                         TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
+                    .with(\.leadingTrivia, node.extendedType.leadingTrivia)
+                    .with(\.trailingTrivia, node.extendedType.trailingTrivia))
+                    .with(\.leadingTrivia, node.leadingTrivia)
+                    .with(\.trailingTrivia, node.trailingTrivia)
+                
+                return super.visit(newNode)
+            } else {
+                
+            }
         }
         
-        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
-        let newNode = node.with(\.extendedType,
-                                 TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
-            .with(\.leadingTrivia, node.extendedType.leadingTrivia)
-            .with(\.trailingTrivia, node.extendedType.trailingTrivia))
-            .with(\.leadingTrivia, node.leadingTrivia)
-            .with(\.trailingTrivia, node.trailingTrivia)
-        
-        return super.visit(newNode)
+        return super.visit(node)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {

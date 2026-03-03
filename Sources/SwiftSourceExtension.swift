@@ -8,7 +8,7 @@
 import SwiftSyntax
 
 protocol SwiftClassDeclProtocol {
-    var name: TokenSyntax { get }
+    var name: SwiftSyntax.TokenSyntax { get }
     var inheritanceClause: InheritanceClauseSyntax? { get }
     var modifiers: DeclModifierListSyntax { get }
     
@@ -350,6 +350,17 @@ extension StructDeclSyntax: SwiftClassDeclProtocol {
 }
 
 extension EnumDeclSyntax: SwiftClassDeclProtocol {
+    
+}
+
+extension ExtensionDeclSyntax: SwiftClassDeclProtocol {
+    var name: SwiftSyntax.TokenSyntax {
+        if let idName: IdentifierTypeSyntax = self.extendedType.as(IdentifierTypeSyntax.self) {
+            return idName.name
+        }
+        
+        return TokenSyntax(stringLiteral: "")
+    }
     
 }
 

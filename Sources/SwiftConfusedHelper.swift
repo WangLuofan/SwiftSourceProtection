@@ -40,6 +40,10 @@ class SwiftConfusedHelper {
     }
     
     private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol) -> Bool {
+        if symbol.originalSymbol.isEmpty {
+            return false
+        }
+        
         if symbol.nodeKind == .class ||
             symbol.nodeKind == .enum || symbol.nodeKind == .enumCase ||
             symbol.nodeKind == .protocol || symbol.nodeKind == .struct {

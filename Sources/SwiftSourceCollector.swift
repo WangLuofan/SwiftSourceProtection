@@ -9,6 +9,7 @@ import SwiftSyntax
 import Foundation
 
 nonisolated(unsafe) var parentStack: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
+nonisolated(unsafe) var extensionMap: [String: [SwiftSourceClassSymbol]] = [String: [SwiftSourceClassSymbol]]()
 
 class SwiftSourceCollector: SyntaxVisitor {
     var sourceFile: String
@@ -67,6 +68,29 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
+        parentStack.removeLast()
+        SwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        let classSymbol: SwiftSourceClassSymbol = node.symbol(.extension, self.sourceFile)
+        
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        parentStack.append(classSymbol)
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ExtensionDeclSyntax) {
+        if let idExtType: IdentifierTypeSyntax = node.extendedType.as(IdentifierTypeSyntax.self),
+           let extSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
+            
+            var extSymbolArr: [SwiftSourceClassSymbol] = extensionMap[idExtType.name.text] ?? [SwiftSourceClassSymbol]()
+            extSymbolArr.append(extSymbol)
+            
+            extensionMap[idExtType.name.text] = extSymbolArr
+        }
+        
         parentStack.removeLast()
         SwiftSourceScopeManager.sharedManager.popScope()
     }
