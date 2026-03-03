@@ -1323,13 +1323,28 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             }
         } else if let tuplePatternSyntax: TuplePatternSyntax = node.pattern.as(TuplePatternSyntax.self) {
             var confusedElements: [TuplePatternElementSyntax] = [TuplePatternElementSyntax]()
-            tuplePatternSyntax.elements.forEach { tuplePatternElemSyntax in
+            
+            for (index, tuplePatternElemSyntax) in tuplePatternSyntax.elements.enumerated() {
                 if let idPattern: IdentifierPatternSyntax = tuplePatternElemSyntax.pattern.as(IdentifierPatternSyntax.self) {
                     let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
                     
                     varSymbol.originalSymbol = idPattern.identifier.text
                     varSymbol.isMember = false
                     varSymbol.symbolFilePath = self.sourceFile
+                    
+                    if let typeAnnotation = newNode.typeAnnotation {
+                        if let tupleType: TupleTypeSyntax = typeAnnotation.type.as(TupleTypeSyntax.self) {
+                            for (typeIndex, tupleTypeElemSyntax) in tupleType.elements.enumerated() {
+                                if typeIndex != index {
+                                    continue
+                                }
+                                
+                                if let idTypeSyntax: IdentifierTypeSyntax = tupleTypeElemSyntax.type.as(IdentifierTypeSyntax.self) {
+                                    varSymbol.symbolType = idTypeSyntax.name.text
+                                }
+                            }
+                        }
+                    }
                     
                     let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
                     confusedElements.append(tuplePatternElemSyntax
