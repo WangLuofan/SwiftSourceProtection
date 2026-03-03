@@ -277,7 +277,7 @@ extension SwiftConfusedHelper {
 //        return nil
 //    }
     
-    static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax, forSymbol symbol: SwiftSourceSymbol?) -> String? {
+    static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax, forSymbol symbol: SwiftSourceSymbol? = nil) -> String? {
         var typeString: String?
         
         if let parameters: ClosureParameterListSyntax = closureExpr.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self)?.parameters.as(ClosureParameterListSyntax.self) {
@@ -302,7 +302,7 @@ extension SwiftConfusedHelper {
         return typeString
     }
     
-    static func inferExprSyntaxType(_ expr: ExprSyntaxProtocol, forSymbol symbol: SwiftSourceSymbol?, isIntance: Bool = true) -> String? {
+    static func inferExprSyntaxType(_ expr: ExprSyntaxProtocol, forSymbol symbol: SwiftSourceSymbol? = nil) -> String? {
         if let _ = expr.as(IntegerLiteralExprSyntax.self) {
             return "Int"
         } else if let _ = expr.as(StringLiteralExprSyntax.self) {
@@ -393,6 +393,8 @@ extension SwiftConfusedHelper {
                       let idTypeSyntax: IdentifierTypeSyntax = typeAnnon.wrappedType.as(IdentifierTypeSyntax.self) {
                 return idTypeSyntax.name.text
             }
+        } else if let switchExpr: SwitchExprSyntax = expr.as(SwitchExprSyntax.self) {
+            return self.inferExprSyntaxType(switchExpr.subject)
         }
         
         return nil  // 暂时无法推导

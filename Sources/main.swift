@@ -79,7 +79,7 @@ func main() {
                                   sourceTree: sourceTree,
                                   projectPath: projectPath).confuse() {
             
-//            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
         }
     }
     

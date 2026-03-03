@@ -397,6 +397,8 @@ extension VariableDeclSyntax {
                           let wrappedType: IdentifierTypeSyntax = optType.wrappedType.as(IdentifierTypeSyntax.self) {
                     variableSymbol.symbolType = wrappedType.name.text
                 }
+            } else if let initializer: InitializerClauseSyntax = patternBinding.initializer {
+                variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
             }
         }
         

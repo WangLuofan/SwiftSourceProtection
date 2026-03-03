@@ -143,6 +143,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             
             enumCaseInfo.parent = parentStack.last
             enumCaseInfo.ASTNode = node
+            enumCaseInfo.symbolType = enumCaseInfo.parent?.originalSymbol
             
             parentStack.last?.children.append(enumCaseInfo)
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumCaseInfo)
