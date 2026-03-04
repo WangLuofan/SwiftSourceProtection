@@ -44,7 +44,9 @@ func findProjectPath(for filePath: String) -> String? {
 
 func main() {
     guard let path = CommandLineParser.parseCommandLine() else {
-        print("Usage ./SwiftSourceProtection [file/directory]")
+        print("Usage: ")
+        print("     ./SwiftSourceProtection --workspace [xcworkspace] --scheme [scheme] --path [path]")
+        print("     ./SwiftSourceProtection --project [xcodeproj] --target [target] --path [path]")
         return
     }
     

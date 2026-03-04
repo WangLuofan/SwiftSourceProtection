@@ -8,11 +8,25 @@
 import Foundation
 
 public class CommandLineParser {
-    static func parseCommandLine() -> String? {
-        if CommandLine.argc != 2 {
+    static func parseCommandLine() -> CommandLineArguments? {
+        let args: CommandLineArguments = CommandLineArguments()
+        
+        if CommandLine.argc != 7 {
             return nil
         }
         
-        return CommandLine.arguments.last
+        var argIndex: Int = 0
+        for (index, argument) in CommandLine.arguments.enumerated() {
+            if index < argIndex {
+                continue
+            }
+            
+            if argument == "--workspace" && (index + 1) < CommandLine.argc {
+                args.workspace = CommandLine.arguments[index + 1]
+                argIndex += 1
+            }
+        }
+        
+        return args
     }
 }
