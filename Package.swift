@@ -15,6 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "602.0.0"),
+        .package(url: "https://github.com/jpsim/SourceKitten.git", from: "0.34.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
