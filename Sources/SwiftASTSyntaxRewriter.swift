@@ -1348,6 +1348,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                 }
                             }
                         }
+                    } else if let type: String = SwiftConfusedHelper.inferExprSyntaxType(node.sequence) {
+                        print("Hello")
                     }
                     
                     let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)

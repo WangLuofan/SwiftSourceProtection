@@ -15,46 +15,46 @@ import SwiftParser
 import SwiftOperators
 
 // 查找项目根目录
-func findProjectPath(for filePath: String) -> String? {
+func findProjectDirectory(for filePath: String) -> (String?, String?) {
     var isDirectory: ObjCBool = ObjCBool(booleanLiteral: false)
     let exists = FileManager.default.fileExists(atPath: filePath, isDirectory: &isDirectory)
     
-    if exists && isDirectory.boolValue == true {
-        return filePath
+    if !exists || isDirectory.boolValue == false {
+        return (nil, "Project Path Not Exists.")
     }
     
-    var currentDir = URL(fileURLWithPath: filePath).deletingLastPathComponent()
+    var currentDir = URL(fileURLWithPath: filePath)
     
-    // 向上查找包含 Package.swift 或 .git 的目录
-    while currentDir.path != "/" {
-        let packageSwift = currentDir.appendingPathComponent("Package.swift")
-        let gitDir = currentDir.appendingPathComponent(".git")
-        
-        if FileManager.default.fileExists(atPath: packageSwift.path) ||
-           FileManager.default.fileExists(atPath: gitDir.path) {
-            return currentDir.path
-        }
-        
-        currentDir.deleteLastPathComponent()
+    guard let contents = try? FileManager.default.contentsOfDirectory(at: currentDir, includingPropertiesForKeys: nil) else {
+        return (nil, "Empty Project Path.")
     }
     
-    // 如果没有找到项目根目录，使用文件所在目录
-    return URL(fileURLWithPath: filePath).deletingLastPathComponent().path
+    guard let projFile = contents.first(where: { $0.pathExtension == "xcworkspace" || $0.pathExtension == "xcodeproj" }) else {
+        return (nil, "No .xcworkspace or .xcodeproj Found.")
+    }
+    
+    return (projFile.path(), nil)
 }
 
 func main() {
     guard let path = CommandLineParser.parseCommandLine() else {
-        print("Usage: ")
-        print("     ./SwiftSourceProtection --workspace [xcworkspace] --scheme [scheme] --path [path]")
-        print("     ./SwiftSourceProtection --project [xcodeproj] --target [target] --path [path]")
+        print("Usage: ./SwiftSourceProtection [ProjectPath]")
         return
     }
     
-    guard let projectPath = findProjectPath(for: path) else {
+    var (projectPath, errorMessage) = findProjectDirectory(for: path)
+    projectPath?.removeLast()
+    
+    guard let projectPath else {
+        print(errorMessage ?? "Unknown Error.")
         return
     }
-    
-    
+
+    // TODO: 使用 SourceKittenHandler 进行类型推导
+    if let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: "ConfuseTest") {
+        print("SourceKitten initialized successfully")
+    }
+
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
@@ -74,16 +74,16 @@ func main() {
         sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
-    /// 第三步：类型推导、符号混淆
-    sourceTreeDict.forEach { sourceFile, sourceTree in
-        if let confusedFileContent: String =
-            SwiftSourceProtector(sourceFile: sourceFile,
-                                  sourceTree: sourceTree,
-                                  projectPath: projectPath).confuse() {
-            
+//    /// 第三步：类型推导、符号混淆
+//    sourceTreeDict.forEach { sourceFile, sourceTree in
+//        if let confusedFileContent: String =
+//            SwiftSourceProtector(sourceFile: sourceFile,
+//                                  sourceTree: sourceTree,
+//                                  projectPath: projectPath).confuse() {
+//            
 //            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
-        }
-    }
+//        }
+//    }
     
 }
 

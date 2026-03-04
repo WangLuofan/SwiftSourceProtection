@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwiftSourceProtection",
     platforms: [
-        .macOS(.v10_15)
+        .macOS(.v12)
     ],
     products: [
         .executable(name: "SwiftSourceProtection", targets: [
@@ -27,14 +27,13 @@ let package = Package(
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
+                .product(name: "SourceKittenFramework", package: "SourceKitten"),
             ], swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
-                .unsafeFlags(["-swift-version", "5.5"]),
                 .unsafeFlags([
                     "-Xfrontend",
                     "-disable-availability-checking",
-                ]),
-                .unsafeFlags(["-Xfrontend", "-strict-concurrency=off"])
+                ])
             ]
         ),
     ]
