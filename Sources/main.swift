@@ -37,8 +37,9 @@ func findProjectDirectory(for filePath: String) -> (String?, String?) {
 }
 
 func main() {
-    guard let path = CommandLineParser.parseCommandLine() else {
-        print("Usage: ./SwiftSourceProtection [ProjectPath]")
+    guard let (path, target) = CommandLineParser.parseCommandLine(),
+          let path, let target else {
+        print("Usage: ./SwiftSourceProtection [ProjectPath] [target]")
         return
     }
     
@@ -51,7 +52,7 @@ func main() {
     }
 
     // TODO: 使用 SourceKittenHandler 进行类型推导
-    guard let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: "ClipSDK") else {
+    guard let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target) else {
         return
     }
     

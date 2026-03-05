@@ -8,12 +8,12 @@
 import Foundation
 
 public class CommandLineParser {
-    static func parseCommandLine() -> String? {
+    static func parseCommandLine() -> (String?, String?)? {
         
-        if CommandLine.argc != 2 {
+        if CommandLine.argc != 3 {
             return nil
         }
         
-        return CommandLine.arguments.last
+        return (CommandLine.arguments[1], CommandLine.arguments[2])
     }
 }
