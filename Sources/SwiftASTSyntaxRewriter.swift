@@ -166,9 +166,9 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                     .with(\.leadingTrivia, node.leadingTrivia)
                     .with(\.trailingTrivia, node.trailingTrivia)
                 
-                return super.visit(newNode)
-            } else {
+                parentStack.append(clsSymbol)
                 
+                return super.visit(newNode)
             }
         }
         
@@ -182,9 +182,13 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         if node.isLocalDecl {
             funcSymbol = node.symbol(self.sourceFile)
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol!)
-        }
-        
-        if funcSymbol == nil {
+        } else if node.isMemberDecl {
+            guard let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol else {
+                return super.visit(newNode)
+            }
+            
+            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node, inScope: clsSymbol.scope) as? SwiftSourceFunctionSymbol
+        } else {
             funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol
         }
         
@@ -1381,7 +1385,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 parentStack.removeLast()
             }
         case .classDecl, .functionDecl, .protocolDecl,
-                .structDecl, .enumDecl:
+                .structDecl, .enumDecl, .extensionDecl:
             SwiftSourceScopeManager.sharedManager.popScope(true)
             
             if !parentStack.isEmpty {

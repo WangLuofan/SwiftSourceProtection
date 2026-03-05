@@ -69,6 +69,9 @@ class SwiftSourceSymbol {
     /// AST结点
     var ASTNode: SyntaxProtocol?
     
+    /// 作用域
+    var scope: SwiftSourceScope?
+    
     /// 是否类声明结点
     var isClassNodeKind: Bool {
         switch self.nodeKind {
@@ -93,6 +96,15 @@ class SwiftSourceSymbol {
 class SwiftSourceClassSymbol: SwiftSourceSymbol {
     /// 继承列表
     var inheritedType: [String]?
+    
+    func mergeSymbol(_ clsSymbol: SwiftSourceClassSymbol) {
+        clsSymbol.children.forEach { symbol in
+            symbol.parent = self
+            
+            self.children.append(symbol)
+            self.scope?.pushSymbol(symbol)
+        }
+    }
 }
 
 /// 方法类型

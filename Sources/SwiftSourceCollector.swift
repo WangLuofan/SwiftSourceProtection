@@ -9,7 +9,7 @@ import SwiftSyntax
 import Foundation
 
 nonisolated(unsafe) var parentStack: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
-nonisolated(unsafe) var extensionMap: [String: [SwiftSourceClassSymbol]] = [String: [SwiftSourceClassSymbol]]()
+nonisolated(unsafe) var extensionMap: [String: SwiftSourceClassSymbol] = [String: SwiftSourceClassSymbol]()
 
 class SwiftSourceCollector: SyntaxVisitor {
     var sourceFile: String
@@ -28,9 +28,14 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        clsSymbol.scope = SwiftSourceScopeManager.sharedManager.currentScope
         
         parentStack.last?.children.append(clsSymbol)
         parentStack.append(clsSymbol)
+        
+        if let extSymbol: SwiftSourceClassSymbol = extensionMap[clsSymbol.originalSymbol] {
+            clsSymbol.mergeSymbol(extSymbol)
+        }
         
         return super.visit(node)
     }
@@ -60,6 +65,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        classSymbol.scope = SwiftSourceScopeManager.sharedManager.currentScope
         
         parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
@@ -77,22 +83,28 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.pushScope()
         parentStack.append(classSymbol)
+        classSymbol.scope = SwiftSourceScopeManager.sharedManager.currentScope
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: ExtensionDeclSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope()
+        
         if let idExtType: IdentifierTypeSyntax = node.extendedType.as(IdentifierTypeSyntax.self),
            let extSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
-            
-            var extSymbolArr: [SwiftSourceClassSymbol] = extensionMap[idExtType.name.text] ?? [SwiftSourceClassSymbol]()
-            extSymbolArr.append(extSymbol)
-            
-            extensionMap[idExtType.name.text] = extSymbolArr
+            if let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idExtType.name.text) as? SwiftSourceClassSymbol {
+                clsSymbol.mergeSymbol(extSymbol)
+            } else {
+                if let curExtSymbol: SwiftSourceClassSymbol = extensionMap[idExtType.name.text] {
+                    curExtSymbol.mergeSymbol(extSymbol)
+                } else {
+                    extensionMap[idExtType.name.text] = extSymbol
+                }
+            }
         }
         
         parentStack.removeLast()
-        SwiftSourceScopeManager.sharedManager.popScope()
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -103,6 +115,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
+        classSymbol.scope = SwiftSourceScopeManager.sharedManager.currentScope
         
         return super.visit(node)
     }
@@ -144,6 +157,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumInfo)
         SwiftSourceScopeManager.sharedManager.pushScope()
+        enumInfo.scope = SwiftSourceScopeManager.sharedManager.currentScope
         
         return super.visit(node)
     }
