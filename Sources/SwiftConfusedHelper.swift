@@ -301,7 +301,7 @@ extension SwiftConfusedHelper {
         } else if let declRefExpr: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
             if declRefExpr.baseName.text == "self" || declRefExpr.baseName.text == "Self" {
                 var parentSymbol: SwiftSourceSymbol? = symbol?.parent
-                while parentSymbol?.nodeKind != .class {
+                while parentSymbol != nil && parentSymbol?.nodeKind != .class {
                     parentSymbol = parentSymbol?.parent
                     continue
                 }

@@ -1000,38 +1000,23 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         var newNode = node
-        
-        if let declRefExprSyntax: DeclReferenceExprSyntax = node.base?.as(DeclReferenceExprSyntax.self) {
-            if declRefExprSyntax.baseName.text == "self" || declRefExprSyntax.baseName.text == "Self" {
-                if let clsDeclSyntax: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self),
-                   let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDeclSyntax) as? SwiftSourceClassSymbol {
-                    for child in clsSymbol.children {
-                        if child.originalSymbol == node.declName.baseName.text {
-                            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
-                            newNode = newNode.with(\.declName, newNode.declName.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol).with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia).with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
-                            )
-                        }
-                    }
-                }
-            } else if let baseSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExprSyntax.baseName.text) as? SwiftSourceClassSymbol {
-                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(baseSymbol)
-                newNode = newNode.with(\.base, ExprSyntax(
-                    declRefExprSyntax
-                        .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-                            .with(\.leadingTrivia, declRefExprSyntax.baseName.leadingTrivia)
-                            .with(\.trailingTrivia, declRefExprSyntax.baseName.trailingTrivia))
-                ))
-                
-                for child in baseSymbol.children {
-                    if child.originalSymbol == node.declName.baseName.text {
-                        let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
-                        newNode = newNode.with(\.declName, newNode.declName.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol).with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia).with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
-                        )
-                    }
+
+        if let base = node.base,
+           let baseTypeName = SwiftConfusedHelper.inferExprSyntaxType(base),
+           let typeSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseTypeName) as? SwiftSourceClassSymbol {
+            for child in typeSymbol.children {
+                if child.originalSymbol == node.declName.baseName.text {
+                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
+                    newNode = newNode.with(\.declName, newNode.declName.with(\.baseName,
+                        TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
+                    )
+                    break
                 }
             }
         }
-        
+
         return super.visit(newNode)
     }
     
