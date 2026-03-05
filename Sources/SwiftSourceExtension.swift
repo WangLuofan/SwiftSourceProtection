@@ -22,9 +22,16 @@ extension SwiftClassDeclProtocol {
         classSymbol.symbolFilePath = sourceFile
         classSymbol.parent = parentStack.last
         classSymbol.originalSymbol = self.name.text
-        classSymbol.inheritedType = self.inheritanceClause?.inheritedTypes.compactMap({ $0.as(IdentifierTypeSyntax.self)?.name.text })
         classSymbol.symbolType = self.name.text
         classSymbol.ASTNode = self as? SyntaxProtocol
+        
+        if let inheritedTypes = self.inheritanceClause?.inheritedTypes {
+            inheritedTypes.forEach { inheritedTypeSyntax in
+                if let idTypeSyntax: IdentifierTypeSyntax = inheritedTypeSyntax.type.as(IdentifierTypeSyntax.self) {
+                    classSymbol.inheritedType.append(idTypeSyntax.name.text)
+                }
+            }
+        }
         
         self.modifiers.forEach { modifier in
             classSymbol.accessControl = modifier.accessControl

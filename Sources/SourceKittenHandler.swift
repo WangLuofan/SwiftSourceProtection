@@ -100,6 +100,21 @@ class SourceKittenHandler {
     ///   - column: 列号（从1开始）
     /// - Returns: 类型名称，如果无法推导则返回 nil
     func getTypeAtLocation(filePath: String, line: Int, column: Int) -> String? {
+        guard let cursorInfo = getCursorInfo(filePath: filePath, line: line, column: column) else {
+            return nil
+        }
+
+        // 提取类型名称
+        return cursorInfo["key.typename"] as? String
+    }
+
+    /// 获取指定位置的完整 cursor info（用于详细分析）
+    /// - Parameters:
+    ///   - filePath: 源文件路径
+    ///   - line: 行号（从1开始）
+    ///   - column: 列号（从1开始）
+    /// - Returns: 完整的 cursor info 字典
+    func getCursorInfo(filePath: String, line: Int, column: Int) -> [String: Any]? {
         guard let file = File(path: filePath) else {
             return nil
         }
@@ -124,8 +139,7 @@ class SourceKittenHandler {
         guard let response = try? request.send() else {
             return nil
         }
-        
-        // 提取类型名称
-        return response["key.typename"] as? String
+
+        return response as? [String: Any]
     }
 }

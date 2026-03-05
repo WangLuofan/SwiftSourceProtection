@@ -95,7 +95,7 @@ class SwiftSourceSymbol {
 /// 类类型
 class SwiftSourceClassSymbol: SwiftSourceSymbol {
     /// 继承列表
-    var inheritedType: [String]?
+    lazy var inheritedType: [String] = [String]()
     
     func mergeSymbol(_ clsSymbol: SwiftSourceClassSymbol) {
         clsSymbol.children.forEach { symbol in
@@ -103,6 +103,10 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
             
             self.children.append(symbol)
             self.scope?.pushSymbol(symbol)
+        }
+        
+        if !clsSymbol.inheritedType.isEmpty {
+            self.inheritedType.append(contentsOf: clsSymbol.inheritedType)
         }
     }
 }

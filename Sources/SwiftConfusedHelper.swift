@@ -11,7 +11,7 @@ import SwiftOperators
 class SwiftConfusedHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
-    
+
     static func confusedSymbol(_ symbol: SwiftSourceSymbol) -> String {
         guard self.shouldConfuseSymbol(symbol) else {
             return symbol.originalSymbol
@@ -66,18 +66,38 @@ class SwiftConfusedHelper {
             if symbol.nodeKind == .function,
                let funcSymbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol,
                let childFuncSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol {
-                
+
                 if funcSymbol.signature != childFuncSymbol.signature {
                     continue
                 }
-                
-                if symbol.isOverride, let inheritedTypes = parent.inheritedType {
-                    for inheritedType in inheritedTypes {
+
+                if symbol.isOverride, !parent.inheritedType.isEmpty {
+                    for inheritedType in parent.inheritedType {
                         if let ancestorCls = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
                             for ancestorChild in ancestorCls.children {
                                 if ancestorChild.nodeKind != .function {
                                     continue
                                 }
+                                
+                                if let ancestorChild: SwiftSourceFunctionSymbol = ancestorChild as? SwiftSourceFunctionSymbol,
+                                   ancestorChild.signature == childFuncSymbol.signature {
+                                    return self.shouldConfuseSymbol(ancestorCls)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for inheritedType in parent.inheritedType {
+                        if let ancestorCls: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
+                            if ancestorCls.nodeKind != .protocol {
+                                continue
+                            }
+                            
+                            for ancestorChild in ancestorCls.children {
+                                if ancestorChild.nodeKind != .function {
+                                    continue
+                                }
+                                
                                 if let ancestorChild: SwiftSourceFunctionSymbol = ancestorChild as? SwiftSourceFunctionSymbol,
                                    ancestorChild.signature == childFuncSymbol.signature {
                                     return self.shouldConfuseSymbol(ancestorCls)
@@ -93,8 +113,8 @@ class SwiftConfusedHelper {
                     continue
                 }
                 
-                if symbol.isOverride, let inheritedTypes = parent.inheritedType {
-                    for inheritedType in inheritedTypes {
+                if symbol.isOverride {
+                    for inheritedType in parent.inheritedType {
                         if let ancestorCls = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) as? SwiftSourceClassSymbol {
                             for ancestorChild in ancestorCls.children {
                                 if ancestorChild.originalSymbol == child.originalSymbol {
@@ -111,7 +131,7 @@ class SwiftConfusedHelper {
 
         return false
     }
-    
+
     static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
         if let confusedSymbolName: String = self.confusedTable[symbol] {
             return confusedSymbolName
