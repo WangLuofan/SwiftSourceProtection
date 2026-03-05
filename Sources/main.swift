@@ -51,7 +51,7 @@ func main() {
     }
 
     // TODO: 使用 SourceKittenHandler 进行类型推导
-    if let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: "ConfuseTest") {
+    if let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: "ClipSDK") {
         print("SourceKitten initialized successfully")
     }
 
@@ -74,16 +74,16 @@ func main() {
         sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
-//    /// 第三步：类型推导、符号混淆
-//    sourceTreeDict.forEach { sourceFile, sourceTree in
-//        if let confusedFileContent: String =
-//            SwiftSourceProtector(sourceFile: sourceFile,
-//                                  sourceTree: sourceTree,
-//                                  projectPath: projectPath).confuse() {
-//            
-//            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
-//        }
-//    }
+    /// 第三步：类型推导、符号混淆
+    sourceTreeDict.forEach { sourceFile, sourceTree in
+        if let confusedFileContent: String =
+            SwiftSourceProtector(sourceFile: sourceFile,
+                                  sourceTree: sourceTree,
+                                  projectPath: projectPath).confuse() {
+            
+            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+        }
+    }
     
 }
 

@@ -22,6 +22,8 @@ class FileHelper {
         let dupPath: String = self.prepareForBackup(FileManager.default.currentDirectoryPath)
         
         self.duplicateProject(path, dupPath)
+        print("Project Duplicated At: \(dupPath)")
+        
         self.sourceFiles.sort()
     }
 }
@@ -38,7 +40,7 @@ extension FileHelper {
         return isDirectory.boolValue
     }
     
-    private func shouldTreatASSrouce(_ path: String) -> Bool {
+    private func shouldTreatASSource(_ path: String) -> Bool {
         if (path as NSString).pathExtension.lowercased() != "swift" {
             return false
         }
@@ -76,7 +78,7 @@ extension FileHelper {
         if !isDirectory {
             try? FileManager.default.copyItem(atPath: srcPath, toPath: fileName)
             
-            if self.shouldTreatASSrouce(srcPath) {
+            if self.shouldTreatASSource(srcPath) {
                 self.sourceFiles.append(srcPath)
             }
             
