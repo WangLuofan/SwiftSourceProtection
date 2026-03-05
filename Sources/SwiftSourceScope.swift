@@ -40,25 +40,25 @@ class SwiftSourceScopeManager {
         }
     }
     
-    func findSymbol( _ node: SyntaxProtocol?, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
-        guard let node = node else { return nil }
-        let nodeID = node.id
-
-        var scope = (scope ?? self.currentScope)
-        while scope != nil {
-            for (_, symbol) in scope!.symbols {
-                if let astNode = symbol.ASTNode {
-                    if astNode.id.indexInTree == nodeID.indexInTree {
-                        return symbol
-                    }
-                }
-            }
-
-            scope = scope?.prev
-        }
-
-        return nil
-    }
+//    func findSymbol( _ node: SyntaxProtocol?, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
+//        guard let node = node else { return nil }
+//        let nodeID = node.id
+//
+//        var scope = (scope ?? self.currentScope)
+//        while scope != nil {
+//            for (_, symbol) in scope!.symbols {
+//                if let astNode = symbol.ASTNode {
+//                    if astNode.id.indexInTree == nodeID.indexInTree {
+//                        return symbol
+//                    }
+//                }
+//            }
+//
+//            scope = scope?.prev
+//        }
+//
+//        return nil
+//    }
     
     func findSymbol(_ symbolName: String, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
         

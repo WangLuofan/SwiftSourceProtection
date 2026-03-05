@@ -23,7 +23,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
         
-        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceClassSymbol else {
+        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceClassSymbol else {
             return super.visit(node)
         }
         
@@ -43,7 +43,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
         
-        guard let proSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceClassSymbol else {
+        guard let proSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceClassSymbol else {
             return super.visit(node)
         }
         
@@ -66,7 +66,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         
         SwiftSourceScopeManager.sharedManager.pushScope()
         
-        if let funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol {
+        if let funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol {
             let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
             
             var confusedParameters: [FunctionParameterSyntax] = [FunctionParameterSyntax]()
@@ -187,9 +187,9 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 return super.visit(newNode)
             }
             
-            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node, inScope: clsSymbol.scope) as? SwiftSourceFunctionSymbol
+            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text, inScope: clsSymbol.scope) as? SwiftSourceFunctionSymbol
         } else {
-            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceFunctionSymbol
+            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol
         }
         
         if let funcSymbol {
@@ -269,52 +269,54 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
-    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+    override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
         var newNode = node
-        SwiftSourceScopeManager.sharedManager.pushScope()
         
-        var confusedConds: [ConditionElementSyntax] = [ConditionElementSyntax]()
-        node.conditions.forEach { condElemSyntax in
-            if let optBindCondSyntax: OptionalBindingConditionSyntax = condElemSyntax.condition.as(OptionalBindingConditionSyntax.self),
-               let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
-                
-                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-                varSymbol.originalSymbol = idPattern.identifier.text
-                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
-                
-                var confusedCondition = optBindCondSyntax.with(\.pattern, PatternSyntax(idPattern
-                    .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol))
-                ))
-                
-                if let typeAnnotation = optBindCondSyntax.typeAnnotation,
-                   let idType: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
-                    varSymbol.symbolType = idType.name.text
-                    
-                    if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text) {
-                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-                        confusedCondition = confusedCondition.with(
-                            \.typeAnnotation, optBindCondSyntax.typeAnnotation?
-                                .with(\.type, TypeSyntax(IdentifierTypeSyntax(
-                                    leadingTrivia: idType.leadingTrivia,
-                                    name: TokenSyntax(stringLiteral: confusedSymbolName),
-                                    trailingTrivia: idType.trailingTrivia)
-                                ))
-                        )
-                    }
-                }
-                
-                confusedConds.append(condElemSyntax.with(\.condition, ConditionElementSyntax.Condition(confusedCondition)))
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-            }
+        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            varSymbol.originalSymbol = idPattern.identifier.text
         }
         
-        newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConds))
+        if let type: IdentifierTypeSyntax = node.typeAnnotation?.as(IdentifierTypeSyntax.self) {
+            varSymbol.symbolType = type.name.text
+            
+            if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(type.name.text) {
+                let confusedTypeSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                newNode = newNode.with(\.typeAnnotation, TypeAnnotationSyntax(type
+                    .with(\.name, TokenSyntax(stringLiteral: confusedTypeSymbolName)
+                        .with(\.leadingTrivia, type.name.leadingTrivia)
+                        .with(\.trailingTrivia, type.name.trailingTrivia)
+                    ))
+                )
+            }
+        } else if let initializer = node.initializer,
+                  let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(initializer.value) {
+            varSymbol.symbolType = inferType
+        }
         
+        varSymbol.ASTNode = node
+        
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
+            newNode = newNode.with(\.pattern, PatternSyntax(idPattern
+                .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
+                    .with(\.trailingTrivia, idPattern.identifier.trailingTrivia)
+                ))
+            )
+        }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
         return super.visit(newNode)
     }
     
+    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        guard let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node) as? SwiftSourceClassSymbol else {
+        guard let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceClassSymbol else {
             return super.visit(node)
         }
 
@@ -823,7 +825,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 let baseName: String = base.baseName.text
                 if baseName == "self" || baseName == "Self" {
                     if let clsDecl: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self),
-                       let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl) as? SwiftSourceClassSymbol {
+                       let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
                         for child in clsSymbol.children {
                             if let funcSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol,
                                child.originalSymbol == calledExpression.declName.baseName.text && child.nodeKind == .function {
