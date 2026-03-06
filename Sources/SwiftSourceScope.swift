@@ -16,6 +16,10 @@ class SwiftSourceScopeManager {
     init() {
         self.currentScope = self.globalScope
     }
+    
+    func isCurrentGlobalScope() -> Bool {
+        return self.currentScope === self.globalScope
+    }
 
     func pushScope(_ bCreate: Bool = true) {
 

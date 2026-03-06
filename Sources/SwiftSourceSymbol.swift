@@ -69,9 +69,6 @@ class SwiftSourceSymbol {
     /// AST结点
     var ASTNode: SyntaxProtocol?
     
-    /// 作用域
-    var scope: SwiftSourceScope?
-    
     /// 是否类声明结点
     var isClassNodeKind: Bool {
         switch self.nodeKind {
@@ -102,7 +99,6 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
             symbol.parent = self
             
             self.children.append(symbol)
-            self.scope?.pushSymbol(symbol)
         }
         
         if !clsSymbol.inheritedType.isEmpty {
