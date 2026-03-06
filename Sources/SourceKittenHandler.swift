@@ -140,6 +140,37 @@ class SourceKittenHandler {
             return nil
         }
 
-        return response as? [String: Any]
+        return response
+    }
+    
+    // MARK: - 通过 USR 解析模块名
+    // Swift USR 格式: s:<mangling>
+    //   标准库缩写: s:S<X>... (如 SH=Hashable, SQ=Equatable, SS=String, Si=Int)
+    //   普通模块:  s:<length><name>... (如 8TestFile16InternalProtocol...)
+    //   ObjC:     c:... / objc(cs)...
+    func extractModuleFromUSR(_ usr: String) -> String? {
+        if usr.hasPrefix("c:") || usr.hasPrefix("objc(") {
+            return "(ObjC)"
+        }
+        guard usr.hasPrefix("s:") else { return nil }
+        let rest = usr.dropFirst(2)
+        
+        // 标准库缩写: S 后跟大写字母（SH / SQ / SS / Si 等）
+        if rest.hasPrefix("S"), let second = rest.dropFirst().first, second.isLetter {
+            return "Swift"
+        }
+        
+        // 普通模块: <length><name>
+        var digits = ""
+        for ch in rest {
+            if ch.isNumber { digits.append(ch) } else { break }
+        }
+        if let len = Int(digits), len > 0 {
+            let nameStart = rest.index(rest.startIndex, offsetBy: digits.count)
+            if let nameEnd = rest.index(nameStart, offsetBy: len, limitedBy: rest.endIndex) {
+                return String(rest[nameStart..<nameEnd])
+            }
+        }
+        return nil
     }
 }
