@@ -33,14 +33,12 @@ class SwiftSourceCollector: SyntaxVisitor {
             clsSymbol.mergeSymbol(extSymbol)
         }
         
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
+
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClassDeclSyntax) {
-        if parentStack.count == 1, let clsSymbol: SwiftSourceSymbol = parentStack.first {
-            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
-        }
-        
         parentStack.removeLast()
     }
     
@@ -67,14 +65,11 @@ class SwiftSourceCollector: SyntaxVisitor {
             clsSymbol.mergeSymbol(extSymbol)
         }
         
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
         return super.visit(node)
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
-        if parentStack.count == 1, let clsSymbol: SwiftSourceSymbol = parentStack.first {
-            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
-        }
-        
         parentStack.removeLast()
     }
     
@@ -109,14 +104,11 @@ class SwiftSourceCollector: SyntaxVisitor {
         parentStack.last?.children.append(classSymbol)
         parentStack.append(classSymbol)
         
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(classSymbol)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ProtocolDeclSyntax) {
-        if parentStack.count == 1, let clsSymbol: SwiftSourceSymbol = parentStack.first {
-            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(clsSymbol)
-        }
-        
         parentStack.removeLast()
     }
     
@@ -155,6 +147,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             } else {
                 // 全局变量添加到 parentStack，在 visitPost 时加入全局作用域
                 parentStack.append(variableSymbol)
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(variableSymbol)
             }
         }
 
@@ -162,28 +155,22 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
 
     override func visitPost(_ node: VariableDeclSyntax) {
-        if node.isGlobalDecl && parentStack.count == 1 {
-            if let varSymbol = parentStack.last {
-                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-            }
+        if node.isGlobalDecl {
             parentStack.removeLast()
         }
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        let enumInfo: SwiftSourceClassSymbol = node.symbol(.enum, self.sourceFile)
+        let enumSymbol: SwiftSourceClassSymbol = node.symbol(.enum, self.sourceFile)
         
-        parentStack.last?.children.append(enumInfo)
-        parentStack.append(enumInfo)
+        parentStack.last?.children.append(enumSymbol)
+        parentStack.append(enumSymbol)
         
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumSymbol)
         return super.visit(node)
     }
     
     override func visitPost(_ node: EnumDeclSyntax) {
-        if parentStack.count == 1, let enumSymbol: SwiftSourceSymbol = parentStack.first {
-            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(enumSymbol)
-        }
-        
         parentStack.removeLast()
     }
     

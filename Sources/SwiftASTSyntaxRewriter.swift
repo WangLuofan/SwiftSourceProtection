@@ -21,1392 +21,1007 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         super.init(viewMode: .sourceAccurate)
     }
     
-//    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-//        
-//        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceClassSymbol else {
-//            return super.visit(node)
-//        }
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope(false)
-//        
-//        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
-//        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//            .with(\.leadingTrivia, node.name.leadingTrivia)
-//            .with(\.trailingTrivia, node.name.trailingTrivia))
-//            .with(\.leadingTrivia, node.leadingTrivia)
-//            .with(\.trailingTrivia, node.trailingTrivia)
-//        
-//        parentStack.append(clsSymbol)
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-//        
-//        guard let proSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceClassSymbol else {
-//            return super.visit(node)
-//        }
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope(false)
-//        
-//        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(proSymbol)
-//        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//            .with(\.leadingTrivia, node.name.leadingTrivia)
-//            .with(\.trailingTrivia, node.name.trailingTrivia))
-//            .with(\.leadingTrivia, node.leadingTrivia)
-//            .with(\.trailingTrivia, node.trailingTrivia)
-//        
-//        parentStack.append(proSymbol)
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-//        var newNode = node
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        
-//        if let funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol {
-//            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-//            
-//            var confusedParameters: [FunctionParameterSyntax] = [FunctionParameterSyntax]()
-//            node.signature.parameterClause.parameters.forEach { funcParamSyntax in
-//                var confusedParameter: FunctionParameterSyntax = funcParamSyntax
-//                
-//                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                varSymbol.ASTNode = funcParamSyntax
-//                
-//                if let secondName = funcParamSyntax.secondName {
-//                    varSymbol.originalSymbol = secondName.text
-//                    let confusedSecondName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                    confusedParameter = funcParamSyntax.with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName).with(\.leadingTrivia, secondName.leadingTrivia).with(\.trailingTrivia, secondName.trailingTrivia)
-//                    )
-//                }
-//                
-//                if let confusedLabelName: String = funcSymbol.labels[funcParamSyntax.firstName.text]?.confusedSymbol {
-//                    confusedParameter = confusedParameter
-//                        .with(\.firstName, TokenSyntax(stringLiteral: confusedLabelName)
-//                            .with(\.leadingTrivia, funcParamSyntax.firstName.leadingTrivia)
-//                            .with(\.trailingTrivia, funcParamSyntax.firstName.trailingTrivia))
-//                    if funcParamSyntax.secondName == nil && funcParamSyntax.firstName.text != "_" {
-//                        varSymbol.originalSymbol = funcParamSyntax.firstName.text
-//                    }
-//                }
-//                
-//                if let idType: IdentifierTypeSyntax = funcParamSyntax.type.as(IdentifierTypeSyntax.self),
-//                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text) {
-//                    let confusedType: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                    confusedParameter = confusedParameter.with(\.type, TypeSyntax(
-//                        IdentifierTypeSyntax(leadingTrivia: funcParamSyntax.type.leadingTrivia,
-//                                             name: TokenSyntax(stringLiteral: confusedType),
-//                                             trailingTrivia: funcParamSyntax.type.trailingTrivia)
-//                    ))
-//                }
-//                
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                confusedParameters.append(confusedParameter)
-//            }
-//            
-//            newNode = node.with(\.signature, node.signature.with(\.parameterClause, node.signature.parameterClause.with(\.parameters, FunctionParameterListSyntax(confusedParameters))))
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-//        let clsName: String = node.name.text
-//        
-//        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsName) as? SwiftSourceClassSymbol else {
-//            return super.visit(node)
-//        }
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope(false)
-//
-//        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
-//        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//            .with(\.leadingTrivia, node.name.leadingTrivia)
-//            .with(\.trailingTrivia, node.name.trailingTrivia))
-//            .with(\.leadingTrivia, node.leadingTrivia)
-//            .with(\.trailingTrivia, node.trailingTrivia)
-//
-//        parentStack.append(clsSymbol)
-//
-//        return super.visit(newNode)
-//    }
-//
-//    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-//        
-//        var newNode = node
-//        let refName: String = node.baseName.text
-//        
-//        if refName.isSwiftKeyWord {
-//            return super.visit(newNode)
-//        }
-//        
-//        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName) {
-//            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(refSymbol)
-//            newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-//                .with(\.leadingTrivia, node.baseName.leadingTrivia)
-//                .with(\.trailingTrivia, node.baseName.trailingTrivia)
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-//        if let extendedType = node.extendedType.as(IdentifierTypeSyntax.self) {
-//            if let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol {
-//                
-//                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
-//                let newNode = node.with(\.extendedType,
-//                                         TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
-//                    .with(\.leadingTrivia, node.extendedType.leadingTrivia)
-//                    .with(\.trailingTrivia, node.extendedType.trailingTrivia))
-//                    .with(\.leadingTrivia, node.leadingTrivia)
-//                    .with(\.trailingTrivia, node.trailingTrivia)
-//                
-//                parentStack.append(clsSymbol)
-//                
-//                return super.visit(newNode)
-//            }
-//        }
-//        
-//        return super.visit(node)
-//    }
-//    
-//    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-//        var newNode = node
-//        
-//        var funcSymbol: SwiftSourceFunctionSymbol? = nil
-//        if node.isLocalDecl {
-//            funcSymbol = node.symbol(self.sourceFile)
-//            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol!)
-//        } else if node.isMemberDecl {
-//            guard let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol else {
-//                return super.visit(newNode)
-//            }
-//            
-//            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text, inScope: clsSymbol.scope) as? SwiftSourceFunctionSymbol
-//        } else {
-//            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol
-//        }
-//        
-//        if let funcSymbol {
-//            let confusedFuncSymbol: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-//            newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedFuncSymbol)
-//                .with(\.leadingTrivia, node.name.leadingTrivia)
-//                .with(\.trailingTrivia, node.name.trailingTrivia))
-//            
-//            if let returnClause: ReturnClauseSyntax = node.signature.returnClause {
-//                if let idTypeSyntax: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self),
-//                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
-//                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                    newNode = newNode.with(\.signature, newNode.signature
-//                        .with(\.returnClause, returnClause
-//                            .with(\.type, TypeSyntax(idTypeSyntax
-//                                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
-//                                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)))
-//                            )
-//                        )
-//                    )
-//                }
-//            }
-//        }
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        if let funcSymbol {
-//            parentStack.append(funcSymbol)
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
-//        var newNode = node
-//        
-//        if let funcSymbol: SwiftSourceFunctionSymbol = parentStack.last as? SwiftSourceFunctionSymbol {
-//            if let secondName = node.secondName {
-//                let paramSymbol: SwiftSourceSymbol = node.funcParameterSymbol(self.sourceFile)
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
-//                
-//                let confusedSecondName: String = SwiftConfusedHelper.confusedSymbol(paramSymbol)
-//                newNode = newNode.with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
-//                    .with(\.leadingTrivia, secondName.leadingTrivia)
-//                    .with(\.trailingTrivia, secondName.trailingTrivia)
-//                )
-//            }
-//            
-//            if let firstSymbol: SwiftSourceSymbol = funcSymbol.labels[node.firstName.text] {
-//                if let confusedLabelSymbolName: String = firstSymbol.confusedSymbol {
-//                    newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedLabelSymbolName)
-//                        .with(\.leadingTrivia, node.firstName.leadingTrivia)
-//                        .with(\.leadingTrivia, node.firstName.leadingTrivia)
-//                        .with(\.trailingTrivia, node.firstName.trailingTrivia))
-//                }
-//                
-//                if node.secondName == nil {
-//                    SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(firstSymbol)
-//                }
-//            }
-//        }
-//        
-//        if let typeAnnon: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self),
-//           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeAnnon.name.text) {
-//            
-//            let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.type, TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedTypeName)))
-//                .with(\.leadingTrivia, node.type.leadingTrivia)
-//                .with(\.trailingTrivia, node.type.trailingTrivia))
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: DoStmtSyntax) -> StmtSyntax {
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        return super.visit(node)
-//    }
-//    
-//    override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
-//        var newNode = node
-//        
-//        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-//            varSymbol.originalSymbol = idPattern.identifier.text
-//        }
-//        
-//        if let type: IdentifierTypeSyntax = node.typeAnnotation?.as(IdentifierTypeSyntax.self) {
-//            varSymbol.symbolType = type.name.text
-//            
-//            if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(type.name.text) {
-//                let confusedTypeSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                newNode = newNode.with(\.typeAnnotation, TypeAnnotationSyntax(type
-//                    .with(\.name, TokenSyntax(stringLiteral: confusedTypeSymbolName)
-//                        .with(\.leadingTrivia, type.name.leadingTrivia)
-//                        .with(\.trailingTrivia, type.name.trailingTrivia)
-//                    ))
-//                )
-//            }
-//        } else if let initializer = node.initializer,
-//                  let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(initializer.value) {
-//            varSymbol.symbolType = inferType
-//        }
-//        
-//        varSymbol.ASTNode = node
-//        
-//        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-//            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//            newNode = newNode.with(\.pattern, PatternSyntax(idPattern
-//                .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
-//                    .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
-//                    .with(\.trailingTrivia, idPattern.identifier.trailingTrivia)
-//                ))
-//            )
-//        }
-//        
-//        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        return super.visit(node)
-//    }
-//    
-//    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-//        guard let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceClassSymbol else {
-//            return super.visit(node)
-//        }
-//
-//        SwiftSourceScopeManager.sharedManager.pushScope(false)
-//
-//        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumSymbol)
-//        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//            .with(\.leadingTrivia, node.name.leadingTrivia)
-//            .with(\.trailingTrivia, node.name.trailingTrivia))
-//
-//        parentStack.append(enumSymbol)
-//
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
-//        var newNode = node
-//        
-//        if let enumSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
-//            var newElements: [EnumCaseElementSyntax] = [EnumCaseElementSyntax]()
-//            node.elements.forEach { enumCaseElemSyntax in
-//                var enumCaseSymbol: SwiftSourceEnumCaseSymbol?
-//                for child in enumSymbol.children {
-//                    if child.originalSymbol == enumCaseElemSyntax.name.text {
-//                        enumCaseSymbol = child as? SwiftSourceEnumCaseSymbol
-//                        break
-//                    }
-//                }
-//                
-//                if let enumCaseSymbol {
-//                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumCaseSymbol)
-//                    var element = enumCaseElemSyntax
-//                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//                            .with(\.leadingTrivia, enumCaseElemSyntax.name.leadingTrivia)
-//                            .with(\.trailingTrivia, enumCaseElemSyntax.name.trailingTrivia))
-//                        .with(\.leadingTrivia, enumCaseElemSyntax.leadingTrivia)
-//                        .with(\.trailingTrivia, enumCaseElemSyntax.trailingTrivia)
-//                    
-//                    if let parameterClause: EnumCaseParameterClauseSyntax = enumCaseElemSyntax.parameterClause {
-//                        var confusedParameters: [EnumCaseParameterSyntax] = [EnumCaseParameterSyntax]()
-//                        parameterClause.parameters.forEach { paramElemSyntax in
-//                            if let typeIdent: IdentifierTypeSyntax = paramElemSyntax.type.as(IdentifierTypeSyntax.self),
-//                               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeIdent.name.text) {
-//                                let confusedTypeSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                                let confusedParam = EnumCaseParameterSyntax(stringLiteral: confusedTypeSymbolName)
-//                                    .with(\.leadingTrivia, paramElemSyntax.leadingTrivia)
-//                                    .with(\.trailingTrivia, paramElemSyntax.trailingTrivia)
-//                                confusedParameters.append(confusedParam)
-//                            }
-//                        }
-//                        
-//                        element = element.with(\.parameterClause, parameterClause.with(\.parameters, EnumCaseParameterListSyntax(confusedParameters)))
-//                    }
-//                    
-//                    newElements.append(element)
-//                }
-//            }
-//            
-//            newNode = node.with(\.elements, EnumCaseElementListSyntax(newElements)
-//                .with(\.leadingTrivia, node.elements.leadingTrivia)
-//                .with(\.trailingTrivia, node.elements.trailingTrivia))
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
-//        var newNode = node
-//        
-//        if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) {
-//            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//                .with(\.leadingTrivia, newNode.leadingTrivia)
-//                .with(\.trailingTrivia, newNode.trailingTrivia)
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: DictionaryTypeSyntax) -> TypeSyntax {
-//        var newNode = node
-//        
-//        if let keySyntax: IdentifierTypeSyntax = node.key.as(IdentifierTypeSyntax.self),
-//           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(keySyntax.name.text) {
-//            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.key, TypeSyntax(keySyntax
-//                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//                    .with(\.leadingTrivia, keySyntax.name.leadingTrivia)
-//                    .with(\.trailingTrivia, keySyntax.name.trailingTrivia)
-//                ))
-//            )
-//        }
-//        
-//        if let valueSyntax: IdentifierTypeSyntax = node.value.as(IdentifierTypeSyntax.self),
-//            let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(valueSyntax.name.text) {
-//            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.value, TypeSyntax(valueSyntax
-//                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//                    .with(\.leadingTrivia, valueSyntax.name.leadingTrivia)
-//                    .with(\.trailingTrivia, valueSyntax.name.trailingTrivia)
-//                ))
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: ArrayTypeSyntax) -> TypeSyntax {
-//        var newNode = node
-//        
-//        if let elemSyntax: IdentifierTypeSyntax = node.element.as(IdentifierTypeSyntax.self),
-//           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(elemSyntax.name.text) {
-//            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.element, TypeSyntax(elemSyntax
-//                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
-//                    .with(\.leadingTrivia, elemSyntax.name.leadingTrivia)
-//                    .with(\.trailingTrivia, elemSyntax.name.trailingTrivia)
-//                )
-//            ))
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-//        var newNode = node
-//        
-//        /// 如果是局部变量，先收集信息，添加作用域，再进行混淆
-//        if node.isLocalDecl {
-//            let localSymbol: SwiftSourceSymbol = node.variableSymbol(self.sourceFile)
-//            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(localSymbol)
-//        }
-//        
-//        var newBindings: [PatternBindingSyntax] = [PatternBindingSyntax]()
-//        node.bindings.forEach { binding in
-//            var newBinding = binding
-//            var variableTypeSymbol: SwiftSourceSymbol?
-//            
-//            if let patternBinding: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self),
-//               let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(patternBinding.identifier.text) {
-//                
-//                parentStack.append(symbol)
-//                
-//                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(symbol)
-//                let newPattern: IdentifierPatternSyntax = patternBinding
-//                    .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
-//                        .with(\.leadingTrivia, patternBinding.identifier.leadingTrivia)
-//                        .with(\.trailingTrivia, patternBinding.identifier.trailingTrivia))
-//                
-//                if let newPattern: PatternSyntax = PatternSyntax(newPattern) {
-//                    newBinding = newBinding.with(\.pattern, newPattern)
-//                    
-//                    var confusedTypeAnnotation: TypeAnnotationSyntax?
-//                    if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation {
-//                        if let idTypeSyntax: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
-//                           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
-//                            
-//                            variableTypeSymbol = typeSymbol
-//                            
-//                            let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                            confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
-//                                idTypeSyntax.with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
-//                                    .with(\.leadingTrivia, idTypeSyntax.leadingTrivia)
-//                                    .with(\.trailingTrivia, idTypeSyntax.trailingTrivia)))
-//                            )
-//                            
-//                        } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self) {
-//                            if let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
-//                               let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
-//                                
-//                                variableTypeSymbol = wrappedTypeSymbol
-//                                
-//                                let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol)
-//                                confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
-//                                    optTypeAnnotation.with(
-//                                        \.wrappedType, TypeSyntax(wrappedType
-//                                            .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName))
-//                                        )
-//                                    ))
-//                                )
-//                            }
-//                        }
-//                        
-//                        if let confusedTypeAnnotation {
-//                            newBinding = newBinding.with(\.typeAnnotation, confusedTypeAnnotation)
-//                                .with(\.leadingTrivia, binding.leadingTrivia)
-//                                .with(\.trailingTrivia, binding.trailingTrivia)
-//                        }
-//                    }
-//                }
-//                
-//                if let initializer: InitializerClauseSyntax = newBinding.initializer {
-//                    if let value = initializer.value.as(MemberAccessExprSyntax.self) {
-//                        if let base: DeclReferenceExprSyntax = value.base?.as(DeclReferenceExprSyntax.self),
-//                           let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(base.baseName.text) {
-//                            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(baseSymbol)
-//                            let newBase = base
-//                                .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-//                                    .with(\.leadingTrivia, base.baseName.leadingTrivia)
-//                                    .with(\.trailingTrivia, base.baseName.trailingTrivia))
-//                            switch baseSymbol.nodeKind {
-//                            case .class, .enum, .protocol, .extension:
-//                                for child in baseSymbol.children {
-//                                    if child.originalSymbol == value.declName.baseName.text {
-//                                        let confusedSymbol: String = SwiftConfusedHelper.confusedSymbol(child)
-//                                        let newValue = value.with(\.declName, value.declName
-//                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-//                                                .with(\.leadingTrivia, value.declName.baseName.leadingTrivia)
-//                                                .with(\.trailingTrivia, value.declName.baseName.trailingTrivia))
-//                                        ).with(\.base, ExprSyntax(newBase))
-//                                        newBinding = newBinding.with(\.initializer, initializer
-//                                            .with(\.value, ExprSyntax(newValue))
-//                                        )
-//                                        break
-//                                    }
-//                                }
-//                            default:
-//                                break
-//                            }
-//                        } else {
-//                            if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self)
-//                            {
-//                                if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeSyntax.name.text) {
-//                                    switch typeSymbol.nodeKind {
-//                                    case .class, .enum, .protocol, .extension:
-//                                        for child in typeSymbol.children {
-//                                            if child.originalSymbol == value.declName.baseName.text {
-//                                                let confusedSymbol: String = SwiftConfusedHelper.confusedSymbol(child)
-//                                                let newValue = value.with(\.declName, value.declName
-//                                                    .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-//                                                        .with(\.leadingTrivia, value.declName.baseName.leadingTrivia)
-//                                                        .with(\.trailingTrivia, value.declName.baseName.trailingTrivia))
-//                                                )
-//                                                newBinding = newBinding.with(\.initializer, initializer
-//                                                    .with(\.value, ExprSyntax(newValue))
-//                                                )
-//                                                break
-//                                            }
-//                                        }
-//                                    default:
-//                                        break
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    } else if let value = initializer.value.as(FunctionCallExprSyntax.self) {
-//                        if let calledExprSyntax: DeclReferenceExprSyntax = value.calledExpression.as(DeclReferenceExprSyntax.self) {
-//                            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExprSyntax.baseName.text) {
-//                                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
-//                                    
-//                                    /// 推导方法签名，匹配方法
-//                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
-//                                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-//                                        
-//                                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                                        value.arguments.forEach { labeledExprSyntax in
-//                                            var confusedArg = labeledExprSyntax
-//                                            if let label = labeledExprSyntax.label,
-//                                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
-//                                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
-//                                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
-//                                                    .with(\.leadingTrivia, label.leadingTrivia)
-//                                                    .with(\.trailingTrivia, label.trailingTrivia)
-//                                                )
-//                                            }
-//                                            
-//                                            confusedArgs.append(confusedArg)
-//                                        }
-//                                        
-//                                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
-//                                        
-//                                        newBinding = newBinding.with(\.initializer, newBinding.initializer?
-//                                            .with(\.value, ExprSyntax(value
-//                                                .with(\.calledExpression, ExprSyntax(calledExprSyntax
-//                                                    .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
-//                                                        .with(\.leadingTrivia, calledExprSyntax.baseName.leadingTrivia)
-//                                                        .with(\.trailingTrivia, calledExprSyntax.baseName.trailingTrivia)
-//                                                    )
-//                                                )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
-//                                            ))
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                        } else if let calledExprSyntax: MemberAccessExprSyntax = value.calledExpression.as(MemberAccessExprSyntax.self) {
-//                            if let baseSyntax: DeclReferenceExprSyntax = calledExprSyntax.base?.as(DeclReferenceExprSyntax.self) {
-//                                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
-//                                    if baseSymbol.isClassNodeKind {
-//                                        /// 推导方法签名，匹配方法
-//                                        if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
-//                                            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-//                                            
-//                                            var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                                            value.arguments.forEach { labeledExprSyntax in
-//                                                var confusedArg = labeledExprSyntax
-//                                                if let label = labeledExprSyntax.label,
-//                                                   let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
-//                                                    let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
-//                                                    confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
-//                                                        .with(\.leadingTrivia, label.leadingTrivia)
-//                                                        .with(\.trailingTrivia, label.trailingTrivia)
-//                                                    )
-//                                                }
-//                                                
-//                                                confusedArgs.append(confusedArg)
-//                                            }
-//                                            
-//                                            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
-//                                            
-//                                            newBinding = newBinding.with(\.initializer, newBinding.initializer?
-//                                                .with(\.value, ExprSyntax(value
-//                                                    .with(\.calledExpression, ExprSyntax(calledExprSyntax
-//                                                        .with(\.base, ExprSyntax(baseSyntax.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
-//                                                            .with(\.leadingTrivia, baseSyntax.baseName.leadingTrivia)
-//                                                            .with(\.trailingTrivia, baseSyntax.baseName.trailingTrivia)))
-//                                                        )
-//                                                    )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
-//                                                ))
-//                                            )
-//                                        }
-//                                    }
-//                                }
-//                            }  else {
-//                                /// nil base
-//                                if let variableTypeSymbol {
-//                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value, variableTypeSymbol) {
-//                                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                                        value.arguments.forEach { labeledExprSyntax in
-//                                            var confusedArg = labeledExprSyntax
-//                                            if let label = labeledExprSyntax.label,
-//                                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
-//                                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
-//                                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
-//                                                    .with(\.leadingTrivia, label.leadingTrivia)
-//                                                    .with(\.trailingTrivia, label.trailingTrivia)
-//                                                )
-//                                            }
-//                                            
-//                                            confusedArgs.append(confusedArg)
-//                                        }
-//                                        
-//                                        newBinding = newBinding.with(\.initializer, newBinding.initializer?
-//                                            .with(\.value, ExprSyntax(value
-//                                                .with(\.calledExpression, ExprSyntax(calledExprSyntax
-//                                                )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
-//                                            ))
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                
-//                newBindings.append(newBinding)
-//            }
-//        }
-//        
-//        newNode = node.with(\.bindings, PatternBindingListSyntax(newBindings)
-//            .with(\.leadingTrivia, node.bindings.leadingTrivia)
-//            .with(\.trailingTrivia, node.bindings.trailingTrivia))
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
-//        var newNode = node
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        
-//        var confusedConditions: [ConditionElementSyntax] = [ConditionElementSyntax]()
-//        node.conditions.forEach { conditionElem in
-//            var newCondition: ConditionElementSyntax? = conditionElem
-//            
-//            if let condition: OptionalBindingConditionSyntax = conditionElem.condition.as(OptionalBindingConditionSyntax.self),
-//               let idPattern: IdentifierPatternSyntax = condition.pattern.as(IdentifierPatternSyntax.self) {
-//                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                
-//                varSymbol.originalSymbol = idPattern.identifier.text
-//                varSymbol.parent = parentStack.last
-//                
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                let optConfusedPattern: IdentifierPatternSyntax = idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol))
-//                
-//                var confusedTypeAnno = condition.typeAnnotation
-//                if let typeAnnotation = condition.typeAnnotation,
-//                   let typeId: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
-//                    varSymbol.symbolType = typeId.name.text
-//                    if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeId.name.text) {
-//                        let confusedType: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                        confusedTypeAnno = typeAnnotation.with(
-//                            \.type, TypeSyntax(IdentifierTypeSyntax(
-//                                leadingTrivia: typeId.leadingTrivia,
-//                                name: TokenSyntax(
-//                                    stringLiteral: confusedType),
-//                                trailingTrivia: typeId.trailingTrivia
-//                            ))
-//                        )
-//                    }
-//                }
-//                
-//                var confusedCondition = condition.with(\.pattern, PatternSyntax(optConfusedPattern))
-//                if let confusedTypeAnno {
-//                    confusedCondition = confusedCondition.with(\.typeAnnotation, confusedTypeAnno)
-//                }
-//                
-//                newCondition = conditionElem.with(\.condition, ConditionElementSyntax.Condition(confusedCondition))
-//            }
-//            
-//            if let newCondition {
-//                confusedConditions.append(newCondition)
-//            }
-//        }
-//        
-//        newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConditions)
-//            .with(\.leadingTrivia, node.conditions.leadingTrivia)
-//            .with(\.trailingTrivia, node.conditions.trailingTrivia))
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-//        var parent = node.parent
-//        
-//        while parent != nil {
-//            if let _: GuardStmtSyntax = parent?.as(GuardStmtSyntax.self) {
-//                SwiftSourceScopeManager.sharedManager.pushScope()
-//                break
-//            }
-//            
-//            parent = parent?.parent
-//        }
-//        
-//        return super.visit(node)
-//    }
-//    
-//    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-//        var newNode = node
-//        
-//        if let calledExpression = newNode.calledExpression.as(DeclReferenceExprSyntax.self) {
-//            if let baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExpression.baseName.text) {
-//                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
-//                    /// MyClass()
-//                    newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
-//                        .with(\.baseName, TokenSyntax(stringLiteral: baseSymbol.confusedSymbol ?? baseSymbol.originalSymbol)
-//                            .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
-//                            .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia)
-//                        ))
-//                    )
-//                    
-//                    /// 推导方法签名，匹配方法
-//                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(node) {
-//                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-//                        
-//                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                        node.arguments.forEach { labeledExprSyntax in
-//                            var confusedArg = labeledExprSyntax
-//                            if let label = labeledExprSyntax.label,
-//                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
-//                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
-//                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
-//                                    .with(\.leadingTrivia, label.leadingTrivia)
-//                                    .with(\.trailingTrivia, label.trailingTrivia)
-//                                )
-//                            }
-//                            
-//                            confusedArgs.append(confusedArg)
-//                        }
-//                        
-//                        newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
-//                            .with(\.leadingTrivia, node.arguments.leadingTrivia)
-//                            .with(\.trailingTrivia, node.arguments.trailingTrivia))
-//                    }
-//                    
-//                } else if baseSymbol.nodeKind == .function,
-//                          let funcSymbol: SwiftSourceFunctionSymbol = baseSymbol as? SwiftSourceFunctionSymbol {
-//                    let confusedFuncName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-//                    newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
-//                        .with(\.baseName, TokenSyntax(stringLiteral: confusedFuncName)
-//                            .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
-//                            .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia))
-//                    ))
-//                    
-//                    var confusedArgList: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                    node.arguments.forEach { labeledExprSyntax in
-//                        if let label: TokenSyntax = labeledExprSyntax.label,
-//                           let confusedLabelName: String = funcSymbol.labels[label.text]?.confusedSymbol {
-//                            confusedArgList.append(
-//                                labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-//                                    .with(\.leadingTrivia, label.leadingTrivia)
-//                                    .with(\.trailingTrivia, label.trailingTrivia))
-//                            )
-//                        } else {
-//                            confusedArgList.append(labeledExprSyntax)
-//                        }
-//                    }
-//                    
-//                    newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgList)
-//                        .with(\.leadingTrivia, node.arguments.leadingTrivia)
-//                        .with(\.trailingTrivia, node.arguments.trailingTrivia))
-//                }
-//            }
-//        } else if let calledExpression = newNode.calledExpression.as(MemberAccessExprSyntax.self) {
-//            if let base = calledExpression.base?.as(DeclReferenceExprSyntax.self) {
-//                let baseName: String = base.baseName.text
-//                if baseName == "self" || baseName == "Self" {
-//                    if let clsDecl: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self),
-//                       let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
-//                        for child in clsSymbol.children {
-//                            if let funcSymbol: SwiftSourceFunctionSymbol = child as? SwiftSourceFunctionSymbol,
-//                               child.originalSymbol == calledExpression.declName.baseName.text && child.nodeKind == .function {
-//                                let confusedFuncName = SwiftConfusedHelper.confusedSymbol(child)
-//                                newNode = node.with(\.calledExpression, ExprSyntax(calledExpression
-//                                    .with(\.declName, DeclReferenceExprSyntax(
-//                                        leadingTrivia: calledExpression.declName.leadingTrivia, baseName: TokenSyntax(stringLiteral: confusedFuncName)
-//                                            .with(\.leadingTrivia, calledExpression.declName.baseName.leadingTrivia)
-//                                            .with(\.trailingTrivia, calledExpression.declName.baseName.trailingTrivia), trailingTrivia: calledExpression.declName.trailingTrivia)
-//                                    ))
-//                                )
-//                                
-//                                var confusedArgList: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                                node.arguments.forEach { labeledExprSyntax in
-//                                    if let label: TokenSyntax = labeledExprSyntax.label,
-//                                       let confusedLabelName: String = funcSymbol.labels[label.text]?.confusedSymbol {
-//                                        confusedArgList.append(
-//                                            labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-//                                                .with(\.leadingTrivia, label.leadingTrivia)
-//                                                .with(\.trailingTrivia, label.trailingTrivia))
-//                                        )
-//                                    } else {
-//                                        confusedArgList.append(labeledExprSyntax)
-//                                    }
-//                                }
-//                                
-//                                newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgList)
-//                                    .with(\.leadingTrivia, node.arguments.leadingTrivia)
-//                                    .with(\.trailingTrivia, node.arguments.trailingTrivia))
-//                                
-//                                break
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
-//        var newNode = node
-//        
-//        var newConds: [ConditionElementSyntax] = [ConditionElementSyntax]()
-//        node.conditions.forEach { condition in
-//            var newCondition = condition
-//            
-//            if let optBindingCondSyntax: OptionalBindingConditionSyntax = newCondition.condition.as(OptionalBindingConditionSyntax.self) {
-//                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                
-//                var newOptBindingCondSyntax: OptionalBindingConditionSyntax = optBindingCondSyntax
-//                
-//                if let idPattern: IdentifierPatternSyntax = optBindingCondSyntax.pattern.as(IdentifierPatternSyntax.self),
-//                   let confusedCondSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idPattern.identifier.text) {
-//                    
-//                    let confusedCondSymbolName: String = SwiftConfusedHelper.confusedSymbol(confusedCondSymbol)
-//                    
-//                    varSymbol.originalSymbol = idPattern.identifier.text
-//                    varSymbol.confusedSymbol = confusedCondSymbolName
-//                    
-//                    let newIdPattern: IdentifierPatternSyntax = idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedCondSymbolName)
-//                        .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
-//                        .with(\.trailingTrivia, idPattern.identifier.trailingTrivia)
-//                    )
-//                    
-//                    newOptBindingCondSyntax = newOptBindingCondSyntax.with(\.pattern, PatternSyntax(newIdPattern))
-//                }
-//                
-//                if let typeAnnotation = optBindingCondSyntax.typeAnnotation {
-//                    if let type: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
-//                       let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(type.name.text) {
-//                        varSymbol.symbolType = type.name.text
-//                        
-//                        let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol)
-//                        newOptBindingCondSyntax = newOptBindingCondSyntax
-//                            .with(\.typeAnnotation, typeAnnotation
-//                                .with(\.type, TypeSyntax(type
-//                                    .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                                        .with(\.leadingTrivia, typeAnnotation.type.leadingTrivia)
-//                                        .with(\.trailingTrivia, typeAnnotation.type.trailingTrivia))))
-//                            )
-//                    }
-//                }
-//                
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                newCondition = condition.with(\.condition, ConditionElementSyntax.Condition(newOptBindingCondSyntax))
-//            }
-//            
-//            newConds.append(newCondition)
-//        }
-//        
-//        newNode = newNode.with(\.conditions, ConditionElementListSyntax(newConds)
-//            .with(\.leadingTrivia, newNode.conditions.leadingTrivia)
-//            .with(\.trailingTrivia, newNode.conditions.trailingTrivia))
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        return super.visit(node)
-//    }
-//    
-//    override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
-//        var newNode = node
-//        
-//        var confusedParameters: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
-//        node.parameters.forEach { tupleTypeElemSyntax in
-//            var confusedTupleTypeElemSyntax = tupleTypeElemSyntax
-//            if let secondName = tupleTypeElemSyntax.secondName {
-//                let confusedSecondName: String = SwiftConfusedHelper.confusedSymbolName(secondName.text)
-//                confusedTupleTypeElemSyntax = confusedTupleTypeElemSyntax
-//                    .with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
-//                        .with(\.leadingTrivia, secondName.leadingTrivia)
-//                        .with(\.trailingTrivia, secondName.trailingTrivia)
-//                    )
-//            }
-//            
-//            if let optTypeSyntax: OptionalTypeSyntax = tupleTypeElemSyntax.type.as(OptionalTypeSyntax.self) {
-//                if let idTypeSyntax: IdentifierTypeSyntax = optTypeSyntax.wrappedType.as(IdentifierTypeSyntax.self),
-//                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
-//                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                    confusedTupleTypeElemSyntax = confusedTupleTypeElemSyntax
-//                        .with(\.type, TypeSyntax(optTypeSyntax
-//                            .with(\.wrappedType, TypeSyntax(idTypeSyntax
-//                                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
-//                                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)
-//                                )
-//                            ))
-//                        ))
-//                }
-//            } else if let idTypeSyntax: IdentifierTypeSyntax = tupleTypeElemSyntax.type.as(IdentifierTypeSyntax.self),
-//                      let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
-//                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                confusedTupleTypeElemSyntax = confusedTupleTypeElemSyntax
-//                    .with(\.type, TypeSyntax(idTypeSyntax.with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                        .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
-//                        .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia))
-//                    ))
-//            }
-//            
-//            confusedParameters.append(confusedTupleTypeElemSyntax)
-//        }
-//        
-//        newNode = newNode.with(\.parameters, TupleTypeElementListSyntax(confusedParameters)
-//            .with(\.leadingTrivia, node.parameters.leadingTrivia)
-//            .with(\.trailingTrivia, node.parameters.trailingTrivia)
-//        )
-//        
-//        if let idTypeSyntax: IdentifierTypeSyntax = node.returnClause.type.as(IdentifierTypeSyntax.self),
-//           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
-//            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.returnClause, newNode.returnClause.with(\.type, TypeSyntax(idTypeSyntax
-//                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
-//                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)
-//                )
-//            )))
-//        } else if let optTypeSyntax: OptionalTypeSyntax = node.returnClause.type.as(OptionalTypeSyntax.self),
-//                  let wrappedType = optTypeSyntax.wrappedType.as(IdentifierTypeSyntax.self),
-//                  let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
-//            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.returnClause, newNode.returnClause
-//                .with(\.type, TypeSyntax(optTypeSyntax
-//                    .with(\.wrappedType, TypeSyntax(wrappedType
-//                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                            .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
-//                            .with(\.trailingTrivia, wrappedType.name.trailingTrivia)))
-//                    ))
-//                )
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-//        var newNode = node
-//
-//        if let base = node.base,
-//           let baseTypeName = SwiftConfusedHelper.inferExprSyntaxType(base),
-//           let typeSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseTypeName) as? SwiftSourceClassSymbol {
-//            for child in typeSymbol.children {
-//                if child.originalSymbol == node.declName.baseName.text {
-//                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
-//                    newNode = newNode.with(\.declName, newNode.declName.with(\.baseName,
-//                        TokenSyntax(stringLiteral: confusedSymbol)
-//                            .with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia)
-//                            .with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
-//                    )
-//                    break
-//                }
-//            }
-//        }
-//
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: TupleTypeSyntax) -> TypeSyntax {
-//        var newNode = node
-//        
-//        var confusedElements: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
-//        node.elements.forEach { tupleTypeElemSyntax in
-//            if let funcTypeSyntax: FunctionTypeSyntax = tupleTypeElemSyntax.type.as(FunctionTypeSyntax.self) {
-//                let newTypeNode = self.visit(funcTypeSyntax)
-//                confusedElements.append(tupleTypeElemSyntax
-//                    .with(\.type, newTypeNode
-//                        .with(\.leadingTrivia, funcTypeSyntax.leadingTrivia)
-//                        .with(\.trailingTrivia, funcTypeSyntax.trailingTrivia)
-//                    ))
-//            } else {
-//                confusedElements.append(tupleTypeElemSyntax)
-//            }
-//        }
-//        
-//        newNode = newNode.with(\.elements, TupleTypeElementListSyntax(confusedElements)
-//            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
-//            .with(\.trailingTrivia, newNode.elements.trailingTrivia))
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
-//        self.switchExprStack.append(node)
-//        return super.visit(node)
-//    }
-//    
-//    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-//        var newNode = node
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope(true)
-//        
-//        if let exprPattern: ExpressionPatternSyntax = newNode.pattern.as(ExpressionPatternSyntax.self) {
-//            var confusedExpression = exprPattern.expression
-//            if let memberAccessExpr: MemberAccessExprSyntax = exprPattern.expression.as(MemberAccessExprSyntax.self),
-//               let currentSwitchExpr = self.switchExprStack.last, memberAccessExpr.base == nil,
-//               let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(currentSwitchExpr),
-//               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inferType) {
-//                if typeSymbol.isClassNodeKind {
-//                    for child in typeSymbol.children {
-//                        if child.originalSymbol == memberAccessExpr.declName.baseName.text {
-//                            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
-//                            confusedExpression = ExprSyntax(memberAccessExpr
-//                                    .with(\.declName, memberAccessExpr.declName
-//                                        .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-//                                            .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
-//                                            .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
-//                                        )
-//                                    )
-//                            )
-//                            break
-//                        }
-//                    }
-//                }
-//            } else if let callExpr: FunctionCallExprSyntax = exprPattern.expression.as(FunctionCallExprSyntax.self) {
-//                var confusedCallExpr = callExpr
-//                var childSymbol: SwiftSourceSymbol?
-//                
-//                if let memberAccessExpr: MemberAccessExprSyntax = callExpr.calledExpression.as(MemberAccessExprSyntax.self),
-//                   let currentSwitchExpr = self.switchExprStack.last, memberAccessExpr.base == nil,
-//                   let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(currentSwitchExpr),
-//                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inferType) {
-//                    if typeSymbol.isClassNodeKind {
-//                        for child in typeSymbol.children {
-//                            if child.originalSymbol == memberAccessExpr.declName.baseName.text {
-//                                childSymbol = child
-//                                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(child)
-//                                confusedCallExpr = callExpr
-//                                    .with(\.calledExpression, ExprSyntax(memberAccessExpr
-//                                        .with(\.declName, memberAccessExpr.declName
-//                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
-//                                                .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
-//                                                .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
-//                                            )
-//                                        )
-//                                    ))
-//                                
-//                                break
-//                            }
-//                        }
-//                    }
-//                }
-//                
-//                var confusedArguments: [LabeledExprSyntax] = [LabeledExprSyntax]()
-//                for (index, labeledExprSyntax) in callExpr.arguments.enumerated() {
-//                    if let expression: PatternExprSyntax = labeledExprSyntax.expression.as(PatternExprSyntax.self) {
-//                        if let pattern: ValueBindingPatternSyntax = expression.pattern.as(ValueBindingPatternSyntax.self) {
-//                            if let bindPattern: IdentifierPatternSyntax = pattern.pattern.as(IdentifierPatternSyntax.self) {
-//                                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                                varSymbol.isMember = false
-//                                varSymbol.symbolFilePath = self.sourceFile
-//                                varSymbol.originalSymbol = bindPattern.identifier.text
-//                                
-//                                if let childSymbol,
-//                                   childSymbol.nodeKind == .enumCase,
-//                                   let enumCaseSymbol: SwiftSourceEnumCaseSymbol = childSymbol as? SwiftSourceEnumCaseSymbol,
-//                                   index < enumCaseSymbol.associatedType.count {
-//                                    varSymbol.symbolType = enumCaseSymbol.associatedType[index]
-//                                }
-//                                
-//                                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                                let confusedLabelExprSyntax = labeledExprSyntax
-//                                    .with(\.expression, ExprSyntax(expression
-//                                        .with(\.pattern, PatternSyntax(pattern
-//                                            .with(\.pattern, PatternSyntax(bindPattern
-//                                                .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol)
-//                                                    .with(\.leadingTrivia, bindPattern.leadingTrivia)
-//                                                    .with(\.trailingTrivia, bindPattern.trailingTrivia)
-//                                                )
-//                                            ))
-//                                        ))
-//                                    ))
-//                                
-//                                confusedArguments.append(confusedLabelExprSyntax)
-//                                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                            }
-//                        }
-//                    } else {
-//                        confusedArguments.append(labeledExprSyntax)
-//                    }
-//                }
-//                
-//                confusedCallExpr = confusedCallExpr.with(\.arguments, LabeledExprListSyntax(confusedArguments)
-//                    .with(\.leadingTrivia, confusedCallExpr.arguments.leadingTrivia)
-//                    .with(\.trailingTrivia, confusedCallExpr.arguments.trailingTrivia)
-//                )
-//                
-//                confusedExpression = ExprSyntax(confusedCallExpr)
-//            }
-//            
-//            newNode = newNode.with(\.pattern, PatternSyntax(exprPattern
-//                .with(\.expression, ExprSyntax(confusedExpression))
-//            ))
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
-//        var newNode = node
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        
-//        if let parameterClause: ClosureShorthandParameterListSyntax = node.signature?.parameterClause?.as(ClosureShorthandParameterListSyntax.self) {
-//            
-//            var parameterSyntaxs: [ClosureShorthandParameterSyntax] = [ClosureShorthandParameterSyntax]()
-//            parameterClause.forEach { closureShorthandParameterSyntax in
-//                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                
-//                varSymbol.originalSymbol = closureShorthandParameterSyntax.name.text
-//                varSymbol.symbolFilePath = self.sourceFile
-//                
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                
-//                let confusedName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                let parameterSyntax = closureShorthandParameterSyntax
-//                    .with(\.name, TokenSyntax(stringLiteral: confusedName))
-//                
-//                parameterSyntaxs.append(parameterSyntax)
-//            }
-//            
-//            let confusedParameterClause: ClosureShorthandParameterListSyntax = ClosureShorthandParameterListSyntax(parameterSyntaxs)
-//                .with(\.leadingTrivia, parameterClause.leadingTrivia)
-//                .with(\.trailingTrivia, parameterClause.trailingTrivia)
-//            
-//            newNode = newNode.with(\.signature, newNode.signature?.with(\.parameterClause, ClosureSignatureSyntax.ParameterClause(confusedParameterClause)))
-//        } else if let parameterClause: ClosureParameterClauseSyntax = node.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
-//            
-//            var confusedParameters: [ClosureParameterSyntax] = [ClosureParameterSyntax]()
-//            parameterClause.parameters.forEach { closureParameterSyntax in
-//                var confusedParameter = closureParameterSyntax
-//                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                
-//                if let secondName: TokenSyntax = closureParameterSyntax.secondName {
-//                    varSymbol.originalSymbol = secondName.text
-//                } else {
-//                    varSymbol.originalSymbol = closureParameterSyntax.firstName.text
-//                }
-//                
-//                let confusedName = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                if let secondName: TokenSyntax = closureParameterSyntax.secondName {
-//                    confusedParameter = closureParameterSyntax
-//                        .with(\.secondName, TokenSyntax(stringLiteral: confusedName)
-//                            .with(\.leadingTrivia, secondName.leadingTrivia)
-//                            .with(\.trailingTrivia, secondName.trailingTrivia))
-//                } else {
-//                    confusedParameter = closureParameterSyntax
-//                        .with(\.firstName, TokenSyntax(stringLiteral: confusedName)
-//                            .with(\.leadingTrivia, closureParameterSyntax.firstName.leadingTrivia)
-//                            .with(\.trailingTrivia, closureParameterSyntax.firstName.trailingTrivia))
-//                }
-//                
-//                if let idType: IdentifierTypeSyntax = closureParameterSyntax.type?.as(IdentifierTypeSyntax.self),
-//                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text)
-//                {
-//                    varSymbol.symbolType = idType.name.text
-//                    
-//                    let confusedTypeSymbol: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                    confusedParameter = closureParameterSyntax.with(\.type, TypeSyntax(idType.with(\.name, TokenSyntax(stringLiteral: confusedTypeSymbol)))
-//                    )
-//                }
-//                
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                confusedParameters.append(confusedParameter)
-//            }
-//            
-//            newNode = newNode.with(\.signature, node.signature?.with(
-//                \.parameterClause, ClosureSignatureSyntax.ParameterClause(parameterClause
-//                    .with(\.parameters, ClosureParameterListSyntax(confusedParameters))
-//                    .with(\.leadingTrivia, parameterClause.parameters.leadingTrivia)
-//                    .with(\.trailingTrivia, parameterClause.parameters.trailingTrivia))
-//            ))
-//        }
-//        
-//        if let returnClause: ReturnClauseSyntax = node.signature?.returnClause {
-//            if let idType: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self),
-//               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text) {
-//                let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//                newNode = newNode.with(
-//                    \.signature, newNode.signature?
-//                        .with(\.returnClause, newNode.signature?.returnClause?
-//                            .with(\.type, TypeSyntax(idType
-//                                .with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
-//                                    .with(\.leadingTrivia, idType.name.leadingTrivia)
-//                                    .with(\.trailingTrivia, idType.name.trailingTrivia))
-//                            ))
-//                        )
-//                )
-//            }
-//        }
-//        
-//        if let captureList: ClosureCaptureClauseSyntax = node.signature?.capture {
-//            var confusedCaptureList: [ClosureCaptureSyntax] = [ClosureCaptureSyntax]()
-//            captureList.items.forEach { closureCaptureSyntax in
-//                var confusedClosureCaptureSyntax = closureCaptureSyntax
-//                if let tokenSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(closureCaptureSyntax.name.text),
-//                   let confusedSymbol = tokenSymbol.confusedSymbol {
-//                    confusedClosureCaptureSyntax = confusedClosureCaptureSyntax
-//                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
-//                            .with(\.leadingTrivia, closureCaptureSyntax.name.leadingTrivia)
-//                            .with(\.trailingTrivia, closureCaptureSyntax.name.trailingTrivia)
-//                        )
-//                }
-//                
-//                confusedCaptureList.append(confusedClosureCaptureSyntax)
-//            }
-//            
-//            newNode = newNode.with(\.signature, newNode.signature?
-//                .with(\.capture, newNode.signature?.capture?
-//                    .with(\.items, ClosureCaptureListSyntax(confusedCaptureList))
-//                )
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-//        var newNode = node
-//        
-//        SwiftSourceScopeManager.sharedManager.pushScope()
-//        
-//        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-//            if idPattern.identifier.kind != .wildcardPattern {
-//                let tokenName: String = idPattern.identifier.text
-//                
-//                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                varSymbol.originalSymbol = tokenName
-//                varSymbol.parent = parentStack.last
-//                
-//                if let typeAnnotation = node.typeAnnotation,
-//                   let typeIdent: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
-//                    varSymbol.symbolType = typeIdent.name.text
-//                }
-//                
-//                let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                let newPattern = idPattern
-//                    .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol)
-//                    .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
-//                    .with(\.trailingTrivia, idPattern.identifier.trailingTrivia))
-//                
-//                newNode = newNode.with(\.pattern, PatternSyntax(newPattern)
-//                    .with(\.leadingTrivia, node.pattern.leadingTrivia)
-//                    .with(\.trailingTrivia, node.pattern.trailingTrivia)
-//                )
-//                
-//                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//            }
-//        } else if let tuplePatternSyntax: TuplePatternSyntax = node.pattern.as(TuplePatternSyntax.self) {
-//            var confusedElements: [TuplePatternElementSyntax] = [TuplePatternElementSyntax]()
-//            
-//            for (index, tuplePatternElemSyntax) in tuplePatternSyntax.elements.enumerated() {
-//                if let idPattern: IdentifierPatternSyntax = tuplePatternElemSyntax.pattern.as(IdentifierPatternSyntax.self) {
-//                    let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-//                    
-//                    varSymbol.originalSymbol = idPattern.identifier.text
-//                    varSymbol.isMember = false
-//                    varSymbol.symbolFilePath = self.sourceFile
-//                    
-//                    if let typeAnnotation = newNode.typeAnnotation {
-//                        if let tupleType: TupleTypeSyntax = typeAnnotation.type.as(TupleTypeSyntax.self) {
-//                            for (typeIndex, tupleTypeElemSyntax) in tupleType.elements.enumerated() {
-//                                if typeIndex != index {
-//                                    continue
-//                                }
-//                                
-//                                if let idTypeSyntax: IdentifierTypeSyntax = tupleTypeElemSyntax.type.as(IdentifierTypeSyntax.self) {
-//                                    varSymbol.symbolType = idTypeSyntax.name.text
-//                                }
-//                            }
-//                        }
-//                    } else if let type: String = SwiftConfusedHelper.inferExprSyntaxType(node.sequence) {
-//                        print("Hello")
-//                    }
-//                    
-//                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(varSymbol)
-//                    confusedElements.append(tuplePatternElemSyntax
-//                        .with(\.pattern, PatternSyntax(idPattern
-//                            .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbol)
-//                                .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
-//                                .with(\.trailingTrivia, idPattern.identifier.trailingTrivia))
-//                        ))
-//                    )
-//                    
-//                    SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-//                } else {
-//                    confusedElements.append(tuplePatternElemSyntax)
-//                }
-//            }
-//            
-//            newNode = newNode.with(\.pattern, PatternSyntax(tuplePatternSyntax
-//                .with(\.elements, TuplePatternElementListSyntax(confusedElements))
-//            ))
-//        }
-//        
-//        if let typeAnnotation = node.typeAnnotation,
-//           let typeIdent: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
-//           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeIdent.name.text) {
-//            
-//            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
-//            newNode = newNode.with(\.typeAnnotation,newNode.typeAnnotation?
-//                .with(\.type, TypeSyntax(IdentifierTypeSyntax(
-//                    leadingTrivia: newNode.typeAnnotation?.type.leadingTrivia,
-//                    name: TokenSyntax(stringLiteral: confusedSymbol),
-//                    trailingTrivia: newNode.typeAnnotation?.type.trailingTrivia)
-//                ))
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-//    
-//    override func visitPost(_ node: Syntax) {
-//        switch node.kind {
-//        case .variableDecl:
-//            if !parentStack.isEmpty {
-//                parentStack.removeLast()
-//            }
-//        case .classDecl, .functionDecl, .protocolDecl,
-//                .structDecl, .enumDecl, .extensionDecl:
-//            SwiftSourceScopeManager.sharedManager.popScope(true)
-//            
-//            if !parentStack.isEmpty {
-//                parentStack.removeLast()
-//            }
-//        case .forStmt, .repeatStmt, .doStmt, .whileStmt,
-//                .closureExpr, .initializerDecl, .caseItem:
-//            SwiftSourceScopeManager.sharedManager.popScope(true)
-//        case .codeBlock: do {
-//            if let _ = SwiftConfusedHelper.findNodeParent(node, .guardStmt) {
-//                SwiftSourceScopeManager.sharedManager.pushScope()
-//            }
-//        }
-//        case .switchExpr:
-//            if !self.switchExprStack.isEmpty {
-//                self.switchExprStack.removeLast()
-//            }
-//        default:
-//            break
-//        }
-//    }
+    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        
+        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node, inFile: self.sourceFile)
+                as? SwiftSourceClassSymbol else {
+            return super.visit(node)
+        }
+        
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        parentStack.append(clsSymbol)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        
+        guard let proSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node, inFile: self.sourceFile)
+                as? SwiftSourceClassSymbol else {
+            return super.visit(node)
+        }
+        
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(proSymbol)
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        parentStack.append(proSymbol)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        
+        guard let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node, inFile: self.sourceFile)
+                as? SwiftSourceClassSymbol else {
+            return super.visit(node)
+        }
+        
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+            .with(\.leadingTrivia, node.leadingTrivia)
+            .with(\.trailingTrivia, node.trailingTrivia)
+        
+        parentStack.append(clsSymbol)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+        var newNode = node
+        let refName: String = node.baseName.text
+        
+        if refName.isSwiftKeyWord {
+            return super.visit(newNode)
+        }
+        
+        var clsSymbol: SwiftSourceClassSymbol?
+        var referenceSymbol: SwiftSourceSymbol?
+        
+        if let refSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(refName) {
+            referenceSymbol = refSymbol
+        } else if let clsDecl: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self) {
+            clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol
+        } else if let clsDecl: ExtensionDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .extensionDecl)?.as(ExtensionDeclSyntax.self) {
+            clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol
+        } else if let clsDecl: StructDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .structDecl)?.as(StructDeclSyntax.self) {
+            clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol
+        } else if let clsDecl: ProtocolDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .protocolDecl)?.as(ProtocolDeclSyntax.self) {
+            clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol
+        } else if let clsDecl: EnumDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .enumDecl)?.as(EnumDeclSyntax.self) {
+            clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol
+        }
+        
+        if let clsSymbol {
+            if node.baseName.text == clsSymbol.originalSymbol {
+                referenceSymbol = clsSymbol
+            } else {
+                referenceSymbol = SwiftConfusedHelper.findChildSymbol(clsSymbol, node.baseName.text)
+            }
+        }
+        
+        if let referenceSymbol {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(referenceSymbol)
+            newNode = node.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                .with(\.leadingTrivia, node.baseName.leadingTrivia)
+                .with(\.trailingTrivia, node.baseName.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        if let extendedType = node.extendedType.as(IdentifierTypeSyntax.self) {
+            if let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(extendedType.name.text) as? SwiftSourceClassSymbol {
+                
+                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(clsSymbol)
+                let newNode = node.with(\.extendedType,
+                                         TypeSyntax(IdentifierTypeSyntax(name: TokenSyntax(stringLiteral: confusedSymbolName)))
+                    .with(\.leadingTrivia, node.extendedType.leadingTrivia)
+                    .with(\.trailingTrivia, node.extendedType.trailingTrivia))
+                    .with(\.leadingTrivia, node.leadingTrivia)
+                    .with(\.trailingTrivia, node.trailingTrivia)
+                
+                parentStack.append(clsSymbol)
+                
+                return super.visit(newNode)
+            }
+        }
+        
+        return super.visit(node)
+    }
+
+    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var funcSymbol: SwiftSourceFunctionSymbol? = nil
+        
+        /// 如果是全局方法，在全局作用域收集
+        /// 如果是成员方法，查找所在类，再查找成员
+        if node.isMemberDecl {
+            guard let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol else {
+                return super.visit(newNode)
+            }
+            
+            funcSymbol = SwiftConfusedHelper.findChildSymbol(clsSymbol, node.name.text, .function) as? SwiftSourceFunctionSymbol
+        } else {
+            funcSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) as? SwiftSourceFunctionSymbol
+        }
+        
+        if let funcSymbol {
+            let confusedFuncSymbol: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+            newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedFuncSymbol)
+                .with(\.leadingTrivia, node.name.leadingTrivia)
+                .with(\.trailingTrivia, node.name.trailingTrivia))
+            
+            if let returnClause: ReturnClauseSyntax = node.signature.returnClause {
+                if let idTypeSyntax: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self),
+                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                    newNode = newNode.with(\.signature, newNode.signature
+                        .with(\.returnClause, returnClause
+                            .with(\.type, TypeSyntax(idTypeSyntax
+                                .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
+                                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)))
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        
+        if let funcSymbol {
+            parentStack.append(funcSymbol)
+        }
+        
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        var newNode = node
+        
+        var paramSymbol: SwiftSourceSymbol?
+        if let funcSymbol: SwiftSourceFunctionSymbol = parentStack.last as? SwiftSourceFunctionSymbol {
+            if let secondName = node.secondName {
+                
+                let secondParamSymbol: SwiftSourceSymbol = node.funcParameterSymbol(self.sourceFile)
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(secondParamSymbol)
+                
+                let confusedSecondName: String = SwiftConfusedHelper.confusedSymbol(secondParamSymbol)
+                newNode = newNode.with(\.secondName, TokenSyntax(stringLiteral: confusedSecondName)
+                    .with(\.leadingTrivia, secondName.leadingTrivia)
+                    .with(\.trailingTrivia, secondName.trailingTrivia)
+                )
+                
+                paramSymbol = secondParamSymbol
+            }
+            
+            if let firstSymbol: SwiftSourceSymbol = funcSymbol.labels[node.firstName.text] {
+                if let confusedLabelSymbolName: String = firstSymbol.confusedSymbol {
+                    newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedLabelSymbolName)
+                        .with(\.leadingTrivia, node.firstName.leadingTrivia)
+                        .with(\.leadingTrivia, node.firstName.leadingTrivia)
+                        .with(\.trailingTrivia, node.firstName.trailingTrivia))
+                }
+                
+                if node.secondName == nil {
+                    paramSymbol = firstSymbol
+                }
+            }
+        }
+        
+        paramSymbol?.symbolType = node.type.trimmedDescription
+        
+        if let paramSymbol {
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: DoStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
+        var newNode = node
+        
+        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            varSymbol.originalSymbol = idPattern.identifier.text
+            
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
+            newNode = node.with(\.pattern, PatternSyntax(idPattern
+                .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, idPattern.identifier.leadingTrivia)
+                    .with(\.trailingTrivia, idPattern.identifier.trailingTrivia)
+                )
+            ))
+        }
+        
+        if let type: IdentifierTypeSyntax = node.typeAnnotation?.as(IdentifierTypeSyntax.self) {
+            varSymbol.symbolType = type.name.text
+        } else if let initializer = node.initializer,
+                  let inferType: String = SwiftConfusedHelper.inferExprSyntaxType(initializer.value) {
+            varSymbol.symbolType = inferType
+        }
+        
+        varSymbol.ASTNode = node
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        guard let enumSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node, inFile: self.sourceFile)
+                as? SwiftSourceClassSymbol else {
+            return super.visit(node)
+        }
+        
+        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumSymbol)
+        let newNode = node.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia))
+        
+        parentStack.append(enumSymbol)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        if let enumSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
+            var newElements: [EnumCaseElementSyntax] = [EnumCaseElementSyntax]()
+            node.elements.forEach { enumCaseElemSyntax in
+                var enumCaseSymbol: SwiftSourceEnumCaseSymbol? = SwiftConfusedHelper.findChildSymbol(enumSymbol, enumCaseElemSyntax.name.text, .enumCase) as? SwiftSourceEnumCaseSymbol
+
+                if let enumCaseSymbol {
+                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumCaseSymbol)
+                    var element = enumCaseElemSyntax
+                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                            .with(\.leadingTrivia, enumCaseElemSyntax.name.leadingTrivia)
+                            .with(\.trailingTrivia, enumCaseElemSyntax.name.trailingTrivia))
+                        .with(\.leadingTrivia, enumCaseElemSyntax.leadingTrivia)
+                        .with(\.trailingTrivia, enumCaseElemSyntax.trailingTrivia)
+                    
+                    if let parameterClause: EnumCaseParameterClauseSyntax = enumCaseElemSyntax.parameterClause {
+                        var confusedParameters: [EnumCaseParameterSyntax] = [EnumCaseParameterSyntax]()
+                        parameterClause.parameters.forEach { paramElemSyntax in
+                            if let typeIdent: IdentifierTypeSyntax = paramElemSyntax.type.as(IdentifierTypeSyntax.self),
+                               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeIdent.name.text) {
+                                let confusedTypeSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                                let confusedParam = EnumCaseParameterSyntax(stringLiteral: confusedTypeSymbolName)
+                                    .with(\.leadingTrivia, paramElemSyntax.leadingTrivia)
+                                    .with(\.trailingTrivia, paramElemSyntax.trailingTrivia)
+                                confusedParameters.append(confusedParam)
+                            }
+                        }
+                        
+                        element = element.with(\.parameterClause, parameterClause.with(\.parameters, EnumCaseParameterListSyntax(confusedParameters)))
+                    }
+                    
+                    newElements.append(element)
+                }
+            }
+            
+            newNode = node.with(\.elements, EnumCaseElementListSyntax(newElements)
+                .with(\.leadingTrivia, node.elements.leadingTrivia)
+                .with(\.trailingTrivia, node.elements.trailingTrivia))
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(node.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                .with(\.leadingTrivia, newNode.leadingTrivia)
+                .with(\.trailingTrivia, newNode.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: DictionaryTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let keySyntax: IdentifierTypeSyntax = node.key.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(keySyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.key, TypeSyntax(keySyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, keySyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, keySyntax.name.trailingTrivia)
+                ))
+            )
+        }
+        
+        if let valueSyntax: IdentifierTypeSyntax = node.value.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(valueSyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.value, TypeSyntax(valueSyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, valueSyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, valueSyntax.name.trailingTrivia)
+                ))
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ArrayTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let elemSyntax: IdentifierTypeSyntax = node.element.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(elemSyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.element, TypeSyntax(elemSyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, elemSyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, elemSyntax.name.trailingTrivia)
+                )
+            ))
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    
+    override func visit(_ node: TypeAnnotationSyntax) -> TypeAnnotationSyntax {
+        var newNode = node
+        
+        if let idTypeSyntax: IdentifierTypeSyntax = node.type.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            
+            newNode = newNode.with(\.type, TypeSyntax(idTypeSyntax
+                .with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, idTypeSyntax.name.leadingTrivia)
+                    .with(\.trailingTrivia, idTypeSyntax.name.trailingTrivia)
+                )
+            ))
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var confusedBindings: [PatternBindingSyntax] = [PatternBindingSyntax]()
+        if node.isMemberDecl {
+            /// 如果是类成员，使用 parentStack 获取父类符号
+            if let clsSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
+                node.bindings.forEach { patternBindingSyntax in
+                    var confusedBinding = patternBindingSyntax
+                    if let idPatternSyntax: IdentifierPatternSyntax = patternBindingSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                        
+                        var variableSymbol: SwiftSourceSymbol? = SwiftConfusedHelper.findChildSymbol(clsSymbol, idPatternSyntax.identifier.text, .variable)
+                        if let variableSymbol {
+                            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(variableSymbol)
+                            let confusedPattern = idPatternSyntax
+                                .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
+                                    .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
+                                    .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
+                                )
+
+                            confusedBinding = patternBindingSyntax
+                                .with(\.pattern, PatternSyntax(confusedPattern
+                                    .with(\.leadingTrivia, patternBindingSyntax.pattern.leadingTrivia)
+                                    .with(\.trailingTrivia, patternBindingSyntax.pattern.trailingTrivia)
+                                ))
+                        }
+                    }
+
+                    confusedBindings.append(confusedBinding)
+                }
+            }
+        } else {
+            var varSymbol: SwiftSourceSymbol?
+            node.bindings.forEach { patternBindingSyntax in
+                var confusedPattern = patternBindingSyntax
+                if let idPattern: IdentifierPatternSyntax = patternBindingSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                    /// 如果是全局变量，在全局作用域中查找
+                    if node.isGlobalDecl {
+                        varSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idPattern.identifier.text)
+                    } else {
+                        /// 如果是局部变量，加入作用域
+                        varSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                        varSymbol?.originalSymbol = idPattern.identifier.text
+                        
+                        if let type = patternBindingSyntax.typeAnnotation?.type {
+                            varSymbol?.symbolType = type.trimmedDescription
+                        } else if let initializer = patternBindingSyntax.initializer {
+                            varSymbol?.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+                        }
+                        
+                        if let varSymbol {
+                            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                        }
+                    }
+                    
+                    if let varSymbol {
+                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                        confusedPattern = confusedPattern.with(\.pattern, PatternSyntax(idPattern.with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName).with(\.leadingTrivia, idPattern.identifier.leadingTrivia).with(\.trailingTrivia, idPattern.identifier.trailingTrivia)))
+                        )
+                    }
+                }
+                
+                confusedBindings.append(confusedPattern)
+            }
+        }
+        
+        newNode = node
+            .with(\.bindings, PatternBindingListSyntax(confusedBindings)
+                .with(\.leadingTrivia, node.bindings.leadingTrivia)
+                .with(\.trailingTrivia, node.bindings.trailingTrivia))
+        
+        /// 如果是局部变量，先收集信息，添加作用域，再进行混淆
+        //        if node.isLocalDecl {
+        //            let localSymbol: SwiftSourceSymbol = node.variableSymbol(self.sourceFile)
+        //            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(localSymbol)
+        //        }
+        //
+        //        var newBindings: [PatternBindingSyntax] = [PatternBindingSyntax]()
+        //        node.bindings.forEach { binding in
+        //            var newBinding = binding
+        //            var variableTypeSymbol: SwiftSourceSymbol?
+        //
+        //            if let patternBinding: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self),
+        //               let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(patternBinding.identifier.text) {
+        //
+        //                parentStack.append(symbol)
+        //
+        //                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(symbol)
+        //                let newPattern: IdentifierPatternSyntax = patternBinding
+        //                    .with(\.identifier, TokenSyntax(stringLiteral: confusedSymbolName)
+        //                        .with(\.leadingTrivia, patternBinding.identifier.leadingTrivia)
+        //                        .with(\.trailingTrivia, patternBinding.identifier.trailingTrivia))
+        //
+        //                if let newPattern: PatternSyntax = PatternSyntax(newPattern) {
+        //                    newBinding = newBinding.with(\.pattern, newPattern)
+        //
+        //                    var confusedTypeAnnotation: TypeAnnotationSyntax?
+        //                    if let typeAnnotation: TypeAnnotationSyntax = binding.typeAnnotation {
+        //                        if let idTypeSyntax: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self),
+        //                           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idTypeSyntax.name.text) {
+        //
+        //                            variableTypeSymbol = typeSymbol
+        //
+        //                            let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+        //                            confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
+        //                                idTypeSyntax.with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
+        //                                    .with(\.leadingTrivia, idTypeSyntax.leadingTrivia)
+        //                                    .with(\.trailingTrivia, idTypeSyntax.trailingTrivia)))
+        //                            )
+        //
+        //                        } else if let optTypeAnnotation: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self) {
+        //                            if let wrappedType = optTypeAnnotation.wrappedType.as(IdentifierTypeSyntax.self),
+        //                               let wrappedTypeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
+        //
+        //                                variableTypeSymbol = wrappedTypeSymbol
+        //
+        //                                let confusedTypeAnnotationName: String = SwiftConfusedHelper.confusedSymbol(wrappedTypeSymbol)
+        //                                confusedTypeAnnotation = typeAnnotation.with(\.type, TypeSyntax(
+        //                                    optTypeAnnotation.with(
+        //                                        \.wrappedType, TypeSyntax(wrappedType
+        //                                            .with(\.name, TokenSyntax(stringLiteral: confusedTypeAnnotationName))
+        //                                        )
+        //                                    ))
+        //                                )
+        //                            }
+        //                        }
+        //
+        //                        if let confusedTypeAnnotation {
+        //                            newBinding = newBinding.with(\.typeAnnotation, confusedTypeAnnotation)
+        //                                .with(\.leadingTrivia, binding.leadingTrivia)
+        //                                .with(\.trailingTrivia, binding.trailingTrivia)
+        //                        }
+        //                    }
+        //                }
+        //
+        //                if let initializer: InitializerClauseSyntax = newBinding.initializer {
+        //                    if let value = initializer.value.as(MemberAccessExprSyntax.self) {
+        //                        if let base: DeclReferenceExprSyntax = value.base?.as(DeclReferenceExprSyntax.self),
+        //                           let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(base.baseName.text) {
+        //                            let confusedSymbol = SwiftConfusedHelper.confusedSymbol(baseSymbol)
+        //                            let newBase = base
+        //                                .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+        //                                    .with(\.leadingTrivia, base.baseName.leadingTrivia)
+        //                                    .with(\.trailingTrivia, base.baseName.trailingTrivia))
+        //                            switch baseSymbol.nodeKind {
+        //                            case .class, .enum, .protocol, .extension:
+        //                                for child in baseSymbol.children {
+        //                                    if child.originalSymbol == value.declName.baseName.text {
+        //                                        let confusedSymbol: String = SwiftConfusedHelper.confusedSymbol(child)
+        //                                        let newValue = value.with(\.declName, value.declName
+        //                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+        //                                                .with(\.leadingTrivia, value.declName.baseName.leadingTrivia)
+        //                                                .with(\.trailingTrivia, value.declName.baseName.trailingTrivia))
+        //                                        ).with(\.base, ExprSyntax(newBase))
+        //                                        newBinding = newBinding.with(\.initializer, initializer
+        //                                            .with(\.value, ExprSyntax(newValue))
+        //                                        )
+        //                                        break
+        //                                    }
+        //                                }
+        //                            default:
+        //                                break
+        //                            }
+        //                        } else {
+        //                            if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self)
+        //                            {
+        //                                if let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeSyntax.name.text) {
+        //                                    switch typeSymbol.nodeKind {
+        //                                    case .class, .enum, .protocol, .extension:
+        //                                        for child in typeSymbol.children {
+        //                                            if child.originalSymbol == value.declName.baseName.text {
+        //                                                let confusedSymbol: String = SwiftConfusedHelper.confusedSymbol(child)
+        //                                                let newValue = value.with(\.declName, value.declName
+        //                                                    .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbol)
+        //                                                        .with(\.leadingTrivia, value.declName.baseName.leadingTrivia)
+        //                                                        .with(\.trailingTrivia, value.declName.baseName.trailingTrivia))
+        //                                                )
+        //                                                newBinding = newBinding.with(\.initializer, initializer
+        //                                                    .with(\.value, ExprSyntax(newValue))
+        //                                                )
+        //                                                break
+        //                                            }
+        //                                        }
+        //                                    default:
+        //                                        break
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    } else if let value = initializer.value.as(FunctionCallExprSyntax.self) {
+        //                        if let calledExprSyntax: DeclReferenceExprSyntax = value.calledExpression.as(DeclReferenceExprSyntax.self) {
+        //                            if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(calledExprSyntax.baseName.text) {
+        //                                if baseSymbol.nodeKind == .class || baseSymbol.nodeKind == .struct {
+        //
+        //                                    /// 推导方法签名，匹配方法
+        //                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
+        //                                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+        //
+        //                                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+        //                                        value.arguments.forEach { labeledExprSyntax in
+        //                                            var confusedArg = labeledExprSyntax
+        //                                            if let label = labeledExprSyntax.label,
+        //                                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+        //                                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
+        //                                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+        //                                                    .with(\.leadingTrivia, label.leadingTrivia)
+        //                                                    .with(\.trailingTrivia, label.trailingTrivia)
+        //                                                )
+        //                                            }
+        //
+        //                                            confusedArgs.append(confusedArg)
+        //                                        }
+        //
+        //                                        let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
+        //
+        //                                        newBinding = newBinding.with(\.initializer, newBinding.initializer?
+        //                                            .with(\.value, ExprSyntax(value
+        //                                                .with(\.calledExpression, ExprSyntax(calledExprSyntax
+        //                                                    .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+        //                                                        .with(\.leadingTrivia, calledExprSyntax.baseName.leadingTrivia)
+        //                                                        .with(\.trailingTrivia, calledExprSyntax.baseName.trailingTrivia)
+        //                                                    )
+        //                                                )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
+        //                                            ))
+        //                                        )
+        //                                    }
+        //                                }
+        //                            }
+        //                        } else if let calledExprSyntax: MemberAccessExprSyntax = value.calledExpression.as(MemberAccessExprSyntax.self) {
+        //                            if let baseSyntax: DeclReferenceExprSyntax = calledExprSyntax.base?.as(DeclReferenceExprSyntax.self) {
+        //                                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseSyntax.baseName.text) {
+        //                                    if baseSymbol.isClassNodeKind {
+        //                                        /// 推导方法签名，匹配方法
+        //                                        if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value) {
+        //                                            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+        //
+        //                                            var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+        //                                            value.arguments.forEach { labeledExprSyntax in
+        //                                                var confusedArg = labeledExprSyntax
+        //                                                if let label = labeledExprSyntax.label,
+        //                                                   let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+        //                                                    let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
+        //                                                    confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+        //                                                        .with(\.leadingTrivia, label.leadingTrivia)
+        //                                                        .with(\.trailingTrivia, label.trailingTrivia)
+        //                                                    )
+        //                                                }
+        //
+        //                                                confusedArgs.append(confusedArg)
+        //                                            }
+        //
+        //                                            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbolName(baseSymbol.originalSymbol)
+        //
+        //                                            newBinding = newBinding.with(\.initializer, newBinding.initializer?
+        //                                                .with(\.value, ExprSyntax(value
+        //                                                    .with(\.calledExpression, ExprSyntax(calledExprSyntax
+        //                                                        .with(\.base, ExprSyntax(baseSyntax.with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+        //                                                            .with(\.leadingTrivia, baseSyntax.baseName.leadingTrivia)
+        //                                                            .with(\.trailingTrivia, baseSyntax.baseName.trailingTrivia)))
+        //                                                        )
+        //                                                    )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
+        //                                                ))
+        //                                            )
+        //                                        }
+        //                                    }
+        //                                }
+        //                            }  else {
+        //                                /// nil base
+        //                                if let variableTypeSymbol {
+        //                                    if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.matchMethodSymbol(value, variableTypeSymbol) {
+        //                                        var confusedArgs: [LabeledExprSyntax] = [LabeledExprSyntax]()
+        //                                        value.arguments.forEach { labeledExprSyntax in
+        //                                            var confusedArg = labeledExprSyntax
+        //                                            if let label = labeledExprSyntax.label,
+        //                                               let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[label.text] {
+        //                                                let confusedLabel: String = labelSymbol.confusedSymbol ?? label.text
+        //                                                confusedArg = labeledExprSyntax.with(\.label, TokenSyntax(stringLiteral: confusedLabel)
+        //                                                    .with(\.leadingTrivia, label.leadingTrivia)
+        //                                                    .with(\.trailingTrivia, label.trailingTrivia)
+        //                                                )
+        //                                            }
+        //
+        //                                            confusedArgs.append(confusedArg)
+        //                                        }
+        //
+        //                                        newBinding = newBinding.with(\.initializer, newBinding.initializer?
+        //                                            .with(\.value, ExprSyntax(value
+        //                                                .with(\.calledExpression, ExprSyntax(calledExprSyntax
+        //                                                )).with(\.arguments, LabeledExprListSyntax(confusedArgs))
+        //                                            ))
+        //                                        )
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //
+        //                newBindings.append(newBinding)
+        //            }
+        //        }
+        //
+        //        newNode = node.with(\.bindings, PatternBindingListSyntax(newBindings)
+        //            .with(\.leadingTrivia, node.bindings.leadingTrivia)
+        //            .with(\.trailingTrivia, node.bindings.trailingTrivia))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        var clsSymbol: SwiftSourceClassSymbol?
+        var calledFunctionName: String?
+        if let memberAccessExpr: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            if let baseExpr = memberAccessExpr.base,
+               let typeSymbolName: String = SwiftConfusedHelper.inferExprSyntaxType(baseExpr) {
+                clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeSymbolName) as? SwiftSourceClassSymbol
+                calledFunctionName = memberAccessExpr.declName.baseName.text
+            }
+        } else if let calledExpression: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self),
+                  let clsDecl: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(node, .classDecl)?.as(ClassDeclSyntax.self) {
+            clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol
+            calledFunctionName = calledExpression.baseName.text
+        }
+        
+        if let clsSymbol,
+           let calledFunctionName {
+            if let funcSymbol: SwiftSourceFunctionSymbol = SwiftConfusedHelper.findChildSymbol(clsSymbol, calledFunctionName, .function) as? SwiftSourceFunctionSymbol {
+                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                if let memberAccessExpr: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
+                    newNode = newNode.with(\.calledExpression, ExprSyntax(memberAccessExpr
+                        .with(\.declName, memberAccessExpr.declName
+                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
+                                .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
+                            )
+                        )
+                    ))
+                } else if let calledExpression: DeclReferenceExprSyntax = node.calledExpression.as(DeclReferenceExprSyntax.self) {
+                    newNode = newNode.with(\.calledExpression, ExprSyntax(calledExpression
+                        .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                            .with(\.leadingTrivia, calledExpression.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, calledExpression.baseName.trailingTrivia)
+                        )
+                    ))
+                }
+                
+                var labeledExprListSyntax: [LabeledExprSyntax] = [LabeledExprSyntax]()
+                node.arguments.forEach { labeledExprSyntax in
+                    if let label = labeledExprSyntax.label {
+                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                        if let confusedLabelName: String = (funcSymbol.labels[label.text])?.confusedSymbol {
+                            let confusedLabeledExprSyntax = labeledExprSyntax
+                                .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
+                                    .with(\.leadingTrivia, label.leadingTrivia).with(\.trailingTrivia, label.trailingTrivia)
+                                )
+                            
+                            labeledExprListSyntax.append(confusedLabeledExprSyntax)
+                        }
+                    } else {
+                        labeledExprListSyntax.append(labeledExprSyntax)
+                    }
+                }
+                
+                newNode = newNode
+                    .with(\.arguments, LabeledExprListSyntax(labeledExprListSyntax)
+                        .with(\.leadingTrivia, node.arguments.leadingTrivia).with(\.trailingTrivia, node.arguments.trailingTrivia)
+                    )
+            }
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let base = node.base {
+           if let baseTypeName = SwiftConfusedHelper.inferExprSyntaxType(base),
+              let typeSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseTypeName) as? SwiftSourceClassSymbol {
+               
+               if let symbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, node.declName.baseName.text) {
+                   let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol)
+                   newNode = newNode.with(\.declName, newNode.declName
+                    .with(\.baseName,TokenSyntax(stringLiteral: confusedSymbol)
+                        .with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia)
+                        .with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
+                   )
+               }
+           }
+        } else {
+            if node.declName.baseName.text == "pro_httpMethodPOST_pro" {
+                print("hello")
+            }
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: TupleTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        var confusedElements: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
+        node.elements.forEach { tupleTypeElemSyntax in
+            if let funcTypeSyntax: FunctionTypeSyntax = tupleTypeElemSyntax.type.as(FunctionTypeSyntax.self) {
+                let newTypeNode = self.visit(funcTypeSyntax)
+                confusedElements.append(tupleTypeElemSyntax
+                    .with(\.type, newTypeNode
+                        .with(\.leadingTrivia, funcTypeSyntax.leadingTrivia)
+                        .with(\.trailingTrivia, funcTypeSyntax.trailingTrivia)
+                    ))
+            } else {
+                confusedElements.append(tupleTypeElemSyntax)
+            }
+        }
+        
+        newNode = newNode.with(\.elements, TupleTypeElementListSyntax(confusedElements)
+            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
+            .with(\.trailingTrivia, newNode.elements.trailingTrivia))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
+        self.switchExprStack.append(node)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        
+        if let parameterClause: ClosureShorthandParameterListSyntax = node.signature?.parameterClause?.as(ClosureShorthandParameterListSyntax.self) {
+            
+            var parameterSyntaxs: [ClosureShorthandParameterSyntax] = [ClosureShorthandParameterSyntax]()
+            parameterClause.forEach { closureShorthandParameterSyntax in
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                
+                varSymbol.originalSymbol = closureShorthandParameterSyntax.name.text
+                varSymbol.symbolFilePath = self.sourceFile
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                
+                let confusedName: String = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                let parameterSyntax = closureShorthandParameterSyntax
+                    .with(\.name, TokenSyntax(stringLiteral: confusedName))
+                
+                parameterSyntaxs.append(parameterSyntax)
+            }
+            
+            let confusedParameterClause: ClosureShorthandParameterListSyntax = ClosureShorthandParameterListSyntax(parameterSyntaxs)
+                .with(\.leadingTrivia, parameterClause.leadingTrivia)
+                .with(\.trailingTrivia, parameterClause.trailingTrivia)
+            
+            newNode = newNode.with(\.signature, newNode.signature?.with(\.parameterClause, ClosureSignatureSyntax.ParameterClause(confusedParameterClause)))
+        } else if let parameterClause: ClosureParameterClauseSyntax = node.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
+            
+            var confusedParameters: [ClosureParameterSyntax] = [ClosureParameterSyntax]()
+            parameterClause.parameters.forEach { closureParameterSyntax in
+                var confusedParameter = closureParameterSyntax
+                let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                
+                if let secondName: TokenSyntax = closureParameterSyntax.secondName {
+                    varSymbol.originalSymbol = secondName.text
+                } else {
+                    varSymbol.originalSymbol = closureParameterSyntax.firstName.text
+                }
+                
+                let confusedName = SwiftConfusedHelper.confusedSymbol(varSymbol)
+                if let secondName: TokenSyntax = closureParameterSyntax.secondName {
+                    confusedParameter = closureParameterSyntax
+                        .with(\.secondName, TokenSyntax(stringLiteral: confusedName)
+                            .with(\.leadingTrivia, secondName.leadingTrivia)
+                            .with(\.trailingTrivia, secondName.trailingTrivia))
+                } else {
+                    confusedParameter = closureParameterSyntax
+                        .with(\.firstName, TokenSyntax(stringLiteral: confusedName)
+                            .with(\.leadingTrivia, closureParameterSyntax.firstName.leadingTrivia)
+                            .with(\.trailingTrivia, closureParameterSyntax.firstName.trailingTrivia))
+                }
+                
+                if let idType: IdentifierTypeSyntax = closureParameterSyntax.type?.as(IdentifierTypeSyntax.self),
+                   let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text)
+                {
+                    varSymbol.symbolType = idType.name.text
+                    
+                    let confusedTypeSymbol: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                    confusedParameter = closureParameterSyntax.with(\.type, TypeSyntax(idType.with(\.name, TokenSyntax(stringLiteral: confusedTypeSymbol)))
+                    )
+                }
+                
+                SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                confusedParameters.append(confusedParameter)
+            }
+            
+            newNode = newNode.with(\.signature, node.signature?.with(
+                \.parameterClause, ClosureSignatureSyntax.ParameterClause(parameterClause
+                    .with(\.parameters, ClosureParameterListSyntax(confusedParameters))
+                    .with(\.leadingTrivia, parameterClause.parameters.leadingTrivia)
+                    .with(\.trailingTrivia, parameterClause.parameters.trailingTrivia))
+            ))
+        }
+        
+        if let returnClause: ReturnClauseSyntax = node.signature?.returnClause {
+            if let idType: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self),
+               let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idType.name.text) {
+                let confusedTypeName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+                newNode = newNode.with(
+                    \.signature, newNode.signature?
+                        .with(\.returnClause, newNode.signature?.returnClause?
+                            .with(\.type, TypeSyntax(idType
+                                .with(\.name, TokenSyntax(stringLiteral: confusedTypeName)
+                                    .with(\.leadingTrivia, idType.name.leadingTrivia)
+                                    .with(\.trailingTrivia, idType.name.trailingTrivia))
+                            ))
+                        )
+                )
+            }
+        }
+        
+        if let captureList: ClosureCaptureClauseSyntax = node.signature?.capture {
+            var confusedCaptureList: [ClosureCaptureSyntax] = [ClosureCaptureSyntax]()
+            captureList.items.forEach { closureCaptureSyntax in
+                var confusedClosureCaptureSyntax = closureCaptureSyntax
+                if let tokenSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(closureCaptureSyntax.name.text),
+                   let confusedSymbol = tokenSymbol.confusedSymbol {
+                    confusedClosureCaptureSyntax = confusedClosureCaptureSyntax
+                        .with(\.name, TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, closureCaptureSyntax.name.leadingTrivia)
+                            .with(\.trailingTrivia, closureCaptureSyntax.name.trailingTrivia)
+                        )
+                }
+                
+                confusedCaptureList.append(confusedClosureCaptureSyntax)
+            }
+            
+            newNode = newNode.with(\.signature, newNode.signature?
+                .with(\.capture, newNode.signature?.capture?
+                    .with(\.items, ClosureCaptureListSyntax(confusedCaptureList))
+                )
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: Syntax) {
+        switch node.kind {
+            
+        case .classDecl, .structDecl, .protocolDecl, .enumDecl, .extensionDecl:
+            if !parentStack.isEmpty {
+                parentStack.removeLast()
+            }
+            
+        case .functionDecl:
+            if !parentStack.isEmpty {
+                parentStack.removeLast()
+            }
+            
+            SwiftSourceScopeManager.sharedManager.popScope()
+            
+        case .forStmt, .repeatStmt, .doStmt, .whileStmt, .ifExpr,
+                .closureExpr, .initializerDecl, .caseItem:
+            SwiftSourceScopeManager.sharedManager.popScope()
+            
+        case .switchExpr:
+            if !self.switchExprStack.isEmpty {
+                self.switchExprStack.removeLast()
+            }
+            
+        default:
+            break
+        }
+    }
 }

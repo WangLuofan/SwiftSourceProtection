@@ -52,9 +52,9 @@ func main() {
     }
 
     // TODO: 使用 SourceKittenHandler 进行类型推导
-    guard let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target) else {
-        return
-    }
+//    guard let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target) else {
+//        return
+//    }
     
     print("SourceKitten initialized successfully")
 
@@ -88,8 +88,7 @@ func main() {
                                  sourceTree: sourceTree,
                                  projectPath: projectPath).confuse() {
             
-            print("\(sourceFile) Confuse Finished.")
-//            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
         }
     }
 }

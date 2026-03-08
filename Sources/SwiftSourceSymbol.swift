@@ -72,7 +72,7 @@ class SwiftSourceSymbol {
     /// 是否类声明结点
     var isClassNodeKind: Bool {
         switch self.nodeKind {
-        case .class, .protocol, .struct, .enum:
+        case .class, .protocol, .struct, .enum, .extension:
             return true
         default:
             break

@@ -20,57 +20,52 @@ class SwiftSourceScopeManager {
     func isCurrentGlobalScope() -> Bool {
         return self.currentScope === self.globalScope
     }
-
-    func pushScope(_ bCreate: Bool = true) {
-
-        if bCreate {
-            let scope: SwiftSourceScope = SwiftSourceScope()
-            scope.prev = self.currentScope
-            self.currentScope?.next.append(scope)
-            self.currentScope = scope          // 直接指向新建的 scope
-        } else {
-            self.currentScope = self.currentScope?.next.first  // FIFO：取第一个
-        }
+    
+    func pushScope() {
+        let scope: SwiftSourceScope = SwiftSourceScope()
+        scope.prev = self.currentScope
+        self.currentScope?.next.append(scope)
+        self.currentScope = scope          // 直接指向新建的 scope
     }
 
-    func popScope(_ bRemoved: Bool = false) {
+    func popScope() {
         guard let prev = self.currentScope?.prev else { return }
         
         let leavingScope = self.currentScope
         self.currentScope = prev
         
-        if bRemoved, let leavingScope {
+        if let leavingScope {
             self.currentScope?.next.removeAll { $0 === leavingScope }
         }
     }
     
-//    func findSymbol( _ node: SyntaxProtocol?, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
-//        guard let node = node else { return nil }
-//        let nodeID = node.id
-//
-//        var scope = (scope ?? self.currentScope)
-//        while scope != nil {
-//            for (_, symbol) in scope!.symbols {
-//                if let astNode = symbol.ASTNode {
-//                    if astNode.id.indexInTree == nodeID.indexInTree {
-//                        return symbol
-//                    }
-//                }
-//            }
-//
-//            scope = scope?.prev
-//        }
-//
-//        return nil
-//    }
+    func findSymbol( _ node: SyntaxProtocol?, inFile: String) -> SwiftSourceSymbol? {
+        guard let node = node else { return nil }
+        let nodeID = node.id
+
+        var scope = self.currentScope
+        while scope != nil {
+            for (_, symbol) in scope!.symbols {
+                if let astNode = symbol.ASTNode,
+                   symbol.symbolFilePath == inFile {
+                    if astNode.id.indexInTree == nodeID.indexInTree {
+                        return symbol
+                    }
+                }
+            }
+
+            scope = scope?.prev
+        }
+
+        return nil
+    }
     
     func findSymbol(_ symbolName: String, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
             for (_, symbol) in scope!.symbols {
-                
-                if symbol.originalSymbol == symbolName {
+                if SwiftConfusedHelper.getConfusedOriginalSymbolName(symbol.originalSymbol) == SwiftConfusedHelper.getConfusedOriginalSymbolName(symbolName) {
                     return symbol
                 }
             }

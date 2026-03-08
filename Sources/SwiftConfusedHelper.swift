@@ -40,7 +40,7 @@ class SwiftConfusedHelper {
     }
     
     private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol) -> Bool {
-        if symbol.originalSymbol.isEmpty {
+        if symbol.originalSymbol.isEmpty || symbol.originalSymbol.isSwiftKeyWord {
             return false
         }
         
@@ -170,6 +170,14 @@ class SwiftConfusedHelper {
         
         return randomSymbolName
     }
+    
+    static func getConfusedOriginalSymbolName(_ symbolName: String) -> String {
+        guard let originalSymbolName: String = self.reversedTable[symbolName] else {
+            return symbolName
+        }
+        
+        return originalSymbolName
+    }
 }
 
 extension SwiftConfusedHelper {
@@ -200,12 +208,13 @@ extension SwiftConfusedHelper {
         }
         
         if let declName: DeclReferenceExprSyntax = memberAccessExpr.declName.as(DeclReferenceExprSyntax.self),
-           let children = baseSymbol?.children {
-            for child in children {
-                if child.originalSymbol == declName.baseName.text {
-                    return child.symbolType
-                }
+           let baseSymbol {
+            let symbol = SwiftConfusedHelper.findChildSymbol(baseSymbol, declName.baseName.text)
+            if symbol?.nodeKind == .function {
+                return (symbol as? SwiftSourceFunctionSymbol)?.returnType
             }
+            
+            return symbol?.symbolType
         }
         
         return nil
@@ -226,13 +235,7 @@ extension SwiftConfusedHelper {
                 return parentSymbol
             } else {
                 if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
-                    var symbol: SwiftSourceSymbol?
-                    for child in baseSymbol.children {
-                        if child.originalSymbol == baseExpr.baseName.text {
-                            symbol = child
-                            break
-                        }
-                    }
+                    let symbol: SwiftSourceSymbol? = SwiftConfusedHelper.findChildSymbol(baseSymbol, baseExpr.baseName.text)
                     
                     if symbol?.nodeKind == .variable,
                        let symbolType: String = symbol?.symbolType {
@@ -242,22 +245,13 @@ extension SwiftConfusedHelper {
                     return symbol
                 } else {
                     let symbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseExpr.baseName.text)
-                    
-                    if symbol?.nodeKind == .class {
-                        
-                    }
-                    
                     return symbol
                 }
             }
         } else if let baseExpr: FunctionCallExprSyntax = expr?.as(FunctionCallExprSyntax.self) {
             if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
                 if let calledExpr: DeclReferenceExprSyntax = baseExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
-                    for child in baseSymbol.children {
-                        if child.originalSymbol == calledExpr.baseName.text {
-                            return child
-                        }
-                    }
+                    return SwiftConfusedHelper.findChildSymbol(baseSymbol, calledExpr.baseName.text)
                 }
             } else if let calledExpr: MemberAccessExprSyntax = baseExpr.calledExpression.as(MemberAccessExprSyntax.self) {
                 let symbol = self.lookupSymbolNodeForExpr(calledExpr, forSymbol: symbol, baseSymbol: baseSymbol)
@@ -320,13 +314,22 @@ extension SwiftConfusedHelper {
             return self.inferExprSyntaxType(callExprSyntax.calledExpression)
         } else if let declRefExpr: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
             if declRefExpr.baseName.text == "self" || declRefExpr.baseName.text == "Self" {
-                var parentSymbol: SwiftSourceSymbol? = symbol?.parent
-                while parentSymbol != nil && parentSymbol?.nodeKind != .class {
-                    parentSymbol = parentSymbol?.parent
-                    continue
+                if let clsDecl: ClassDeclSyntax = SwiftConfusedHelper.findNodeParent(expr, .classDecl)?.as(ClassDeclSyntax.self),
+                   let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
+                    return clsSymbol.originalSymbol
+                } else if let clsDecl: ExtensionDeclSyntax = SwiftConfusedHelper.findNodeParent(expr, .extensionDecl)?.as(ExtensionDeclSyntax.self),
+                          let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
+                    return clsSymbol.originalSymbol
+                } else if let clsDecl: StructDeclSyntax = SwiftConfusedHelper.findNodeParent(expr, .structDecl)?.as(StructDeclSyntax.self),
+                          let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
+                    return clsSymbol.originalSymbol
+                } else if let clsDecl: ProtocolDeclSyntax = SwiftConfusedHelper.findNodeParent(expr, .protocolDecl)?.as(ProtocolDeclSyntax.self),
+                          let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
+                    return clsSymbol.originalSymbol
+                } else if let clsDecl: EnumDeclSyntax = SwiftConfusedHelper.findNodeParent(expr, .enumDecl)?.as(EnumDeclSyntax.self),
+                          let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
+                    return clsSymbol.originalSymbol
                 }
-                
-                return parentSymbol?.originalSymbol
             } else if let symbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(declRefExpr.baseName.text) {
                 if symbol.nodeKind == .function {
                     return (symbol as? SwiftSourceFunctionSymbol)?.returnType
@@ -375,6 +378,8 @@ extension SwiftConfusedHelper {
                 
                 return leftOperand ?? rightOperand
             }
+        } else if let optChainingExprSyntax: OptionalChainingExprSyntax = expr.as(OptionalChainingExprSyntax.self) {
+            return self.inferExprSyntaxType(optChainingExprSyntax.expression)
         } else if let _ = expr.as(IsExprSyntax.self) {
             return "Bool"
         } else if let prefixOper: PrefixOperatorExprSyntax = expr.as(PrefixOperatorExprSyntax.self) {
@@ -468,6 +473,66 @@ extension SwiftConfusedHelper {
         }
         
         return signature
+    }
+    
+    private static func findFuncSymbol(with signature: String, inSymbol parentSymbol: SwiftSourceSymbol?) -> SwiftSourceSymbol? {
+        var symbol: SwiftSourceSymbol?
+        
+        if let parentSymbol {
+            for child in parentSymbol.children {
+                if child.nodeKind != .function {
+                    continue
+                }
+                
+                if (child as? SwiftSourceFunctionSymbol)?.signature == signature {
+                    symbol = child
+                    break
+                }
+            }
+            
+            if symbol == nil,
+               let clsSymbol: SwiftSourceClassSymbol = parentSymbol as? SwiftSourceClassSymbol {
+                for inheritedType in clsSymbol.inheritedType {
+                    if let parentSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) {
+                        symbol = self.findFuncSymbol(with: signature, inSymbol: parentSymbol)
+                        if symbol != nil {
+                            break
+                        }
+                    }
+                }
+            }
+        }
+        
+        return symbol
+    }
+    
+    static func findChildSymbol(_ clsSymbol: SwiftSourceSymbol, _ symbolName: String, _ nodeKind: SwiftNodeKind? = nil) -> SwiftSourceSymbol? {
+        var symbol: SwiftSourceSymbol? 
+        for child in clsSymbol.children {
+            if child.originalSymbol == symbolName {
+                if nodeKind == nil {
+                    symbol = child
+                } else if let nodeKind, nodeKind == child.nodeKind {
+                    symbol = child
+                }
+                
+                break
+            }
+        }
+        
+        if symbol == nil,
+           let clsSymbol: SwiftSourceClassSymbol = clsSymbol as? SwiftSourceClassSymbol {
+            for inheritedType in clsSymbol.inheritedType {
+                if let parentSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(inheritedType) {
+                    symbol = self.findChildSymbol(parentSymbol, symbolName)
+                    if symbol != nil {
+                        break
+                    }
+                }
+            }
+        }
+        
+        return symbol
     }
     
     static func findNodeParent(_ node: SyntaxProtocol, _ kind: SyntaxKind) -> SyntaxProtocol? {
