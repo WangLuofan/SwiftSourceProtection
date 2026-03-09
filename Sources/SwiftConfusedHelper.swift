@@ -26,11 +26,7 @@ class SwiftConfusedHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
-            for (identifier, label) in funcSymbol.labelDict {
-                if identifier == "_" {
-                    continue
-                }
-                
+            for label in funcSymbol.labels {
                 let confusedLabel: String = self.confusedSymbolName(label.originalSymbol)
                 label.confusedSymbol = confusedLabel
             }
@@ -133,6 +129,10 @@ class SwiftConfusedHelper {
     }
 
     static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+        if symbol.isSwiftKeyWord {
+            return symbol
+        }
+        
         if let confusedSymbolName: String = self.confusedTable[symbol] {
             return confusedSymbolName
         }

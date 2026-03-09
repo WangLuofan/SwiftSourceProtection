@@ -221,8 +221,12 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 paramSymbol = secondParamSymbol
             }
             
-            if let firstSymbol: SwiftSourceSymbol = funcSymbol.labelDict[node.firstName.text] {
-                if let confusedLabelSymbolName: String = firstSymbol.confusedSymbol {
+            for labelSymbol in funcSymbol.labels {
+                if labelSymbol.originalSymbol != node.firstName.text {
+                    continue
+                }
+                
+                if let confusedLabelSymbolName: String = labelSymbol.confusedSymbol {
                     newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedLabelSymbolName)
                         .with(\.leadingTrivia, node.firstName.leadingTrivia)
                         .with(\.leadingTrivia, node.firstName.leadingTrivia)
@@ -230,7 +234,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 }
                 
                 if node.secondName == nil {
-                    paramSymbol = firstSymbol
+                    paramSymbol = labelSymbol
                 }
             }
         }
@@ -541,40 +545,52 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 }
                 
                 var labeledExprListSyntax: [LabeledExprSyntax] = [LabeledExprSyntax]()
-                
-                for (index, labeledExprSyntax) in node.arguments.enumerated() {
-                    var confusedLabeledExprSyntax = labeledExprSyntax
+                node.arguments.forEach { labeledExprSyntax in
+                    var confusedLabelExprSyntax = labeledExprSyntax
+                    
+                    var matchedLabelSymbol: SwiftSourceSymbol?
                     if let label = labeledExprSyntax.label {
-                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-                        if let confusedLabelName: String = (funcSymbol.labels[index]).confusedSymbol {
-                            confusedLabeledExprSyntax = labeledExprSyntax
-                                .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-                                    .with(\.leadingTrivia, label.leadingTrivia).with(\.trailingTrivia, label.trailingTrivia)
-                                )
+                        for labelSymbol: SwiftSourceSymbol in funcSymbol.labels {
+                            if label.text != labelSymbol.originalSymbol {
+                                continue
+                            }
+                            
+                            matchedLabelSymbol = labelSymbol
+                            break
                         }
                         
-                        if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
-                            let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[index]
-                            if memberAccessExpr.base == nil,
-                               let labelType: String = labelSymbol.symbolType,
-                               let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelType) as? SwiftSourceClassSymbol,
-                               let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
-                                
-                                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
-                                confusedLabeledExprSyntax = confusedLabeledExprSyntax
-                                    .with(\.expression, ExprSyntax(memberAccessExpr
-                                        .with(\.declName, memberAccessExpr.declName
-                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
-                                                .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
-                                                .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
+                        if let matchedLabelSymbol {
+                            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
+                            if let confusedLabelName: String = matchedLabelSymbol.confusedSymbol {
+                                confusedLabelExprSyntax = labeledExprSyntax
+                                    .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
+                                        .with(\.leadingTrivia, label.leadingTrivia)
+                                        .with(\.trailingTrivia, label.trailingTrivia)
+                                    )
+                            }
+                            
+                            if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
+                                if memberAccessExpr.base == nil,
+                                   let labelType: String = matchedLabelSymbol.symbolType,
+                                   let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelType) as? SwiftSourceClassSymbol,
+                                   let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
+                                    
+                                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
+                                    confusedLabelExprSyntax = confusedLabelExprSyntax
+                                        .with(\.expression, ExprSyntax(memberAccessExpr
+                                            .with(\.declName, memberAccessExpr.declName
+                                                .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                                    .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
+                                                    .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
+                                                )
                                             )
-                                        )
-                                    ))
+                                        ))
+                                }
                             }
                         }
                     }
                     
-                    labeledExprListSyntax.append(confusedLabeledExprSyntax)
+                    labeledExprListSyntax.append(confusedLabelExprSyntax)
                 }
                 
                 newNode = newNode
