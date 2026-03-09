@@ -153,6 +153,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
         
+        if node.name.text == "fun_sendPOSTHttpRequest_fun" {
+            print("Hello")
+        }
+        
         var funcSymbol: SwiftSourceFunctionSymbol? = nil
         
         /// 如果是全局方法，在全局作用域收集
@@ -593,8 +597,45 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
+    override func visit(_ node: OptionalTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let wrappedType: IdentifierTypeSyntax = node.wrappedType.as(IdentifierTypeSyntax.self),
+           let typeSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(wrappedType.name.text) {
+            let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(typeSymbol)
+            newNode = newNode.with(\.wrappedType, TypeSyntax(
+                wrappedType.with(\.name, TokenSyntax(stringLiteral: confusedSymbolName)
+                    .with(\.leadingTrivia, wrappedType.name.leadingTrivia)
+                    .with(\.trailingTrivia, wrappedType.name.trailingTrivia)
+                )
+            ))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
         var newNode = node
+        
+        var confusedParameters: [TupleTypeElementSyntax] = [TupleTypeElementSyntax]()
+        node.parameters.forEach { tupleTypeElemSyntax in
+            var confusedTupleTypeElemSyntax = tupleTypeElemSyntax
+            if let secondName: TokenSyntax = tupleTypeElemSyntax.secondName {
+                confusedTupleTypeElemSyntax = tupleTypeElemSyntax
+                    .with(\.secondName, TokenSyntax(stringLiteral: SwiftConfusedHelper.confusedSymbolName(secondName.text))
+                        .with(\.leadingTrivia, secondName.leadingTrivia)
+                        .with(\.trailingTrivia, secondName.trailingTrivia)
+                    )
+            }
+            
+            confusedParameters.append(confusedTupleTypeElemSyntax)
+        }
+        
+        newNode = node.with(\.parameters, TupleTypeElementListSyntax(confusedParameters)
+            .with(\.leadingTrivia, node.parameters.leadingTrivia)
+            .with(\.trailingTrivia, node.parameters.trailingTrivia)
+        )
+        
         return super.visit(newNode)
     }
     
