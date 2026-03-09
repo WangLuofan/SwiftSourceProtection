@@ -81,7 +81,15 @@ extension SwiftFunctionDeclProtocol {
             funcLabel.originalSymbol = parameterSyntax.firstName.text
             funcLabel.symbolFilePath = sourceFile
             
-            funcSymbol.labels[parameterSyntax.firstName.text] = funcLabel
+            if let typeSyntax: IdentifierTypeSyntax = parameterSyntax.type.as(IdentifierTypeSyntax.self) {
+                funcLabel.symbolType = typeSyntax.name.text
+            }
+            
+            funcSymbol.labels.append(funcLabel)
+            
+            if parameterSyntax.firstName.text != "_" {
+                funcSymbol.labelDict[parameterSyntax.firstName.text] = funcLabel
+            }
         }
         
         funcSymbol.signature = SwiftConfusedHelper.generateFunctionSignature(self)

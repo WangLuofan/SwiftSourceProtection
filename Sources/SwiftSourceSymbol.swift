@@ -116,7 +116,9 @@ class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
     var signature: String = ""
     
     /// 标签
-    lazy var labels: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
+    lazy var labels: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
+    
+    lazy var labelDict: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
     
     init() {
         super.init(nodeKind: .function)

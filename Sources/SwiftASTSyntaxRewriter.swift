@@ -217,7 +217,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 paramSymbol = secondParamSymbol
             }
             
-            if let firstSymbol: SwiftSourceSymbol = funcSymbol.labels[node.firstName.text] {
+            if let firstSymbol: SwiftSourceSymbol = funcSymbol.labelDict[node.firstName.text] {
                 if let confusedLabelSymbolName: String = firstSymbol.confusedSymbol {
                     newNode = newNode.with(\.firstName, TokenSyntax(stringLiteral: confusedLabelSymbolName)
                         .with(\.leadingTrivia, node.firstName.leadingTrivia)
@@ -301,7 +301,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         if let enumSymbol: SwiftSourceClassSymbol = parentStack.last as? SwiftSourceClassSymbol {
             var newElements: [EnumCaseElementSyntax] = [EnumCaseElementSyntax]()
             node.elements.forEach { enumCaseElemSyntax in
-                var enumCaseSymbol: SwiftSourceEnumCaseSymbol? = SwiftConfusedHelper.findChildSymbol(enumSymbol, enumCaseElemSyntax.name.text, .enumCase) as? SwiftSourceEnumCaseSymbol
+                let enumCaseSymbol: SwiftSourceEnumCaseSymbol? = SwiftConfusedHelper.findChildSymbol(enumSymbol, enumCaseElemSyntax.name.text, .enumCase) as? SwiftSourceEnumCaseSymbol
 
                 if let enumCaseSymbol {
                     let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(enumCaseSymbol)
@@ -429,7 +429,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                     var confusedBinding = patternBindingSyntax
                     if let idPatternSyntax: IdentifierPatternSyntax = patternBindingSyntax.pattern.as(IdentifierPatternSyntax.self) {
                         
-                        var variableSymbol: SwiftSourceSymbol? = SwiftConfusedHelper.findChildSymbol(clsSymbol, idPatternSyntax.identifier.text, .variable)
+                        let variableSymbol: SwiftSourceSymbol? = SwiftConfusedHelper.findChildSymbol(clsSymbol, idPatternSyntax.identifier.text, .variable)
                         if let variableSymbol {
                             let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(variableSymbol)
                             let confusedPattern = idPatternSyntax
@@ -537,20 +537,40 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 }
                 
                 var labeledExprListSyntax: [LabeledExprSyntax] = [LabeledExprSyntax]()
-                node.arguments.forEach { labeledExprSyntax in
+                
+                for (index, labeledExprSyntax) in node.arguments.enumerated() {
+                    var confusedLabeledExprSyntax = labeledExprSyntax
                     if let label = labeledExprSyntax.label {
                         let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-                        if let confusedLabelName: String = (funcSymbol.labels[label.text])?.confusedSymbol {
-                            let confusedLabeledExprSyntax = labeledExprSyntax
+                        if let confusedLabelName: String = (funcSymbol.labels[index]).confusedSymbol {
+                            confusedLabeledExprSyntax = labeledExprSyntax
                                 .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
                                     .with(\.leadingTrivia, label.leadingTrivia).with(\.trailingTrivia, label.trailingTrivia)
                                 )
-                            
-                            labeledExprListSyntax.append(confusedLabeledExprSyntax)
                         }
-                    } else {
-                        labeledExprListSyntax.append(labeledExprSyntax)
+                        
+                        if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
+                            let labelSymbol: SwiftSourceSymbol = funcSymbol.labels[index]
+                            if memberAccessExpr.base == nil,
+                               let labelType: String = labelSymbol.symbolType,
+                               let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelType) as? SwiftSourceClassSymbol,
+                               let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
+                                
+                                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
+                                confusedLabeledExprSyntax = confusedLabeledExprSyntax
+                                    .with(\.expression, ExprSyntax(memberAccessExpr
+                                        .with(\.declName, memberAccessExpr.declName
+                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                                .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
+                                                .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
+                                            )
+                                        )
+                                    ))
+                            }
+                        }
                     }
+                    
+                    labeledExprListSyntax.append(confusedLabeledExprSyntax)
                 }
                 
                 newNode = newNode
@@ -594,10 +614,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                    )
                }
            }
-        } else {
-            if node.declName.baseName.text == "pro_httpMethodPOST_pro" {
-                print("hello")
-            }
         }
         
         return super.visit(newNode)

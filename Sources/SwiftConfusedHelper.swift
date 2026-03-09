@@ -26,7 +26,7 @@ class SwiftConfusedHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
-            for (identifier, label) in funcSymbol.labels {
+            for (identifier, label) in funcSymbol.labelDict {
                 if identifier == "_" {
                     continue
                 }
