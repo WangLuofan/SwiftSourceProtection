@@ -11,6 +11,8 @@ import SwiftOperators
 class SwiftConfusedHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
+    
+    nonisolated(unsafe) static var sourcekittenHandler: SourceKittenHandler?
 
     static func confusedSymbol(_ symbol: SwiftSourceSymbol) -> String {
         guard self.shouldConfuseSymbol(symbol) else {

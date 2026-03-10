@@ -51,11 +51,7 @@ func main() {
         return
     }
 
-    // TODO: 使用 SourceKittenHandler 进行类型推导
-//    guard let sourceKittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target) else {
-//        return
-//    }
-    
+    SwiftConfusedHelper.sourcekittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target)
     print("SourceKitten initialized successfully")
 
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
