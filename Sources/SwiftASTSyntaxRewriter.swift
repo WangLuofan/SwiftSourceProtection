@@ -85,6 +85,26 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: AsExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let calledExpression: DeclReferenceExprSyntax = node.expression.as(DeclReferenceExprSyntax.self) {
+            if let expr: DeclReferenceExprSyntax = node.expression.as(DeclReferenceExprSyntax.self) {
+                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(expr.baseName.text) {
+                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(baseSymbol)
+                    newNode = newNode.with(\.expression, ExprSyntax(expr
+                        .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                            .with(\.leadingTrivia, expr.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, expr.baseName.trailingTrivia)
+                        )
+                    ))
+                }
+            }
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
         if let _: MemberAccessExprSyntax = SwiftConfusedHelper.findNodeParent(node, .memberAccessExpr)?.as(MemberAccessExprSyntax.self) {
             return super.visit(node)

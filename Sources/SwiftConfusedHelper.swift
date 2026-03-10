@@ -396,6 +396,16 @@ extension SwiftConfusedHelper {
             }
         } else if let switchExpr: SwitchExprSyntax = expr.as(SwitchExprSyntax.self) {
             return self.inferExprSyntaxType(switchExpr.subject)
+        } else if let superExpr: SuperExprSyntax = expr.as(SuperExprSyntax.self) {
+            if let clsDecl: ClassDeclSyntax = Self.findNodeParent(expr, .classDecl)?.as(ClassDeclSyntax.self) {
+                return clsDecl.name.text
+            } else if let structDecl: StructDeclSyntax = Self.findNodeParent(expr, .structDecl)?.as(StructDeclSyntax.self) {
+                return structDecl.name.text
+            } else if let enumDecl: EnumDeclSyntax = Self.findNodeParent(expr, .enumDecl)?.as(EnumDeclSyntax.self) {
+                return enumDecl.name.text
+            } else if let protoDecl: ProtocolDeclSyntax = Self.findNodeParent(expr, .protocolDecl)?.as(ProtocolDeclSyntax.self) {
+                return protoDecl.name.text
+            }
         }
         
         return nil  // 暂时无法推导
