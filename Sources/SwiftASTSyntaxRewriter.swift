@@ -592,7 +592,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                 node.arguments.forEach { labeledExprSyntax in
                     var confusedLabelExprSyntax = labeledExprSyntax
                     
-                    var matchedLabelSymbol: SwiftSourceSymbol?
                     if let label = labeledExprSyntax.label {
                         let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
                         for labelSymbol: SwiftSourceSymbol in funcSymbol.labels {
@@ -600,28 +599,26 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                 continue
                             }
                             
-                            matchedLabelSymbol = labelSymbol
-                            break
+                            if let confusedLabelName: String = labelSymbol.confusedSymbol {
+                                confusedLabelExprSyntax = labeledExprSyntax
+                                    .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
+                                        .with(\.leadingTrivia, label.leadingTrivia)
+                                        .with(\.trailingTrivia, label.trailingTrivia)
+                                    )
+                                break
+                            }
                         }
-                        
-                        if let matchedLabelSymbol,
-                           let confusedLabelName: String = matchedLabelSymbol.confusedSymbol {
-                            confusedLabelExprSyntax = labeledExprSyntax
-                                .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-                                    .with(\.leadingTrivia, label.leadingTrivia)
-                                    .with(\.trailingTrivia, label.trailingTrivia)
-                                )
-                        }
-                    } else {
-                        
                     }
                     
-                    if let matchedLabelSymbol {
-                        if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
-                            if memberAccessExpr.base == nil,
-                               let labelType: String = matchedLabelSymbol.symbolType,
-                               let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelType) as? SwiftSourceClassSymbol,
-                               let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
+                    if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
+                        
+                        if memberAccessExpr.base == nil {
+                            for labelSymbol in funcSymbol.labels {
+                                guard labelSymbol.originalSymbol == labeledExprSyntax.label?.text ?? "_",
+                                      let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelSymbol.symbolType) as? SwiftSourceClassSymbol,
+                                      let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(clsSymbol, memberAccessExpr.declName.baseName.text) else {
+                                    continue
+                                }
                                 
                                 let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
                                 confusedLabelExprSyntax = confusedLabelExprSyntax
@@ -633,6 +630,8 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                                             )
                                         )
                                     ))
+                                
+                                break
                             }
                         }
                     }
