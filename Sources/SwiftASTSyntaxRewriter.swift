@@ -86,6 +86,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+        if let _: MemberAccessExprSyntax = SwiftConfusedHelper.findNodeParent(node, .memberAccessExpr)?.as(MemberAccessExprSyntax.self) {
+            return super.visit(node)
+        }
+        
         var newNode = node
         let refName: String = node.baseName.text
         
@@ -152,10 +156,6 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
-        
-        if node.name.text == "fun_generateURLRequest_fun" {
-            print("Hello")
-        }
         
         var funcSymbol: SwiftSourceFunctionSymbol? = nil
         
@@ -682,18 +682,44 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var newNode = node
         
         if let base = node.base {
-           if let baseTypeName = SwiftConfusedHelper.inferExprSyntaxType(base),
-              let typeSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseTypeName) as? SwiftSourceClassSymbol {
-               
-               if let symbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, node.declName.baseName.text) {
-                   let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol)
-                   newNode = newNode.with(\.declName, newNode.declName
-                    .with(\.baseName,TokenSyntax(stringLiteral: confusedSymbol)
-                        .with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia)
-                        .with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
-                   )
-               }
-           }
+            if let idBaseSyntax: DeclReferenceExprSyntax = base.as(DeclReferenceExprSyntax.self) {
+                if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(idBaseSyntax.baseName.text) {
+                    let confusedBaseSymbolName: String = SwiftConfusedHelper.confusedSymbol(baseSymbol)
+                    newNode = newNode.with(\.base, ExprSyntax(idBaseSyntax
+                        .with(\.baseName, TokenSyntax(stringLiteral: confusedBaseSymbolName)
+                            .with(\.leadingTrivia, idBaseSyntax.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, idBaseSyntax.baseName.trailingTrivia)
+                        )
+                    ))
+                }
+            } else if let optChainExprSyntax: OptionalChainingExprSyntax = base.as(OptionalChainingExprSyntax.self) {
+                if let expression: DeclReferenceExprSyntax = optChainExprSyntax.expression.as(DeclReferenceExprSyntax.self) {
+                    if let baseSymbol: SwiftSourceSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(expression.baseName.text) {
+                        let confusedBaseSymbolName: String = SwiftConfusedHelper.confusedSymbol(baseSymbol)
+                        newNode = newNode.with(\.base, ExprSyntax(optChainExprSyntax
+                            .with(\.expression, ExprSyntax(expression
+                                .with(\.baseName, TokenSyntax(stringLiteral: confusedBaseSymbolName)
+                                    .with(\.leadingTrivia, expression.baseName.leadingTrivia)
+                                    .with(\.trailingTrivia, expression.baseName.trailingTrivia)
+                                )
+                            ))
+                        ))
+                    }
+                }
+            }
+            
+            if let baseTypeName = SwiftConfusedHelper.inferExprSyntaxType(base),
+               let typeSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseTypeName) as? SwiftSourceClassSymbol {
+                
+                if let symbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, node.declName.baseName.text) {
+                    let confusedSymbol = SwiftConfusedHelper.confusedSymbol(symbol)
+                    newNode = newNode.with(\.declName, newNode.declName
+                        .with(\.baseName,TokenSyntax(stringLiteral: confusedSymbol)
+                            .with(\.leadingTrivia, newNode.declName.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, newNode.declName.baseName.trailingTrivia))
+                    )
+                }
+            }
         }
         
         return super.visit(newNode)

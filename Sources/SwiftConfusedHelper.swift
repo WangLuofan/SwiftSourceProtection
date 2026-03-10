@@ -226,13 +226,10 @@ extension SwiftConfusedHelper {
         
         if let baseExpr: DeclReferenceExprSyntax = expr?.as(DeclReferenceExprSyntax.self) {
             if baseExpr.baseName.text == "self" || baseExpr.baseName.text == "Self" {
-                var parentSymbol: SwiftSourceSymbol? = symbol?.parent
-                while parentSymbol != nil && parentSymbol?.nodeKind != .class {
-                    parentSymbol = parentSymbol?.parent
-                    continue
+                if let clsDecl: ClassDeclSyntax = Self.findNodeParent(baseExpr, .classDecl)?.as(ClassDeclSyntax.self),
+                   let clsSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(clsDecl.name.text) as? SwiftSourceClassSymbol {
+                    return clsSymbol
                 }
-                
-                return parentSymbol
             } else {
                 if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
                     let symbol: SwiftSourceSymbol? = SwiftConfusedHelper.findChildSymbol(baseSymbol, baseExpr.baseName.text)
@@ -337,6 +334,8 @@ extension SwiftConfusedHelper {
                 
                 return symbol.symbolType
             }
+            
+            return declRefExpr.baseName.text
         } else if let macroExpr: MacroExpansionExprSyntax = expr.as(MacroExpansionExprSyntax.self) {
             let macroName = macroExpr.macroName.text
             switch macroName {
