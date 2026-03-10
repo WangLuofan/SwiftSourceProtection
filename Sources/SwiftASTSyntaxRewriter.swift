@@ -554,6 +554,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         var clsSymbol: SwiftSourceClassSymbol?
         var calledFunctionName: String?
         if let memberAccessExpr: MemberAccessExprSyntax = node.calledExpression.as(MemberAccessExprSyntax.self) {
+            
             if let baseExpr = memberAccessExpr.base,
                let typeSymbolName: String = SwiftConfusedHelper.inferExprSyntaxType(baseExpr) {
                 clsSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(typeSymbolName) as? SwiftSourceClassSymbol

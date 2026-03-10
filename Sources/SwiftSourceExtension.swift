@@ -24,6 +24,7 @@ extension SwiftClassDeclProtocol {
         classSymbol.originalSymbol = self.name.text
         classSymbol.symbolType = self.name.text
         classSymbol.ASTNode = self as? SyntaxProtocol
+        classSymbol.symbolType = classSymbol.originalSymbol
         
         if let inheritedTypes = self.inheritanceClause?.inheritedTypes {
             inheritedTypes.forEach { inheritedTypeSyntax in
