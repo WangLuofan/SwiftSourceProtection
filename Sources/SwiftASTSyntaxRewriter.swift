@@ -594,6 +594,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                     
                     var matchedLabelSymbol: SwiftSourceSymbol?
                     if let label = labeledExprSyntax.label {
+                        let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
                         for labelSymbol: SwiftSourceSymbol in funcSymbol.labels {
                             if label.text != labelSymbol.originalSymbol {
                                 continue
@@ -603,33 +604,35 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
                             break
                         }
                         
-                        if let matchedLabelSymbol {
-                            let _ = SwiftConfusedHelper.confusedSymbol(funcSymbol)
-                            if let confusedLabelName: String = matchedLabelSymbol.confusedSymbol {
-                                confusedLabelExprSyntax = labeledExprSyntax
-                                    .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
-                                        .with(\.leadingTrivia, label.leadingTrivia)
-                                        .with(\.trailingTrivia, label.trailingTrivia)
-                                    )
-                            }
-                            
-                            if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
-                                if memberAccessExpr.base == nil,
-                                   let labelType: String = matchedLabelSymbol.symbolType,
-                                   let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelType) as? SwiftSourceClassSymbol,
-                                   let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
-                                    
-                                    let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
-                                    confusedLabelExprSyntax = confusedLabelExprSyntax
-                                        .with(\.expression, ExprSyntax(memberAccessExpr
-                                            .with(\.declName, memberAccessExpr.declName
-                                                .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
-                                                    .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
-                                                    .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
-                                                )
+                        if let matchedLabelSymbol,
+                           let confusedLabelName: String = matchedLabelSymbol.confusedSymbol {
+                            confusedLabelExprSyntax = labeledExprSyntax
+                                .with(\.label, TokenSyntax(stringLiteral: confusedLabelName)
+                                    .with(\.leadingTrivia, label.leadingTrivia)
+                                    .with(\.trailingTrivia, label.trailingTrivia)
+                                )
+                        }
+                    } else {
+                        
+                    }
+                    
+                    if let matchedLabelSymbol {
+                        if let memberAccessExpr: MemberAccessExprSyntax = labeledExprSyntax.expression.as(MemberAccessExprSyntax.self) {
+                            if memberAccessExpr.base == nil,
+                               let labelType: String = matchedLabelSymbol.symbolType,
+                               let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(labelType) as? SwiftSourceClassSymbol,
+                               let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
+                                
+                                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
+                                confusedLabelExprSyntax = confusedLabelExprSyntax
+                                    .with(\.expression, ExprSyntax(memberAccessExpr
+                                        .with(\.declName, memberAccessExpr.declName
+                                            .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                                                .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
+                                                .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
                                             )
-                                        ))
-                                }
+                                        )
+                                    ))
                             }
                         }
                     }
