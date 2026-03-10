@@ -153,7 +153,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        if node.name.text == "fun_sendPOSTHttpRequest_fun" {
+        if node.name.text == "fun_generateURLRequest_fun" {
             print("Hello")
         }
         
@@ -279,6 +279,29 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
         varSymbol.ASTNode = node
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let memberAccessExpr: MemberAccessExprSyntax = node.rightOperand.as(MemberAccessExprSyntax.self),
+           memberAccessExpr.base == nil {
+            if let leftOperandType: String = SwiftConfusedHelper.inferExprSyntaxType(node.leftOperand),
+               let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(leftOperandType) as? SwiftSourceClassSymbol,
+               let childSymbol: SwiftSourceSymbol = SwiftConfusedHelper.findChildSymbol(typeSymbol, memberAccessExpr.declName.baseName.text) {
+                let confusedSymbolName: String = SwiftConfusedHelper.confusedSymbol(childSymbol)
+                newNode = node.with(\.rightOperand, ExprSyntax(memberAccessExpr
+                    .with(\.declName, memberAccessExpr.declName
+                        .with(\.baseName, TokenSyntax(stringLiteral: confusedSymbolName)
+                            .with(\.leadingTrivia, memberAccessExpr.declName.baseName.leadingTrivia)
+                            .with(\.trailingTrivia, memberAccessExpr.declName.baseName.trailingTrivia)
+                        )
+                    )
+                ))
+            }
+        }
+        
         return super.visit(newNode)
     }
     
