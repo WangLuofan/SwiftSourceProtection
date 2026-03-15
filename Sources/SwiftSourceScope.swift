@@ -67,7 +67,10 @@ class SwiftSourceScopeManager {
         return nil
     }
     
-    func findSymbol(_ symbolName: String, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
+    func findSymbol(_ symbolName: String?, inScope scope: SwiftSourceScope? = nil) -> SwiftSourceSymbol? {
+        guard let symbolName else {
+            return nil
+        }
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {

@@ -46,7 +46,14 @@ class SourceKittenHandler {
             return nil
         }
 
-        self.compilerArguments = self.projectModule?.compilerArguments
+        let blockedFlags: Set<String> = [
+            "-no-serialize-debugging-options",
+            "-serialize-debugging-options",
+        ]
+        self.compilerArguments = self.projectModule?.compilerArguments.filter {
+            !blockedFlags.contains($0)
+        }
+
     }
 
     /// 获取指定文件中所有符号的类型信息
@@ -68,6 +75,17 @@ class SourceKittenHandler {
         extractTypes(from: structure.dictionary, in: file, into: &typeMap)
 
         return typeMap
+    }
+    
+    func getTypeName(filePath: String, byteOffset: Int) -> String? {
+        guard let compilerArguments else { return nil }
+        let request = Request.cursorInfo(
+            file: filePath,
+            offset: ByteCount(byteOffset),
+            arguments: compilerArguments
+        )
+        guard let response = try? request.send() else { return nil }
+        return response["key.typename"] as? String
     }
 
     /// 递归提取结构中的类型信息

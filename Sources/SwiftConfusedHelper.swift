@@ -11,6 +11,8 @@ import SwiftOperators
 class SwiftConfusedHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
+    
+    nonisolated(unsafe) static var sourcekittenHandler: SourceKittenHandler?
 
     static func confusedSymbol(_ symbol: SwiftSourceSymbol) -> String {
         guard self.shouldConfuseSymbol(symbol) else {
@@ -419,6 +421,16 @@ extension SwiftConfusedHelper {
             return SwiftConfusedHelper.detectTypeSyntax(asExpr.type)
         } else if let switchExpr: SwitchExprSyntax = expr.as(SwitchExprSyntax.self) {
             return self.inferExprSyntaxType(switchExpr.subject)
+        } else if let _: SuperExprSyntax = expr.as(SuperExprSyntax.self) {
+            if let clsDecl: ClassDeclSyntax = Self.findNodeParent(expr, .classDecl)?.as(ClassDeclSyntax.self) {
+                return SwiftSymbolSingleType(typeName: clsDecl.name.text)
+            } else if let structDecl: StructDeclSyntax = Self.findNodeParent(expr, .structDecl)?.as(StructDeclSyntax.self) {
+                return SwiftSymbolSingleType(typeName: structDecl.name.text)
+            } else if let enumDecl: EnumDeclSyntax = Self.findNodeParent(expr, .enumDecl)?.as(EnumDeclSyntax.self) {
+                return SwiftSymbolSingleType(typeName: enumDecl.name.text)
+            } else if let protoDecl: ProtocolDeclSyntax = Self.findNodeParent(expr, .protocolDecl)?.as(ProtocolDeclSyntax.self) {
+                return SwiftSymbolSingleType(typeName: protoDecl.name.text)
+            }
         }
         
         return SwiftSymbolAnyType()  // 暂时无法推导
