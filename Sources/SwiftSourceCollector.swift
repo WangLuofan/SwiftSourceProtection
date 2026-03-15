@@ -80,6 +80,30 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
     }
     
+    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
     override func visit(_ node: FunctionParameterListSyntax) -> SyntaxVisitorContinueKind {
         SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
