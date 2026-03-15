@@ -20,9 +20,8 @@ extension SwiftClassDeclProtocol {
         let classSymbol: SwiftSourceClassSymbol = SwiftSourceClassSymbol(nodeKind: nodeKind)
         
         classSymbol.symbolFilePath = sourceFile
-        classSymbol.parent = parentStack.last
         classSymbol.originalSymbol = self.name.text
-        classSymbol.symbolType = self.name.text
+        classSymbol.symbolType = SwiftSymbolSingleType(typeName: self.name.text)
         classSymbol.ASTNode = self as? SyntaxProtocol
         
         if let inheritedTypes = self.inheritanceClause?.inheritedTypes {
@@ -55,7 +54,6 @@ extension SwiftFunctionDeclProtocol {
     func symbol(_ sourceFile: String) -> SwiftSourceFunctionSymbol {
         let funcSymbol: SwiftSourceFunctionSymbol = SwiftSourceFunctionSymbol()
         funcSymbol.symbolFilePath = sourceFile
-        funcSymbol.parent = parentStack.last
         funcSymbol.originalSymbol = self.name.text
         self.modifiers.forEach { modifier in
             funcSymbol.accessControl = modifier.accessControl
@@ -65,9 +63,8 @@ extension SwiftFunctionDeclProtocol {
             funcSymbol.isOverride = modifier.isOverride
         }
         
-        funcSymbol.returnType = "Void"
-        if let identSyntax: IdentifierTypeSyntax = self.signature.returnClause?.type.as(IdentifierTypeSyntax.self) {
-            funcSymbol.returnType = identSyntax.name.text
+        if let type = self.signature.returnClause?.type {
+            funcSymbol.returnType = SwiftConfusedHelper.detectTypeSyntax(type)
         }
         
         funcSymbol.ASTNode = self as? SyntaxProtocol
@@ -81,7 +78,7 @@ extension SwiftFunctionDeclProtocol {
             funcLabel.originalSymbol = parameterSyntax.firstName.text
             funcLabel.symbolFilePath = sourceFile
             
-            funcLabel.symbolType = parameterSyntax.type.trimmedDescription
+            funcLabel.symbolType = SwiftConfusedHelper.detectTypeSyntax(parameterSyntax.type)
             funcSymbol.labels.append(funcLabel)
         }
         
@@ -390,7 +387,6 @@ extension VariableDeclSyntax {
     func variableSymbol(_ sourceFile: String) -> SwiftSourceSymbol {
         let variableSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
         variableSymbol.symbolFilePath = sourceFile
-        variableSymbol.parent = parentStack.last
         self.modifiers.forEach { modifier in
             variableSymbol.accessControl = modifier.accessControl
             variableSymbol.isStatic = modifier.isStatic
@@ -410,12 +406,7 @@ extension VariableDeclSyntax {
             }
             
             if let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
-                if let typeId: IdentifierTypeSyntax = typeAnnotation.type.as(IdentifierTypeSyntax.self) {
-                    variableSymbol.symbolType = typeId.name.text
-                } else if let optType: OptionalTypeSyntax = typeAnnotation.type.as(OptionalTypeSyntax.self),
-                          let wrappedType: IdentifierTypeSyntax = optType.wrappedType.as(IdentifierTypeSyntax.self) {
-                    variableSymbol.symbolType = wrappedType.name.text
-                }
+                variableSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
             } else if let initializer: InitializerClauseSyntax = patternBinding.initializer {
                 variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
             }
@@ -435,12 +426,27 @@ extension FunctionParameterSyntax {
             paramSymbol.originalSymbol = firstName.text
         }
         
-        if let typeIdent: IdentifierTypeSyntax = self.type.as(IdentifierTypeSyntax.self) {
-            paramSymbol.symbolType = typeIdent.name.text
+        paramSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(self.type)
+        paramSymbol.ASTNode = self
+        
+        return paramSymbol
+    }
+}
+
+extension ClosureParameterSyntax {
+    func closureParameterSymbol(_ sourceFile: String) -> SwiftSourceSymbol {
+        let paramSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        paramSymbol.symbolFilePath = sourceFile
+        
+        if let secondName {
+            paramSymbol.originalSymbol = secondName.text
+        } else {
+            paramSymbol.originalSymbol = self.firstName.text
         }
         
-        paramSymbol.ASTNode = self
-        paramSymbol.parent = parentStack.last
+        if let type {
+            paramSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(type)
+        }
         
         return paramSymbol
     }

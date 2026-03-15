@@ -71,7 +71,7 @@ func main() {
         let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
         
         let parsedSourceTree = foldedSourceTree ?? sourceTree
-        let sourceCollector: SwiftSourceCollector = SwiftSourceCollector(sourceFile: sourceFile)
+        let sourceCollector: SwiftSourceCollector = SwiftSourceCollector(sourceFile: sourceFile, sourceKitten: nil)
         sourceCollector.walk(parsedSourceTree)
         
         sourceTreeDict[sourceFile] = foldedSourceTree

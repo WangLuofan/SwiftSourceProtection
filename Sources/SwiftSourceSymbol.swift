@@ -37,13 +37,13 @@ class SwiftSourceSymbol {
     var symbolFilePath: String?
     
     /// 原始符号
-    var originalSymbol: String = ""
+    var originalSymbol: String = "_"
     
     /// 混淆符号
     var confusedSymbol: String?
     
     /// 符号类型
-    var symbolType: String?
+    var symbolType: SwiftSymbolType = SwiftSymbolAnyType()
     
     /// 父结点
     var parent: SwiftSourceSymbol?
@@ -81,9 +81,6 @@ class SwiftSourceSymbol {
         return false
     }
     
-    /// 子声明
-    lazy var children: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
-    
     init(nodeKind: SwiftNodeKind) {
         self.nodeKind = nodeKind
     }
@@ -94,11 +91,14 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
     /// 继承列表
     lazy var inheritedType: [String] = [String]()
     
+    /// 子声明
+    lazy var members: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
+
     func mergeSymbol(_ clsSymbol: SwiftSourceClassSymbol) {
-        clsSymbol.children.forEach { symbol in
+        clsSymbol.members.forEach { symbol in
             symbol.parent = self
             
-            self.children.append(symbol)
+            self.members.append(symbol)
         }
         
         if !clsSymbol.inheritedType.isEmpty {
@@ -110,7 +110,7 @@ class SwiftSourceClassSymbol: SwiftSourceSymbol {
 /// 方法类型
 class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
     /// 返回类型
-    var returnType: String = "Void"
+    var returnType: SwiftSymbolType = SwiftSymbolSingleType.voidType
     
     /// 签名
     var signature: String = ""

@@ -21,20 +21,27 @@ class SwiftSourceScopeManager {
         return self.currentScope === self.globalScope
     }
     
-    func pushScope() {
-        let scope: SwiftSourceScope = SwiftSourceScope()
-        scope.prev = self.currentScope
-        self.currentScope?.next.append(scope)
-        self.currentScope = scope          // 直接指向新建的 scope
+    func pushScope(_ bCreate:Bool = true) {
+        if bCreate {
+            let scope: SwiftSourceScope = SwiftSourceScope()
+            scope.prev = self.currentScope
+            self.currentScope?.next.append(scope)
+            self.currentScope = scope          // 直接指向新建的 scope
+            
+            return
+        }
+        
+        self.currentScope = self.currentScope?.next.first
     }
 
-    func popScope() {
+    func popScope(_ bRemove: Bool = true) {
         guard let prev = self.currentScope?.prev else { return }
         
         let leavingScope = self.currentScope
         self.currentScope = prev
         
-        if let leavingScope {
+        if let leavingScope,
+           bRemove {
             self.currentScope?.next.removeAll { $0 === leavingScope }
         }
     }
@@ -45,7 +52,7 @@ class SwiftSourceScopeManager {
 
         var scope = self.currentScope
         while scope != nil {
-            for (_, symbol) in scope!.symbols {
+            for symbol in scope!.symbols {
                 if let astNode = symbol.ASTNode,
                    symbol.symbolFilePath == inFile {
                     if astNode.id.indexInTree == nodeID.indexInTree {
@@ -64,7 +71,7 @@ class SwiftSourceScopeManager {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
-            for (_, symbol) in scope!.symbols {
+            for symbol in scope!.symbols {
                 if SwiftConfusedHelper.getConfusedOriginalSymbolName(symbol.originalSymbol) == SwiftConfusedHelper.getConfusedOriginalSymbolName(symbolName) {
                     return symbol
                 }
@@ -79,26 +86,13 @@ class SwiftSourceScopeManager {
 
 class SwiftSourceScope {
     
-    lazy var symbols: [String: SwiftSourceSymbol] = [String: SwiftSourceSymbol]()
+    lazy var symbols: [SwiftSourceSymbol] = [SwiftSourceSymbol]()
     
     var prev: SwiftSourceScope?
     lazy var next: [SwiftSourceScope] = [SwiftSourceScope]()
     
     func pushSymbol(_ symbol: SwiftSourceSymbol) {
-        if symbol.nodeKind == .function,
-           let symbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
-            guard !symbol.signature.isEmpty else {
-                return
-            }
-            
-            self.symbols[symbol.signature] = symbol
-        }
-        
-        guard !symbol.originalSymbol.isEmpty else {
-            return
-        }
-        
-        self.symbols[symbol.originalSymbol] = symbol
+        self.symbols.append(symbol)
     }
     
 }
