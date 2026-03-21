@@ -92,7 +92,17 @@ class SwiftSymbolTupleType: SwiftSymbolAnyType {
         return .tuple
     }
     
-    lazy var elements: [SwiftSymbolType] = [SwiftSymbolType]()
+    var elements: [SwiftSymbolType]
+    
+    override init() {
+        self.elements = [SwiftSymbolType]()
+        super.init()
+    }
+    
+    init(elements: [SwiftSymbolType]) {
+        self.elements = elements
+        super.init()
+    }
 }
 
 class SwiftFunctionType: SwiftSymbolAnyType {
@@ -101,7 +111,17 @@ class SwiftFunctionType: SwiftSymbolAnyType {
     }
     
     var returnType: SwiftSymbolType?
-    lazy var elements: [SwiftSymbolType] = [SwiftSymbolType]()
+    var elements: [SwiftSymbolType]
+    
+    init(elements: [SwiftSymbolType], returnType: SwiftSymbolType? = nil) {
+        self.returnType = returnType
+        self.elements = elements
+    }
+    
+    override init() {
+        self.elements = [SwiftSymbolType]()
+        super.init()
+    }
 }
 
 class SwiftCompositionType: SwiftSymbolAnyType {

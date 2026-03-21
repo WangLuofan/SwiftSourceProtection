@@ -26,7 +26,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         
         if !self.parentStack.isEmpty {
-            symbol.parent = parentStack.last
+            symbol.parent = self.parentStack.last
         }
         
         self.parentStack.append(symbol)
@@ -39,22 +39,68 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
     }
     
-    override func visit(_ node: MemberBlockSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope()
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SwiftSourceSymbol = node.symbol(.class, self.sourceFile)
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
+        
+        if !self.parentStack.isEmpty {
+            symbol.parent = self.parentStack.last
+        }
+        
+        self.parentStack.append(symbol)
         return super.visit(node)
     }
     
-    override func visitPost(_ node: MemberBlockSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope(false)
-    }
-    
-    override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope()
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SwiftSourceClassSymbol = node.symbol(.enum, self.sourceFile)
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
+        
+        if !self.parentStack.isEmpty {
+            symbol.parent = self.parentStack.last
+        }
+        
+        if let clsSymbol: SwiftSourceClassSymbol = self.parentStack.last as? SwiftSourceClassSymbol {
+            clsSymbol.members.append(symbol)
+        }
+        
+        self.parentStack.append(symbol)
         return super.visit(node)
     }
     
-    override func visitPost(_ node: CodeBlockSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope(false)
+    override func visit(_ node: EnumCaseElementSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SwiftSourceEnumCaseSymbol = SwiftSourceEnumCaseSymbol(nodeKind: .enumCase)
+        symbol.originalSymbol = node.name.text
+        symbol.ASTNode = node
+        symbol.parent = self.parentStack.last
+        
+        if let type = self.parentStack.last?.symbolType {
+            symbol.symbolType = type
+        }
+        
+        node.parameterClause?.parameters.forEach { enumCaseParamSyntax in
+            symbol.associatedType.append(SwiftConfusedHelper.detectTypeSyntax(enumCaseParamSyntax.type))
+        }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SwiftSourceSymbol = node.symbol(.class, self.sourceFile)
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
+        
+        if !self.parentStack.isEmpty {
+            symbol.parent = self.parentStack.last
+        }
+        
+        self.parentStack.append(symbol)
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: StructDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -81,14 +127,59 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
+        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            varSymbol.originalSymbol = idPattern.identifier.text
+        }
+        
+        if let typeAnnotation = node.typeAnnotation {
+            varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
+        } else {
+            let seqType: SwiftSymbolType = SwiftConfusedHelper.inferExprSyntaxType(node.sequence)
+            if let arrType: SwiftSymbolArrayType = seqType as? SwiftSymbolArrayType {
+                varSymbol.symbolType = arrType.elementType
+            } else if let dicType: SwiftSymbolDictionaryType = seqType as? SwiftSymbolDictionaryType {
+                varSymbol.symbolType = SwiftSymbolTupleType(elements: [dicType.keyType, dicType.valueType])
+            }
+        }
+        
+        varSymbol.symbolFilePath = self.sourceFile
+        
+        if !self.parentStack.isEmpty {
+            varSymbol.parent = self.parentStack.last
+        }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
         return super.visit(node)
     }
     
     override func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
+        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            varSymbol.originalSymbol = idPattern.identifier.text
+        }
+        varSymbol.symbolFilePath = self.sourceFile
+        if let typeAnnotation = node.typeAnnotation {
+            varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
+        } else if let initializer = node.initializer {
+            varSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+        }
+        
+        if !self.parentStack.isEmpty {
+            varSymbol.parent = self.parentStack.last
+        }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
         return super.visit(node)
     }
     
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        let funcSymbol = node.symbol(self.sourceFile)
+        if !self.parentStack.isEmpty {
+            funcSymbol.parent = self.parentStack.last
+        }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
         return super.visit(node)
     }
     
@@ -96,21 +187,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         return super.visit(node)
     }
     
-    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
-        return super.visit(node)
-    }
-    
     override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
         return super.visit(node)
-    }
-    
-    override func visit(_ node: FunctionParameterListSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope()
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: FunctionParameterListSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
@@ -154,15 +232,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         if self.parentStack.isEmpty {
             symbol.parent = self.parentStack.last
         }
+        
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         return super.visit(node)
-    }
-    
-    override func visit(_ node: ClosureCaptureListSyntax) -> SyntaxVisitorContinueKind {
-        SwiftSourceScopeManager.sharedManager.pushScope()
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: ClosureCaptureListSyntax) {
-        SwiftSourceScopeManager.sharedManager.popScope(true)
     }
 }

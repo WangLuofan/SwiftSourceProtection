@@ -124,5 +124,5 @@ class SwiftSourceFunctionSymbol: SwiftSourceSymbol {
 }
 
 class SwiftSourceEnumCaseSymbol: SwiftSourceSymbol {
-    lazy var associatedType: [String] = [String]()
+    lazy var associatedType: [SwiftSymbolType] = [SwiftSymbolType]()
 }

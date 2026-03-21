@@ -51,7 +51,7 @@ func main() {
         return
     }
 
-    SwiftConfusedHelper.sourcekittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target)
+//    SwiftConfusedHelper.sourcekittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target)
     print("SourceKitten initialized successfully")
 
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
@@ -59,6 +59,10 @@ func main() {
     
     /// 第一步：收集全局符号、成员符号
     sourceFiles.forEach { sourceFile in
+        if !sourceFile.contains("TestFile.swift") {
+            return
+        }
+        
         guard let sourceCode: String = try? String(contentsOfFile: sourceFile, encoding: .utf8), !sourceCode.isEmpty else {
             return
         }
@@ -84,7 +88,7 @@ func main() {
                                  sourceTree: sourceTree,
                                  projectPath: projectPath).confuse() {
             
-            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
+//            try? confusedFileContent.write(toFile: sourceFile, atomically: true, encoding: .utf8)
         }
     }
 }

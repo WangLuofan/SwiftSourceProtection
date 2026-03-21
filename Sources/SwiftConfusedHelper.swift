@@ -293,29 +293,21 @@ extension SwiftConfusedHelper {
         return nil
     }
     
-    static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax, forSymbol symbol: SwiftSourceSymbol? = nil) -> SwiftSymbolType? {
-        var typeString: String?
-        
-        if let parameters: ClosureParameterListSyntax = closureExpr.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self)?.parameters.as(ClosureParameterListSyntax.self) {
-            if parameters.count == 0 {
-                typeString = "()"
-            } else {
-                typeString = "(\(parameters.trimmedDescription))"
-            }
-        }
-        
+    static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax, forSymbol symbol: SwiftSourceSymbol? = nil) -> SwiftSymbolType {
+        let funcType: SwiftFunctionType = SwiftFunctionType()
         if let returnClause: ReturnClauseSyntax = closureExpr.signature?.returnClause {
-            if let identTypeSyntax: IdentifierTypeSyntax = returnClause.type.as(IdentifierTypeSyntax.self) {
-                typeString = ((typeString != nil) ? typeString! : "()") + " -> \(identTypeSyntax.name.text)"
-            }
-        } else {
-//            if let expr: ExprSyntax = closureExpr.statements.last?.item.as(ExprSyntax.self),
-//               let stmtType: String = self.inferExprSyntaxType(expr, forSymbol: symbol) {
-//                typeString = ((typeString != nil) ? typeString! : "()") + " -> \(stmtType)"
-//            }
+            funcType.returnType = SwiftConfusedHelper.detectTypeSyntax(returnClause.type)
         }
         
-        return nil
+        if let paramClauseSyntax: ClosureParameterClauseSyntax = closureExpr.signature?.parameterClause?.as(ClosureParameterClauseSyntax.self) {
+            paramClauseSyntax.parameters.forEach { closureParamSyntax in
+                if let paramType = closureParamSyntax.type {
+                    funcType.elements.append(SwiftConfusedHelper.detectTypeSyntax(paramType))
+                }
+            }
+        }
+        
+        return funcType
     }
     
     static func inferExprSyntaxType(_ expr: ExprSyntaxProtocol, forSymbol symbol: SwiftSourceSymbol? = nil) -> SwiftSymbolType {
@@ -325,14 +317,24 @@ extension SwiftConfusedHelper {
             return SwiftSymbolSingleType(typeName: "String")
         } else if let _ = expr.as(FloatLiteralExprSyntax.self) {
             return SwiftSymbolSingleType(typeName: "Double")
-        } else if let _ = expr.as(ArrayExprSyntax.self) {
-            return SwiftSymbolArrayType()
-        } else if let _ = expr.as(DictionaryExprSyntax.self) {
-            return SwiftSymbolDictionaryType()
-        } else if let closureExpr: ClosureExprSyntax = expr.as(ClosureExprSyntax.self) {
-            if let type = self.inferClosureExprSyntaxType(closureExpr, forSymbol: symbol) {
-                return type
+        } else if let expr: ArrayExprSyntax = expr.as(ArrayExprSyntax.self) {
+            let arrType: SwiftSymbolArrayType = SwiftSymbolArrayType()
+            if let firstElem = expr.elements.first?.expression as? ExprSyntaxProtocol {
+                arrType.elementType = self.inferExprSyntaxType(firstElem)
             }
+            return arrType
+        } else if let expr: DictionaryExprSyntax = expr.as(DictionaryExprSyntax.self) {
+            let dictType: SwiftSymbolDictionaryType = SwiftSymbolDictionaryType()
+            
+            if let content: DictionaryElementListSyntax = expr.content.as(DictionaryElementListSyntax.self),
+               let firstElemSyntax: DictionaryElementSyntax = content.first {
+                dictType.keyType = self.inferExprSyntaxType(firstElemSyntax.key)
+                dictType.valueType = self.inferExprSyntaxType(firstElemSyntax.value)
+            }
+            
+            return dictType
+        } else if let closureExpr: ClosureExprSyntax = expr.as(ClosureExprSyntax.self) {
+            return self.inferClosureExprSyntaxType(closureExpr, forSymbol: symbol)
         } else if let _ = expr.as(BooleanLiteralExprSyntax.self) {
             return SwiftSymbolSingleType(typeName: "Bool")
         } else if let _ = expr.as(RegexLiteralExprSyntax.self) {
