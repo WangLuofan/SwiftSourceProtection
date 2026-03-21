@@ -30,6 +30,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         self.parentStack.append(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
@@ -37,6 +38,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         if !self.parentStack.isEmpty {
             self.parentStack.removeLast()
         }
+        
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -48,7 +51,16 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         self.parentStack.append(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ProtocolDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -64,7 +76,16 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         self.parentStack.append(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: EnumDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: EnumCaseElementSyntax) -> SyntaxVisitorContinueKind {
@@ -94,6 +115,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         self.parentStack.append(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
@@ -101,6 +123,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         if !self.parentStack.isEmpty {
             self.parentStack.removeLast()
         }
+        
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -117,6 +141,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         self.parentStack.append(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
@@ -124,6 +149,8 @@ class SwiftSourceCollector: SyntaxVisitor {
         if !self.parentStack.isEmpty {
             self.parentStack.removeLast()
         }
+        
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
@@ -150,7 +177,16 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ForStmtSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
@@ -180,7 +216,16 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: InitializerDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
+        SwiftSourceScopeManager.sharedManager.popScope()
     }
     
     override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
@@ -235,5 +280,14 @@ class SwiftSourceCollector: SyntaxVisitor {
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         return super.visit(node)
+    }
+    
+    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ClosureExprSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
 }
