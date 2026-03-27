@@ -455,14 +455,20 @@ extension ClosureParameterSyntax {
         let paramSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
         paramSymbol.symbolFilePath = sourceFile
         
-        if let secondName {
-            paramSymbol.originalSymbol = secondName.text
-        } else {
-            paramSymbol.originalSymbol = self.firstName.text
-        }
-        
         if let type {
             paramSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(type)
+        }
+        
+        if let secondName {
+            paramSymbol.originalSymbol = secondName.text
+            if paramSymbol.symbolType.isUnknownType {
+                paramSymbol.symbolType = SourceKittenHandler.sharedHandler.querySymbolType(by: sourceFile, byteOffset: secondName.positionAfterSkippingLeadingTrivia.utf8Offset)
+            }
+        } else {
+            paramSymbol.originalSymbol = self.firstName.text
+            if paramSymbol.symbolType.isUnknownType {
+                paramSymbol.symbolType = SourceKittenHandler.sharedHandler.querySymbolType(by: sourceFile, byteOffset: self.firstName.positionAfterSkippingLeadingTrivia.utf8Offset)
+            }
         }
         
         return paramSymbol
