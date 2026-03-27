@@ -514,10 +514,10 @@ extension SwiftConfusedHelper {
             if parent?.kind == kind {
                 break
             }
-            
+
             parent = parent?.parent
         }
-        
+
         return parent
     }
 }

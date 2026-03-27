@@ -163,9 +163,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             if let typeAnnotation = node.typeAnnotation {
                 varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
             } else {
-                if let typeString = SourceKittenHandler.sharedHandler.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
-                    varSymbol.symbolType = SwiftSymbolSingleType(typeName: typeString)
-                }
+                varSymbol.symbolType = SourceKittenHandler.sharedHandler.querySymbolType(by: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset)
             }
             
             SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
@@ -178,9 +176,7 @@ class SwiftSourceCollector: SyntaxVisitor {
                     if let typeAnnotation = node.typeAnnotation {
                         varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
                     } else {
-                        if let typeString = SourceKittenHandler.sharedHandler.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
-                            varSymbol.symbolType = SwiftSymbolSingleType(typeName: typeString)
-                        }
+                        varSymbol.symbolType = SourceKittenHandler.sharedHandler.querySymbolType(by: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset)
                     }
                     
                     SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)

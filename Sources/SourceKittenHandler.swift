@@ -86,7 +86,15 @@ class SourceKittenHandler {
         return typeMap
     }
     
-    func getTypeName(filePath: String, byteOffset: Int) -> String? {
+    func querySymbolType(by filePath: String, byteOffset: Int) -> SwiftSymbolType {
+        guard let typeName = self.getTypeName(filePath: filePath, byteOffset: byteOffset) else {
+            return SwiftSymbolUnknownType()
+        }
+        
+        return self.parseTypeString(typeName)
+    }
+    
+    private func getTypeName(filePath: String, byteOffset: Int) -> String? {
         guard let compilerArguments else { return nil }
         let request = Request.cursorInfo(
             file: filePath,
@@ -199,5 +207,202 @@ class SourceKittenHandler {
             }
         }
         return nil
+    }
+}
+
+// MARK: - SourceKit key.typename 字符串解析
+extension SourceKittenHandler {
+    
+    /// 将 SourceKit 返回的 key.typename 字符串解析为 SwiftSymbolType，
+    /// 与 detectTypeSyntax(_:) 对应，但输入来源是字符串而非 AST 节点。
+    private func parseTypeString(_ typeName: String) -> SwiftSymbolType {
+        let s = typeName.trimmingCharacters(in: .whitespaces)
+        guard !s.isEmpty else { return SwiftSymbolUnknownType() }
+        
+        // Void / 空 tuple
+        if s == "Void" || s == "()" {
+            return SwiftSymbolSingleType.voidType
+        }
+        
+        // Any / AnyObject
+        if s == "Any" || s == "AnyObject" {
+            return SwiftSymbolAnyType()
+        }
+        
+        // some T / any T
+        if s.hasPrefix("some ") {
+            return SwiftSomeAnyType(constraints: parseTypeString(String(s.dropFirst(5))))
+        }
+        if s.hasPrefix("any ") {
+            return SwiftSomeAnyType(constraints: parseTypeString(String(s.dropFirst(4))))
+        }
+        
+        // @escaping / @autoclosure / @Sendable 等 attribute — 对应 AttributedTypeSyntax
+        for prefix in ["@escaping ", "@autoclosure ", "@Sendable ", "@noescape "] {
+            if s.hasPrefix(prefix) {
+                return parseTypeString(String(s.dropFirst(prefix.count)))
+            }
+        }
+        
+        // Optional T? / ImplicitlyUnwrapped T! — 对应 OptionalTypeSyntax
+        // 先于括号/箭头处理，确保 ((Int)->String)? 能正确剥离外层 ?
+        if s.hasSuffix("?") { return parseTypeString(String(s.dropLast())) }
+        if s.hasSuffix("!") { return parseTypeString(String(s.dropLast())) }
+        
+        // 函数类型：顶层含 -> — 对应 FunctionTypeSyntax
+        // e.g. "(Int) -> String"  "(Int) throws -> Bool"  "() async -> Void"
+        if let arrowRange = typeStringTopLevelArrow(in: s) {
+            var paramsPart = String(s[..<arrowRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+            let returnPart = String(s[arrowRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+            
+            // 剥离 throws / async / rethrows 等 effect 修饰词
+            for effect in [" async throws", " throws async", " async", " throws", " rethrows"] {
+                if paramsPart.hasSuffix(effect) {
+                    paramsPart = String(paramsPart.dropLast(effect.count))
+                    break
+                }
+            }
+            
+            let funcType = SwiftFunctionType()
+            funcType.returnType = parseTypeString(returnPart)
+            
+            if paramsPart.hasPrefix("(") && paramsPart.hasSuffix(")") {
+                let inner = String(paramsPart.dropFirst().dropLast())
+                for param in typeStringSplitTopLevel(inner, by: ",") {
+                    let trimmed = param.trimmingCharacters(in: .whitespaces)
+                    guard !trimmed.isEmpty else { continue }
+                    funcType.elements.append(parseTypeString(typeStringStripParamModifiers(trimmed)))
+                }
+            }
+            return funcType
+        }
+        
+        // Array / Dictionary: [...] — 对应 ArrayTypeSyntax / DictionaryTypeSyntax
+        // SourceKit dictionary 格式: [Key : Value]（冒号两边有空格）
+        if s.hasPrefix("[") && s.hasSuffix("]") {
+            let inner = String(s.dropFirst().dropLast()).trimmingCharacters(in: .whitespaces)
+            let parts = typeStringSplitTopLevel(inner, by: ":")
+            if parts.count == 2 {
+                return SwiftSymbolDictionaryType(
+                    keyType: parseTypeString(parts[0].trimmingCharacters(in: .whitespaces)),
+                    valueType: parseTypeString(parts[1].trimmingCharacters(in: .whitespaces))
+                )
+            }
+            return SwiftSymbolArrayType(elementType: parseTypeString(inner))
+        }
+        
+        // Tuple: (...) 顶层含逗号 — 对应 TupleTypeSyntax
+        // e.g. "(Int, String)"  "(x: Int, y: String)"
+        if s.hasPrefix("(") && s.hasSuffix(")") {
+            let inner = String(s.dropFirst().dropLast()).trimmingCharacters(in: .whitespaces)
+            let elements = typeStringSplitTopLevel(inner, by: ",")
+            if elements.count >= 2 {
+                let tupleType = SwiftSymbolTupleType()
+                for elem in elements {
+                    let typeStr = typeStringStripTupleLabel(elem.trimmingCharacters(in: .whitespaces))
+                    tupleType.elements.append(parseTypeString(typeStr))
+                }
+                return tupleType
+            }
+            // 单元素括号，直接 unwrap
+            if let only = elements.first {
+                let trimmed = only.trimmingCharacters(in: .whitespaces)
+                if !trimmed.isEmpty { return parseTypeString(trimmed) }
+            }
+        }
+        
+        // Protocol Composition: A & B — 对应 CompositionTypeSyntax
+        let compParts = typeStringSplitTopLevel(s, by: "&")
+        if compParts.count >= 2 {
+            let compType = SwiftCompositionType()
+            for part in compParts {
+                compType.elements.append(parseTypeString(part.trimmingCharacters(in: .whitespaces)))
+            }
+            return compType
+        }
+        
+        // 其余：命名类型、泛型、模块限定类型 → SingleType
+        // e.g. "Int"  "MyClass"  "Set<Int>"  "Result<Int, Error>"  "Swift.Int"
+        return SwiftSymbolSingleType(typeName: s)
+    }
+    
+    // MARK: - Private helpers
+    
+    /// 在顶层（depth == 0）查找第一个 ->，返回其 Range。
+    /// 遇到 -> 时优先判断并跳过 >，避免 > 影响括号深度计数。
+    private func typeStringTopLevelArrow(in s: String) -> Range<String.Index>? {
+        var depth = 0
+        var i = s.startIndex
+        while i < s.endIndex {
+            let ch = s[i]
+            let next = s.index(after: i)
+            if ch == "-", next < s.endIndex, s[next] == ">" {
+                if depth == 0 { return i..<s.index(after: next) }
+                i = s.index(after: next)   // 跳过 >，不计入 depth
+                continue
+            }
+            switch ch {
+            case "(", "[", "<": depth += 1
+            case ")", "]", ">": if depth > 0 { depth -= 1 }
+            default: break
+            }
+            i = s.index(after: i)
+        }
+        return nil
+    }
+    
+    /// 按分隔符在顶层分割字符串，忽略括号/泛型内的分隔符。
+    private func typeStringSplitTopLevel(_ s: String, by sep: Character) -> [String] {
+        var result: [String] = []
+        var depth = 0
+        var current = ""
+        var i = s.startIndex
+        while i < s.endIndex {
+            let ch = s[i]
+            let next = s.index(after: i)
+            // 跳过 -> 中的 >，避免影响 depth
+            if ch == "-", next < s.endIndex, s[next] == ">" {
+                current.append(ch)
+                current.append(s[next])
+                i = s.index(after: next)
+                continue
+            }
+            switch ch {
+            case "(", "[", "<": depth += 1
+            case ")", "]", ">": if depth > 0 { depth -= 1 }
+            default: break
+            }
+            if ch == sep, depth == 0 {
+                result.append(current)
+                current = ""
+            } else {
+                current.append(ch)
+            }
+            i = s.index(after: i)
+        }
+        result.append(current)
+        return result
+    }
+    
+    /// 剥离 tuple 元素的 label，如 "name: Int" → "Int"。
+    /// label 只含 letter/digit/underscore，确保不误剥 "[String : Int]" 中的冒号。
+    private func typeStringStripTupleLabel(_ s: String) -> String {
+        guard let colonRange = s.range(of: ": ") else { return s }
+        let label = String(s[..<colonRange.lowerBound])
+        guard label.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "_" }) else { return s }
+        return String(s[colonRange.upperBound...])
+    }
+    
+    /// 剥离函数参数的修饰词（inout / @escaping 等）及 label，
+    /// 最终留下纯类型字符串供 parseTypeString 递归处理。
+    private func typeStringStripParamModifiers(_ s: String) -> String {
+        var r = s
+        for prefix in ["inout ", "@escaping ", "@autoclosure ", "consuming ", "borrowing "] {
+            if r.hasPrefix(prefix) {
+                r = String(r.dropFirst(prefix.count))
+                break
+            }
+        }
+        return typeStringStripTupleLabel(r)
     }
 }
