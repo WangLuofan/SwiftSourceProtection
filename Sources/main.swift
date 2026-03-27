@@ -51,9 +51,9 @@ func main() {
         return
     }
 
-    SwiftConfusedHelper.sourcekittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target)
-    guard let _ = SwiftConfusedHelper.sourcekittenHandler else {
-        print("SourceKitten initizlize failed, please check it.")
+    SourceKittenHandler.sharedHandler.initializeSourceKitten(projectPath: projectPath, projectTarget: target)
+    guard SourceKittenHandler.sharedHandler.isSourceKittenInitialized() else {
+        print("SourceKitten initizlize failed, please check your project.")
         return
     }
     print("SourceKitten initialized successfully")

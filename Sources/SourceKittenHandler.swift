@@ -21,15 +21,22 @@ struct TypeInfo {
 }
 
 class SourceKittenHandler {
-    private var projectPath: String
-    private var projectTarget: String
+    nonisolated(unsafe) static let sharedHandler: SourceKittenHandler = SourceKittenHandler()
+    
+    private var projectPath: String = ""
+    private var projectTarget: String = ""
     private var projectModule: Module?
     private var compilerArguments: [String]?
-
-    init?(projectPath: String, projectTarget: String) {
+    private var initialized: Bool = false
+    
+    func isSourceKittenInitialized() -> Bool {
+        return self.initialized
+    }
+    
+    func initializeSourceKitten(projectPath: String, projectTarget: String) {
         self.projectPath = projectPath
         self.projectTarget = projectTarget
-
+        
         if projectPath.hasSuffix("xcworkspace") {
             self.projectModule = Module.init(xcodeBuildArguments: [
                 "-workspace", projectPath,
@@ -41,19 +48,21 @@ class SourceKittenHandler {
                 "-target", projectTarget
             ], name: projectTarget)
         }
-
+        
         guard self.projectModule != nil else {
-            return nil
+            return
         }
-
+        
         let blockedFlags: Set<String> = [
             "-no-serialize-debugging-options",
             "-serialize-debugging-options",
         ]
+        
         self.compilerArguments = self.projectModule?.compilerArguments.filter {
             !blockedFlags.contains($0)
         }
-
+        
+        self.initialized = true
     }
 
     /// 获取指定文件中所有符号的类型信息

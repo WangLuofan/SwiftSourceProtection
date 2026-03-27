@@ -12,8 +12,6 @@ class SwiftConfusedHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
     
-    nonisolated(unsafe) static var sourcekittenHandler: SourceKittenHandler?
-
     static func confusedSymbol(_ symbol: SwiftSourceSymbol) -> String {
         guard self.shouldConfuseSymbol(symbol) else {
             return symbol.originalSymbol
@@ -225,75 +223,11 @@ extension SwiftConfusedHelper {
         return SwiftSymbolUnknownType()
     }
     
-    static func inferMemberAccessExprSyntaxType(_ memberAccessExpr: MemberAccessExprSyntax, forSymbol symbol: SwiftSourceSymbol?) -> SwiftSymbolType? {
-        var baseSymbol = self.lookupSymbolNodeForExpr(memberAccessExpr.base, forSymbol: symbol)
-//        if baseSymbol?.nodeKind == .variable,
-//           let symbolName: String = baseSymbol?.symbolType {
-//            baseSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(symbolName)
-//        }
-//        
-//        if let declName: DeclReferenceExprSyntax = memberAccessExpr.declName.as(DeclReferenceExprSyntax.self),
-//           let baseSymbol {
-//            let symbol = SwiftConfusedHelper.findChildSymbol(baseSymbol, declName.baseName.text)
-//            if symbol?.nodeKind == .function {
-//                return (symbol as? SwiftSourceFunctionSymbol)?.returnType
-//            }
-//            
-//            return symbol?.symbolType
-//        }
-        
+    static func inferMemberAccessExprSyntaxType(_ memberAccessExpr: MemberAccessExprSyntax) -> SwiftSymbolType? {
         return nil
     }
-    
-    private static func lookupSymbolNodeForExpr(_ expr: ExprSyntaxProtocol?, forSymbol symbol: SwiftSourceSymbol? = nil,
-                                                baseSymbol: SwiftSourceSymbol? = nil) -> SwiftSourceSymbol?
-    {
-        
-        if let baseExpr: DeclReferenceExprSyntax = expr?.as(DeclReferenceExprSyntax.self) {
-            if baseExpr.baseName.text == "self" || baseExpr.baseName.text == "Self" {
-                var parentSymbol: SwiftSourceSymbol? = symbol?.parent
-                while parentSymbol != nil && parentSymbol?.nodeKind != .class {
-                    parentSymbol = parentSymbol?.parent
-                    continue
-                }
-                
-                return parentSymbol
-            } else {
-                if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
-                    let symbol: SwiftSourceSymbol? = SwiftConfusedHelper.findChildSymbol(baseSymbol, baseExpr.baseName.text)
-                    
-//                    if symbol?.nodeKind == .variable,
-//                       let symbolType: String = symbol?.symbolType {
-//                        return SwiftSourceScopeManager.sharedManager.findSymbol(symbolType)
-//                    }
-                    
-                    return symbol
-                } else {
-                    let symbol = SwiftSourceScopeManager.sharedManager.findSymbol(baseExpr.baseName.text)
-                    return symbol
-                }
-            }
-        } else if let baseExpr: FunctionCallExprSyntax = expr?.as(FunctionCallExprSyntax.self) {
-            if let baseSymbol: SwiftSourceClassSymbol = baseSymbol as? SwiftSourceClassSymbol {
-                if let calledExpr: DeclReferenceExprSyntax = baseExpr.calledExpression.as(DeclReferenceExprSyntax.self) {
-                    return SwiftConfusedHelper.findChildSymbol(baseSymbol, calledExpr.baseName.text)
-                }
-            } else if let calledExpr: MemberAccessExprSyntax = baseExpr.calledExpression.as(MemberAccessExprSyntax.self) {
-//                let symbol = self.lookupSymbolNodeForExpr(calledExpr, forSymbol: symbol, baseSymbol: baseSymbol)
-//                if symbol?.nodeKind == .function,
-//                   let symbol: SwiftSourceFunctionSymbol = symbol as? SwiftSourceFunctionSymbol {
-//                    return SwiftSourceScopeManager.sharedManager.findSymbol(symbol.returnType)
-//                }
-            }
-        } else if let baseExpr: MemberAccessExprSyntax = expr?.as(MemberAccessExprSyntax.self) {
-            let baseSymbol = self.lookupSymbolNodeForExpr(baseExpr.base, forSymbol: symbol, baseSymbol: baseSymbol)
-            return self.lookupSymbolNodeForExpr(baseExpr.declName, forSymbol: symbol, baseSymbol: baseSymbol)
-        }
-        
-        return nil
-    }
-    
-    static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax, forSymbol symbol: SwiftSourceSymbol? = nil) -> SwiftSymbolType {
+     
+    static func inferClosureExprSyntaxType(_ closureExpr: ClosureExprSyntax) -> SwiftSymbolType {
         let funcType: SwiftFunctionType = SwiftFunctionType()
         if let returnClause: ReturnClauseSyntax = closureExpr.signature?.returnClause {
             funcType.returnType = SwiftConfusedHelper.detectTypeSyntax(returnClause.type)
@@ -310,7 +244,7 @@ extension SwiftConfusedHelper {
         return funcType
     }
     
-    static func inferExprSyntaxType(_ expr: ExprSyntaxProtocol, forSymbol symbol: SwiftSourceSymbol? = nil) -> SwiftSymbolType {
+    static func inferExprSyntaxType(_ expr: ExprSyntaxProtocol) -> SwiftSymbolType {
         if let _ = expr.as(IntegerLiteralExprSyntax.self) {
             return SwiftSymbolSingleType(typeName: "Int")
         } else if let _ = expr.as(StringLiteralExprSyntax.self) {
@@ -334,7 +268,7 @@ extension SwiftConfusedHelper {
             
             return dictType
         } else if let closureExpr: ClosureExprSyntax = expr.as(ClosureExprSyntax.self) {
-            return self.inferClosureExprSyntaxType(closureExpr, forSymbol: symbol)
+            return self.inferClosureExprSyntaxType(closureExpr)
         } else if let _ = expr.as(BooleanLiteralExprSyntax.self) {
             return SwiftSymbolSingleType(typeName: "Bool")
         } else if let _ = expr.as(RegexLiteralExprSyntax.self) {
@@ -377,11 +311,11 @@ extension SwiftConfusedHelper {
                 break
             }
         } else if let memberAccessExpr: MemberAccessExprSyntax = expr.as(MemberAccessExprSyntax.self) {
-            if let type = self.inferMemberAccessExprSyntaxType(memberAccessExpr, forSymbol: symbol) {
+            if let type = self.inferMemberAccessExprSyntaxType(memberAccessExpr) {
                 return type
             }
         } else if let forceUnwrapExpr: ForceUnwrapExprSyntax = expr.as(ForceUnwrapExprSyntax.self) {
-            return self.inferExprSyntaxType(forceUnwrapExpr.expression, forSymbol: symbol)
+            return self.inferExprSyntaxType(forceUnwrapExpr.expression)
         } else if let _ = expr.as(TupleExprSyntax.self) {
             
         } else if let _ = expr.as(SubscriptCallExprSyntax.self) {
@@ -393,15 +327,15 @@ extension SwiftConfusedHelper {
                 return SwiftSymbolAnyType()
             }
             
-            return self.inferExprSyntaxType(foldExpr, forSymbol: symbol)
+            return self.inferExprSyntaxType(foldExpr)
         } else if let infixOperatorExpr = expr.as(InfixOperatorExprSyntax.self) {
             if let oper: BinaryOperatorExprSyntax = infixOperatorExpr.operator.as(BinaryOperatorExprSyntax.self) {
                 if oper.isBooleanOperator {
                     return SwiftSymbolSingleType(typeName: "Bool")
                 }
                 
-                let leftOperand = self.inferExprSyntaxType(infixOperatorExpr.leftOperand, forSymbol: symbol)
-                let rightOperand = self.inferExprSyntaxType(infixOperatorExpr.rightOperand, forSymbol: symbol)
+                let leftOperand = self.inferExprSyntaxType(infixOperatorExpr.leftOperand)
+                let rightOperand = self.inferExprSyntaxType(infixOperatorExpr.rightOperand)
                 
                 if let leftOperand = leftOperand as? SwiftSymbolSingleType, let rightOperand = rightOperand as? SwiftSymbolSingleType {
                     return SwiftSymbolSingleType.promoteBuiltInType(left: leftOperand, right: rightOperand)
@@ -418,7 +352,7 @@ extension SwiftConfusedHelper {
                 return SwiftSymbolSingleType(typeName: "Bool")
             }
             
-            return self.inferExprSyntaxType(prefixOper.expression, forSymbol: symbol)
+            return self.inferExprSyntaxType(prefixOper.expression)
         } else if let asExpr: AsExprSyntax = expr.as(AsExprSyntax.self) {
             return SwiftConfusedHelper.detectTypeSyntax(asExpr.type)
         } else if let switchExpr: SwitchExprSyntax = expr.as(SwitchExprSyntax.self) {

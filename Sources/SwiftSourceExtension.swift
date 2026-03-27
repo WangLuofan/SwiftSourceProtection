@@ -410,7 +410,7 @@ extension VariableDeclSyntax {
                 }
                 
                 if variableSymbol.symbolType.isUnknownType {
-                    if let symbolType = SwiftConfusedHelper.sourcekittenHandler?.getTypeName(filePath: sourceFile, byteOffset: identPatternBinding.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
+                    if let symbolType = SourceKittenHandler.sharedHandler.getTypeName(filePath: sourceFile, byteOffset: identPatternBinding.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
                         variableSymbol.symbolType = SwiftSymbolSingleType(typeName: symbolType)
                     }
                 }
@@ -433,6 +433,21 @@ extension FunctionParameterSyntax {
         
         paramSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(self.type)
         paramSymbol.ASTNode = self
+        
+        return paramSymbol
+    }
+}
+
+extension ClosureShorthandParameterSyntax {
+    func closureParameterSymbol(_ sourceFile: String) -> SwiftSourceSymbol {
+        let paramSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        paramSymbol.symbolFilePath = sourceFile
+        paramSymbol.originalSymbol = self.name.text
+        paramSymbol.ASTNode = self
+        if paramSymbol.symbolType.isUnknownType,
+           let typeStr: String = SourceKittenHandler.sharedHandler.getTypeName(filePath: sourceFile, byteOffset: self.name.positionAfterSkippingLeadingTrivia.utf8Offset) {
+            paramSymbol.symbolType = SwiftSymbolSingleType(typeName: typeStr)
+        }
         
         return paramSymbol
     }

@@ -163,7 +163,7 @@ class SwiftSourceCollector: SyntaxVisitor {
             if let typeAnnotation = node.typeAnnotation {
                 varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
             } else {
-                if let typeString = SwiftConfusedHelper.sourcekittenHandler?.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
+                if let typeString = SourceKittenHandler.sharedHandler.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
                     varSymbol.symbolType = SwiftSymbolSingleType(typeName: typeString)
                 }
             }
@@ -178,7 +178,7 @@ class SwiftSourceCollector: SyntaxVisitor {
                     if let typeAnnotation = node.typeAnnotation {
                         varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
                     } else {
-                        if let typeString = SwiftConfusedHelper.sourcekittenHandler?.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
+                        if let typeString = SourceKittenHandler.sharedHandler.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
                             varSymbol.symbolType = SwiftSymbolSingleType(typeName: typeString)
                         }
                     }
@@ -271,13 +271,14 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
+    override func visit(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SwiftSourceSymbol = node.closureParameterSymbol(self.sourceFile)
+        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
+        return super.visit(node)
+    }
+    
     override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
         let symbol: SwiftSourceSymbol = node.closureParameterSymbol(self.sourceFile)
-        
-        if self.parentStack.isEmpty {
-            symbol.parent = self.parentStack.last
-        }
-        
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         return super.visit(node)
     }
