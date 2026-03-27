@@ -6,6 +6,7 @@
 //
 
 enum SwiftSymbolTypeKind {
+    case unknown
     case any
     case single
     case array
@@ -18,6 +19,12 @@ enum SwiftSymbolTypeKind {
 
 protocol SwiftSymbolType {
     var type: SwiftSymbolTypeKind { get }
+}
+
+class SwiftSymbolUnknownType: SwiftSymbolType {
+    var type: SwiftSymbolTypeKind {
+        return .unknown
+    }
 }
 
 class SwiftSymbolAnyType: SwiftSymbolType {

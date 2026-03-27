@@ -96,7 +96,6 @@ class SwiftSourceScope {
     
     func pushSymbol(_ symbol: SwiftSourceSymbol) {
         self.symbols.append(symbol)
-        print("symbol: \(symbol.originalSymbol), type: \(symbol.symbolType)")
     }
     
 }

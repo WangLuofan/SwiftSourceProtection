@@ -222,7 +222,7 @@ extension SwiftConfusedHelper {
             return self.detectTypeSyntax(attrType.baseType)
         }
 
-        return SwiftSymbolAnyType()
+        return SwiftSymbolUnknownType()
     }
     
     static func inferMemberAccessExprSyntaxType(_ memberAccessExpr: MemberAccessExprSyntax, forSymbol symbol: SwiftSourceSymbol?) -> SwiftSymbolType? {
@@ -435,7 +435,7 @@ extension SwiftConfusedHelper {
             }
         }
         
-        return SwiftSymbolAnyType()  // 暂时无法推导
+        return SwiftSymbolUnknownType()  // 未知类型
     }
     
     // funcName_label1_label2_...

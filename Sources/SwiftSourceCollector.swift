@@ -182,10 +182,6 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: ForStmtSyntax) {
-        if !self.parentStack.isEmpty {
-            self.parentStack.removeLast()
-        }
-        
         SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
@@ -221,11 +217,7 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: InitializerDeclSyntax) {
-        if !self.parentStack.isEmpty {
-            self.parentStack.removeLast()
-        }
-        
-        SwiftSourceScopeManager.sharedManager.popScope()
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
@@ -261,14 +253,12 @@ class SwiftSourceCollector: SyntaxVisitor {
             symbol.parent = self.parentStack.last
         }
         
-        self.parentStack.append(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
-        if !self.parentStack.isEmpty {
-            self.parentStack.removeLast()
-        }
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
