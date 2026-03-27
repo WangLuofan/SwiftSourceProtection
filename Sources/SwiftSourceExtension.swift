@@ -403,12 +403,17 @@ extension VariableDeclSyntax {
             
             if let identPatternBinding: IdentifierPatternSyntax = patternBinding.pattern.as(IdentifierPatternSyntax.self) {
                 variableSymbol.originalSymbol = identPatternBinding.identifier.text
-            }
-            
-            if let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
-                variableSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
-            } else if let initializer: InitializerClauseSyntax = patternBinding.initializer {
-                variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+                if let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
+                    variableSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
+                } else if let initializer: InitializerClauseSyntax = patternBinding.initializer {
+                    variableSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+                }
+                
+                if variableSymbol.symbolType.isUnknownType {
+                    if let symbolType = SwiftConfusedHelper.sourcekittenHandler?.getTypeName(filePath: sourceFile, byteOffset: identPatternBinding.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
+                        variableSymbol.symbolType = SwiftSymbolSingleType(typeName: symbolType)
+                    }
+                }
             }
         }
         
