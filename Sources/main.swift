@@ -51,7 +51,11 @@ func main() {
         return
     }
 
-//    SwiftConfusedHelper.sourcekittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target)
+    SwiftConfusedHelper.sourcekittenHandler = SourceKittenHandler(projectPath: projectPath, projectTarget: target)
+    guard let _ = SwiftConfusedHelper.sourcekittenHandler else {
+        print("SourceKitten initizlize failed, please check it.")
+        return
+    }
     print("SourceKitten initialized successfully")
 
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles

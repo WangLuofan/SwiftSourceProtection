@@ -19,17 +19,26 @@ enum SwiftSymbolTypeKind {
 
 protocol SwiftSymbolType {
     var type: SwiftSymbolTypeKind { get }
+    var isUnknownType: Bool { get }
 }
 
 class SwiftSymbolUnknownType: SwiftSymbolType {
     var type: SwiftSymbolTypeKind {
         return .unknown
     }
+    
+    var isUnknownType: Bool {
+        return self.type == .unknown
+    }
 }
 
 class SwiftSymbolAnyType: SwiftSymbolType {
     var type: SwiftSymbolTypeKind {
         return .any
+    }
+    
+    var isUnknownType: Bool {
+        return self.type == .unknown
     }
 }
 

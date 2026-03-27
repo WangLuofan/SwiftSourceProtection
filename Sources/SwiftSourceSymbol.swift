@@ -43,7 +43,7 @@ class SwiftSourceSymbol {
     var confusedSymbol: String?
     
     /// 符号类型
-    var symbolType: SwiftSymbolType = SwiftSymbolAnyType()
+    var symbolType: SwiftSymbolType = SwiftSymbolUnknownType()
     
     /// 父结点
     var parent: SwiftSourceSymbol?

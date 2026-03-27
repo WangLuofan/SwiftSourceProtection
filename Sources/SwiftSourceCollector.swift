@@ -154,30 +154,40 @@ class SwiftSourceCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-            varSymbol.originalSymbol = idPattern.identifier.text
-        }
+        SwiftSourceScopeManager.sharedManager.pushScope()
         
-        if let typeAnnotation = node.typeAnnotation {
-            varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
-        } else {
-            let seqType: SwiftSymbolType = SwiftConfusedHelper.inferExprSyntaxType(node.sequence)
-            if let arrType: SwiftSymbolArrayType = seqType as? SwiftSymbolArrayType {
-                varSymbol.symbolType = arrType.elementType
-            } else if let dicType: SwiftSymbolDictionaryType = seqType as? SwiftSymbolDictionaryType {
-                varSymbol.symbolType = SwiftSymbolTupleType(elements: [dicType.keyType, dicType.valueType])
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+            varSymbol.originalSymbol = idPattern.identifier.text
+            varSymbol.symbolFilePath = self.sourceFile
+            if let typeAnnotation = node.typeAnnotation {
+                varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
+            } else {
+                if let typeString = SwiftConfusedHelper.sourcekittenHandler?.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
+                    varSymbol.symbolType = SwiftSymbolSingleType(typeName: typeString)
+                }
+            }
+            
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+        } else if let tuplePattern: TuplePatternSyntax = node.pattern.as(TuplePatternSyntax.self) {
+            tuplePattern.elements.forEach { tuplePatternElemSyntax in
+                if let idPattern: IdentifierPatternSyntax = tuplePatternElemSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                    let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+                    varSymbol.originalSymbol = idPattern.identifier.text
+                    varSymbol.symbolFilePath = self.sourceFile
+                    if let typeAnnotation = node.typeAnnotation {
+                        varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
+                    } else {
+                        if let typeString = SwiftConfusedHelper.sourcekittenHandler?.getTypeName(filePath: self.sourceFile, byteOffset: idPattern.identifier.positionAfterSkippingLeadingTrivia.utf8Offset) {
+                            varSymbol.symbolType = SwiftSymbolSingleType(typeName: typeString)
+                        }
+                    }
+                    
+                    SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                }
             }
         }
         
-        varSymbol.symbolFilePath = self.sourceFile
-        
-        if !self.parentStack.isEmpty {
-            varSymbol.parent = self.parentStack.last
-        }
-        
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
-        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
