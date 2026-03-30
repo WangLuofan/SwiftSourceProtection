@@ -52,7 +52,7 @@ class SwiftSourceScopeManager {
 
         var scope = self.currentScope
         while scope != nil {
-            for symbol in scope!.symbols {
+            for symbol in scope!.symbols.reversed() {
                 if let astNode = symbol.ASTNode,
                    symbol.symbolFilePath == inFile {
                     if astNode.id.indexInTree == nodeID.indexInTree {
@@ -74,7 +74,7 @@ class SwiftSourceScopeManager {
         
         var scope = (scope ?? self.currentScope)
         while scope != nil {
-            for symbol in scope!.symbols {
+            for symbol in scope!.symbols.reversed() {
                 if SwiftConfusedHelper.getConfusedOriginalSymbolName(symbol.originalSymbol) == SwiftConfusedHelper.getConfusedOriginalSymbolName(symbolName) {
                     return symbol
                 }

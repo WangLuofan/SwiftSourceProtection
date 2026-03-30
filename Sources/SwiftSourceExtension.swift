@@ -431,6 +431,7 @@ extension FunctionParameterSyntax {
         
         paramSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(self.type)
         paramSymbol.ASTNode = self
+        paramSymbol.symbolFilePath = sourceFile
         
         return paramSymbol
     }

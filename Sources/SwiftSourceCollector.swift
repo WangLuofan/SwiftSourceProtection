@@ -93,6 +93,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         symbol.originalSymbol = node.name.text
         symbol.ASTNode = node
         symbol.parent = self.parentStack.last
+        symbol.symbolFilePath = self.sourceFile
         
         if let type = self.parentStack.last?.symbolType {
             symbol.symbolType = type
