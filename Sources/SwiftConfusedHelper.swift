@@ -224,6 +224,23 @@ extension SwiftConfusedHelper {
     }
     
     static func inferMemberAccessExprSyntaxType(_ memberAccessExpr: MemberAccessExprSyntax) -> SwiftSymbolType? {
+        
+        var symbolType: SwiftSymbolType = SwiftSymbolUnknownType()
+        if let base = memberAccessExpr.base {
+            symbolType = self.inferExprSyntaxType(base)
+        }
+        
+        if !symbolType.isUnknownType,
+           let singleType: SwiftSymbolSingleType =
+            symbolType as? SwiftSymbolSingleType,
+           let typeSymbol: SwiftSourceClassSymbol = SwiftSourceScopeManager.sharedManager.findSymbol(singleType.typeName) as? SwiftSourceClassSymbol {
+            for child in typeSymbol.members {
+                if child.originalSymbol == memberAccessExpr.declName.baseName.text {
+                    return child.symbolType
+                }
+            }
+        }
+        
         return nil
     }
      

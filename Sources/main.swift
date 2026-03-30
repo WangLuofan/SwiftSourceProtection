@@ -51,12 +51,12 @@ func main() {
         return
     }
 
-    SourceKittenHandler.sharedHandler.initializeSourceKitten(projectPath: projectPath, projectTarget: target)
-    guard SourceKittenHandler.sharedHandler.isSourceKittenInitialized() else {
-        print("SourceKitten initizlize failed, please check your project.")
-        return
-    }
-    print("SourceKitten initialized successfully")
+//    SourceKittenHandler.sharedHandler.initializeSourceKitten(projectPath: projectPath, projectTarget: target)
+//    guard SourceKittenHandler.sharedHandler.isSourceKittenInitialized() else {
+//        print("SourceKitten initizlize failed, please check your project.")
+//        return
+//    }
+//    print("SourceKitten initialized successfully")
 
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()

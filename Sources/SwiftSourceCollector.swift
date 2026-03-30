@@ -95,8 +95,10 @@ class SwiftSourceCollector: SyntaxVisitor {
         symbol.parent = self.parentStack.last
         symbol.symbolFilePath = self.sourceFile
         
-        if let type = self.parentStack.last?.symbolType {
-            symbol.symbolType = type
+        if !self.parentStack.isEmpty,
+           let enumSymbol: SwiftSourceClassSymbol = self.parentStack.last as? SwiftSourceClassSymbol {
+            symbol.symbolType = enumSymbol.symbolType
+            enumSymbol.members.append(symbol)
         }
         
         node.parameterClause?.parameters.forEach { enumCaseParamSyntax in

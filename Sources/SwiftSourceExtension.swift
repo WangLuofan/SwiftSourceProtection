@@ -402,6 +402,7 @@ extension VariableDeclSyntax {
             }
             
             if let identPatternBinding: IdentifierPatternSyntax = patternBinding.pattern.as(IdentifierPatternSyntax.self) {
+                
                 variableSymbol.originalSymbol = identPatternBinding.identifier.text
                 if let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation {
                     variableSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
