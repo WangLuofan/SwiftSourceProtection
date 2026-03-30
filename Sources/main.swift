@@ -23,7 +23,7 @@ func findProjectDirectory(for filePath: String) -> (String?, String?) {
         return (nil, "Project Path Not Exists.")
     }
     
-    var currentDir = URL(fileURLWithPath: filePath)
+    let currentDir = URL(fileURLWithPath: filePath)
     
     guard let contents = try? FileManager.default.contentsOfDirectory(at: currentDir, includingPropertiesForKeys: nil) else {
         return (nil, "Empty Project Path.")
@@ -61,7 +61,7 @@ func main() {
     let sourceFiles = FileHelper(path, excludePaths: ["Pods"]).sourceFiles
     var sourceTreeDict: [String: SourceFileSyntax] = [String: SourceFileSyntax]()
     
-    /// 第一步：收集全局符号、成员符号
+    /// 第一步：收集所有符号信息、类型推导、作用域构建
     sourceFiles.forEach { sourceFile in
         if !sourceFile.contains("TestFile.swift") {
             return
@@ -81,7 +81,7 @@ func main() {
         sourceTreeDict[sourceFile] = foldedSourceTree
     }
     
-    /// 第三步：类型推导、符号混淆
+    /// 第二步：符号混淆
     sourceFiles.forEach { sourceFile in
         guard let sourceTree: SourceFileSyntax = sourceTreeDict[sourceFile] else {
             return

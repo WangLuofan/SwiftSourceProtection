@@ -192,38 +192,57 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
+    override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
+        node.conditions.forEach { condElemSyntax in
+            guard let optBindingSyntax: OptionalBindingConditionSyntax = condElemSyntax.as(OptionalBindingConditionSyntax.self),
+                  let varSymbol: SwiftSourceSymbol = self.visit(optBindingSyntax) else {
+                return
+            }
+            
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+        }
+        
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: GuardStmtSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
+    }
+    
     override func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
-        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
-        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-            varSymbol.originalSymbol = idPattern.identifier.text
-        }
-        varSymbol.symbolFilePath = self.sourceFile
-        if let typeAnnotation = node.typeAnnotation {
-            varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
-        } else if let initializer = node.initializer {
-            varSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+        /// guard 特殊处理
+        if let _ = SwiftConfusedHelper.findNodeParent(node, .guardStmt) {
+            return super.visit(node)
         }
         
-        if !self.parentStack.isEmpty {
-            varSymbol.parent = self.parentStack.last
+        if let varSymbol: SwiftSourceSymbol = self.visit(node) {
+            SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
         }
         
-        SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
         return super.visit(node)
     }
     
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         let funcSymbol = node.symbol(self.sourceFile)
         if !self.parentStack.isEmpty {
+            if let clsSymbol: SwiftSourceClassSymbol = self.parentStack.last as? SwiftSourceClassSymbol {
+                clsSymbol.members.append(funcSymbol)
+            }
+            
             funcSymbol.parent = self.parentStack.last
         }
         
+        self.parentStack.append(funcSymbol)
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(funcSymbol)
         SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
     override func visitPost(_ node: InitializerDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
         SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
@@ -292,5 +311,33 @@ class SwiftSourceCollector: SyntaxVisitor {
     
     override func visitPost(_ node: ClosureExprSyntax) {
         SwiftSourceScopeManager.sharedManager.popScope(false)
+    }
+}
+
+extension SwiftSourceCollector {
+    func visit(_ node: OptionalBindingConditionSyntax) -> SwiftSourceSymbol? {
+        /// 如果没有初始化表达式，则说明变量在前面已经定义，如guard let test else { return }
+        /// 此时不需要再次将该变量添加到作用域
+        guard let initializer = node.initializer else {
+            return nil
+        }
+        
+        let varSymbol: SwiftSourceSymbol = SwiftSourceSymbol(nodeKind: .variable)
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            varSymbol.originalSymbol = idPattern.identifier.text
+        }
+        varSymbol.symbolFilePath = self.sourceFile
+        varSymbol.ASTNode = node
+        if let typeAnnotation = node.typeAnnotation {
+            varSymbol.symbolType = SwiftConfusedHelper.detectTypeSyntax(typeAnnotation.type)
+        } else {
+            varSymbol.symbolType = SwiftConfusedHelper.inferExprSyntaxType(initializer.value)
+        }
+        
+        if !self.parentStack.isEmpty {
+            varSymbol.parent = self.parentStack.last
+        }
+        
+        return varSymbol
     }
 }

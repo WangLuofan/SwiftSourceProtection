@@ -36,7 +36,7 @@ class SwiftConfusedHelper {
     }
     
     private static func shouldConfuseSymbol(_ symbol: SwiftSourceSymbol) -> Bool {
-        if symbol.originalSymbol.isEmpty || symbol.originalSymbol.isSwiftKeyWord {
+        if symbol.originalSymbol.isEmpty {
             return false
         }
         
