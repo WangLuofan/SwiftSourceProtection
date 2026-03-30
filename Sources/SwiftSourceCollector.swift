@@ -199,6 +199,42 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
+    override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: IfExprSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
+    }
+    
+    override func visit(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: RepeatStmtSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
+    }
+    
+    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: WhileStmtSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
+    }
+    
+    override func visit(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: DoStmtSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
+    }
+    
     override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
         node.conditions.forEach { condElemSyntax in
             guard let optBindingSyntax: OptionalBindingConditionSyntax = condElemSyntax.as(OptionalBindingConditionSyntax.self),
