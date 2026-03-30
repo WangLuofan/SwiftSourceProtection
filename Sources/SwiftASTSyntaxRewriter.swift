@@ -428,8 +428,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-        guard !self.switchExprStack.isEmpty,
-              let currentSwitch: SwitchExprSyntax = self.switchExprStack.last else {
+        guard !self.switchExprStack.isEmpty else {
             return super.visit(node)
         }
 
@@ -733,7 +732,7 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
             
         case .classDecl, .structDecl, .protocolDecl, .enumDecl, .extensionDecl, .functionDecl, .guardStmt,
                 .variableDecl, .forStmt, .repeatStmt, .doStmt, .whileStmt, .ifExpr,
-                .closureExpr, .initializerDecl, .caseItem:
+                .closureExpr, .initializerDecl, .switchCaseItem:
             SwiftSourceScopeManager.sharedManager.popScope()
             
         case .switchExpr:

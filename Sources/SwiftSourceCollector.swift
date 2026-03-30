@@ -106,7 +106,12 @@ class SwiftSourceCollector: SyntaxVisitor {
         }
         
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: EnumCaseElementSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
