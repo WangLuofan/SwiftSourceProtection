@@ -421,10 +421,10 @@ class SwiftASTSyntaxRewriter: SyntaxRewriter {
     //        return super.visit(node)
     //    }
     //
-    //    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-    //        SwiftSourceScopeManager.sharedManager.pushScope()
-    //        return super.visit(node)
-    //    }
+    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+        SwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
     //
     //    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
     //        var newNode = node

@@ -231,8 +231,13 @@ class SwiftSourceCollector: SyntaxVisitor {
         return super.visit(node)
     }
     
-    override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: SwitchCaseItemSyntax) -> SyntaxVisitorContinueKind {
+        SwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
+    }
+    
+    override func visitPost(_ node: SwitchCaseItemSyntax) {
+        SwiftSourceScopeManager.sharedManager.popScope(false)
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
