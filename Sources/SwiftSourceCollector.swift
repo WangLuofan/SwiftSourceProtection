@@ -264,7 +264,7 @@ class SwiftSourceCollector: SyntaxVisitor {
         SwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         
         if !self.parentStack.isEmpty {
-            symbol.parent = self.parentStack.removeLast()
+            symbol.parent = self.parentStack.last
         }
         
         return super.visit(node)
