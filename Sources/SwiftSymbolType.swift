@@ -20,30 +20,53 @@ enum SwiftSymbolTypeKind {
 protocol SwiftSymbolType {
     var type: SwiftSymbolTypeKind { get }
     var isUnknownType: Bool { get }
+    
+    func isEqualTo(_ symbolType: SwiftSymbolType) -> Bool
 }
 
 class SwiftSymbolUnknownType: SwiftSymbolType {
+    func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        return symbolType.isUnknownType
+    }
+    
     var type: SwiftSymbolTypeKind {
         return .unknown
     }
     
     var isUnknownType: Bool {
-        return self.type == .unknown
+        return true
     }
 }
 
 class SwiftSymbolAnyType: SwiftSymbolType {
+    func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        if symbolType.type != self.type {
+            return false
+        }
+        
+        return true
+    }
+    
     var type: SwiftSymbolTypeKind {
         return .any
     }
     
     var isUnknownType: Bool {
-        return self.type == .unknown
+        return false
     }
 }
 
 class SwiftSymbolSingleType: SwiftSymbolAnyType {
     var typeName: String
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+            let singleType: SwiftSymbolSingleType = symbolType as? SwiftSymbolSingleType else {
+            return false
+        }
+        
+        return singleType.typeName == self.typeName
+    }
     
     override var type: SwiftSymbolTypeKind {
         return .single
@@ -78,28 +101,46 @@ class SwiftSymbolSingleType: SwiftSymbolAnyType {
 }
 
 class SwiftSymbolArrayType: SwiftSymbolAnyType {
-    var elementType: SwiftSymbolType
+    var elementType: any SwiftSymbolType
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+              let arrType: SwiftSymbolArrayType = symbolType as? SwiftSymbolArrayType else {
+            return false
+        }
+        
+        return arrType.elementType.isEqualTo(self.elementType)
+    }
     
     override var type: SwiftSymbolTypeKind {
         return .array
     }
     
-    init(elementType: SwiftSymbolType = SwiftSymbolAnyType()) {
+    init(elementType: any SwiftSymbolType = SwiftSymbolAnyType()) {
         self.elementType = elementType
     }
 }
 
 class SwiftSymbolDictionaryType: SwiftSymbolAnyType {
-    var keyType: SwiftSymbolType
-    var valueType: SwiftSymbolType
+    var keyType: any SwiftSymbolType
+    var valueType: any SwiftSymbolType
     
     override var type: SwiftSymbolTypeKind {
         return .dictionary
     }
     
-    init(keyType: SwiftSymbolType = SwiftSymbolAnyType(), valueType: SwiftSymbolType = SwiftSymbolAnyType()) {
+    init(keyType: any SwiftSymbolType = SwiftSymbolAnyType(), valueType: any SwiftSymbolType = SwiftSymbolAnyType()) {
         self.keyType = keyType
         self.valueType = valueType
+    }
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+              let dictType: SwiftSymbolDictionaryType = symbolType as? SwiftSymbolDictionaryType else {
+            return false
+        }
+        
+        return dictType.keyType.isEqualTo(self.keyType) && dictType.valueType.isEqualTo(self.valueType)
     }
 }
 
@@ -108,16 +149,35 @@ class SwiftSymbolTupleType: SwiftSymbolAnyType {
         return .tuple
     }
     
-    var elements: [SwiftSymbolType]
+    var elements: [any SwiftSymbolType]
     
     override init() {
-        self.elements = [SwiftSymbolType]()
+        self.elements = [any SwiftSymbolType]()
         super.init()
     }
     
-    init(elements: [SwiftSymbolType]) {
+    init(elements: [any SwiftSymbolType]) {
         self.elements = elements
         super.init()
+    }
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+              let tupleType: SwiftSymbolTupleType = symbolType as? SwiftSymbolTupleType else {
+            return false
+        }
+        
+        if self.elements.count != tupleType.elements.count {
+            return false
+        }
+        
+        for (index, element) in self.elements.enumerated() {
+            if !element.isEqualTo(tupleType.elements[index]) {
+                return false
+            }
+        }
+        
+        return true
     }
 }
 
@@ -126,17 +186,39 @@ class SwiftFunctionType: SwiftSymbolAnyType {
         return .function
     }
     
-    var returnType: SwiftSymbolType?
-    var elements: [SwiftSymbolType]
+    var returnType: (any SwiftSymbolType)?
+    var elements: [any SwiftSymbolType]
     
-    init(elements: [SwiftSymbolType], returnType: SwiftSymbolType? = nil) {
+    init(elements: [any SwiftSymbolType], returnType: (any SwiftSymbolType)? = nil) {
         self.returnType = returnType
         self.elements = elements
     }
     
     override init() {
-        self.elements = [SwiftSymbolType]()
+        self.elements = [any SwiftSymbolType]()
         super.init()
+    }
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+              let funcType: SwiftFunctionType = symbolType as? SwiftFunctionType else {
+            return false
+        }
+        
+        let lRetType = self.returnType ?? SwiftSymbolUnknownType()
+        let rRetType = funcType.returnType ?? SwiftSymbolUnknownType()
+        
+        if !lRetType.isEqualTo(rRetType) || self.elements.count != funcType.elements.count {
+            return false
+        }
+        
+        for (index, element) in elements.enumerated() {
+            if !element.isEqualTo(funcType.elements[index]) {
+                return false
+            }
+        }
+        
+        return true
     }
 }
 
@@ -145,7 +227,22 @@ class SwiftCompositionType: SwiftSymbolAnyType {
         return .composition
     }
     
-    lazy var elements: [SwiftSymbolType] = [SwiftSymbolType]()
+    lazy var elements: [any SwiftSymbolType] = [any SwiftSymbolType]()
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+              let compType: SwiftCompositionType = symbolType as? SwiftCompositionType else {
+            return false
+        }
+        
+        for (index, element) in elements.enumerated() {
+            if !element.isEqualTo(compType.elements[index]) {
+                return false
+            }
+        }
+        
+        return true
+    }
 }
 
 class SwiftSomeAnyType: SwiftSymbolAnyType {
@@ -153,9 +250,18 @@ class SwiftSomeAnyType: SwiftSymbolAnyType {
         return .someAny
     }
     
-    var constraints: SwiftSymbolType
+    var constraints: any SwiftSymbolType
     
-    init(constraints: SwiftSymbolType) {
+    init(constraints: any SwiftSymbolType) {
         self.constraints = constraints
+    }
+    
+    override func isEqualTo(_ symbolType: any SwiftSymbolType) -> Bool {
+        guard super.isEqualTo(symbolType),
+              let someAnyType: SwiftSomeAnyType = symbolType as? SwiftSomeAnyType else {
+            return false
+        }
+        
+        return self.constraints.isEqualTo(someAnyType.constraints)
     }
 }
