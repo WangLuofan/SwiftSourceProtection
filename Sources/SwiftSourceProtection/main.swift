@@ -8,7 +8,7 @@
 import Foundation
 
 func main() {
-    
+    SPArgumentParser.main()
 }
 
 main()

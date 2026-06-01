@@ -30,7 +30,8 @@ let package = Package(
                 "Csourcekitd",
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
             ], swiftSettings: [
                 .swiftLanguageMode(.v5),
                 .unsafeFlags(["-Xfrontend", "-disable-availability-checking"])
