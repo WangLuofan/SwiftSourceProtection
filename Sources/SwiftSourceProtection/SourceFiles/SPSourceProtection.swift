@@ -7,15 +7,17 @@
 
 class SPSourceProtection {
     
-    var project: String
-    var scheme: String
+    var schemeInfoProvider: SPSchemeInfoProvider
     
     init(project: String, scheme: String) {
-        self.project = project
-        self.scheme = scheme
+        self.schemeInfoProvider = SPSchemeInfoProvider(project: project, scheme: scheme)
     }
     
     func run() {
+        guard let modules: [Module] = self.schemeInfoProvider.getModulesFromProject() else {
+            return
+        }
+        
         
     }
 }
