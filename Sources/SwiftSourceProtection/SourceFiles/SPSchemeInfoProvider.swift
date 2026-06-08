@@ -97,7 +97,7 @@ class SPSchemeInfoProvider {
             }
         }
         
-        return modules.sorted { $0.value.order < $1.value.order }.map {
+        return modules.filter{$0.value.source.allSatisfy {!$0.path.contains("Pods")}}.sorted { $0.value.order < $1.value.order }.map {
             Module(name: $0.key,
                    sourceFiles: Set($0.value.source),
                    compilerArguments: $0.value.args)
