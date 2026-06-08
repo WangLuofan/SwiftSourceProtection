@@ -7,11 +7,16 @@
 
 import Foundation
 
-class SPSwiftSourceScope {
+class SPSwiftSourceScope: Equatable {
+    private var scopeId: Int = 0
     private var symbols: [String: SPSwiftSourceSymbol] = [:]
     
     var nextScope: [SPSwiftSourceScope] = []
     var prevScope: SPSwiftSourceScope?
+    
+    init(_ id: Int) {
+        self.scopeId = id
+    }
     
     func pushSymbol(_ symbol: SPSwiftSourceSymbol) {
         guard let originalSymbolName: String = symbol.originalSymbolName else {
@@ -29,5 +34,9 @@ class SPSwiftSourceScope {
         }
         
         return nil
+    }
+    
+    static func == (lhs: SPSwiftSourceScope, rhs: SPSwiftSourceScope) -> Bool {
+        return lhs.scopeId == rhs.scopeId
     }
 }

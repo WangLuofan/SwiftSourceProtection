@@ -23,20 +23,46 @@ class SPSourceProtection {
             return
         }
         
+        var sourceTrees: [String: SourceFileSyntax] = [:]
+        
+        let logger: Logger = Logger()
+        let sourceKit = SourceKit(logger: Logger())
+        
         for module in modules {
+            let compilerArguments = SKRequestArray(sourcekitd: sourceKit)
+            module.compilerArguments.forEach(compilerArguments.append(_:))
+            
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 guard let sourceCode: String = try? $0.read() else {
                     return
                 }
                 
-                print("--- Collection: \($0.name)")
+                logger.log("--- Collection: \($0.name)")
                 let sourceTree: SourceFileSyntax = Parser.parse(source: sourceCode)
                 let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
+                
+                sourceTrees[$0.path] = foldedSourceTree ?? sourceTree
                 
                 let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: foldedSourceTree ?? sourceTree, sourceFile: $0)
                 astCollector.walk()
                 
-                print("--- Indexing: \($0.name)")
+                logger.log("--- Indexing: \($0.name)")
+                astCollector.index(sourceKit, compilerArguments)
+            }
+        }
+        
+        for module in modules {
+            module.sourceFiles.sorted { $0.path < $1.path }.forEach {
+                logger.log("--- Rewriting: \($0.name)")
+                
+                guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path] else {
+                    return
+                }
+                
+                let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(sourceTree: sourceTree, sourceFile: $0)
+                let confusedContent = rewriter.rewrite()
+                
+                try? confusedContent.write(toFile: $0.path, atomically: true, encoding: .utf8)
             }
         }
     }
