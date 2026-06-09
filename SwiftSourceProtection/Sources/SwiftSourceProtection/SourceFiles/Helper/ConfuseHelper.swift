@@ -1,5 +1,5 @@
 //
-//  SPSwiftConfusedHelper.swift
+//  ConfuseHelper.swift
 //  SwiftSourceProtection
 //
 //  Created by wangluofan on 2026/1/17.
@@ -8,7 +8,7 @@
 import SwiftSyntax
 import SwiftOperators
 
-class SPSwiftConfusedHelper {
+class ConfuseHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
     

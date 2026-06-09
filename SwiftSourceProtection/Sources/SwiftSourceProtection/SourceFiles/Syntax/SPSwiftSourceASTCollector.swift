@@ -23,7 +23,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.ASTNode = node
         symbol.originalSymbolName = node.name.text
         
-        if let confusedSymbolName: String = SPSwiftConfusedHelper.confuseSymbol(symbol) {
+        if let confusedSymbolName: String = ConfuseHelper.confuseSymbol(symbol) {
             symbol.confusedSymbolName = confusedSymbolName
         }
         
@@ -80,7 +80,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        if let confusedName: String = SPSwiftConfusedHelper.confuseSymbol(symbol) {
+        if let confusedName: String = ConfuseHelper.confuseSymbol(symbol) {
             symbol.confusedSymbolName = confusedName
         }
         
@@ -118,7 +118,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 paramSymbol.originalSymbolName = secondName.text
                 paramSymbol.variableKind = .local
                 paramSymbol.ASTNode = secondName
-                paramSymbol.confusedSymbolName = SPSwiftConfusedHelper.confusedSymbolName(secondName.text)
+                paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
             }
             
             SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
