@@ -130,6 +130,23 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visitPost(_ node: FunctionDeclSyntax) {
         SPSwiftSourceScopeManager.sharedManager.popScope()
     }
+    
+    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ForStmtSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: WhileStmtSyntax) {
+        
+    }
 }
 
 extension SPSwiftSourceASTCollector {
