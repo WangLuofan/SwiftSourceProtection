@@ -37,7 +37,7 @@ class SPSourceProtection {
                     return
                 }
                 
-                logger.log("--- Collection: \($0.name)")
+                logger.log("--- Collecting: \($0.name)")
                 let sourceTree: SourceFileSyntax = Parser.parse(source: sourceCode)
                 let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
                 
