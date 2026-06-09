@@ -3,23 +3,4 @@
    uuid = "B827B032-BE01-4C93-BACE-44B050629F07"
    type = "1"
    version = "2.0">
-   <Breakpoints>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "2E836BFC-6F5A-403B-8F5D-DE1AFC22DA2C"
-            shouldBeEnabled = "Yes"
-            condition = "variableName == &quot;a&quot;"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Sources/SwiftSourceProtection/SourceFiles/Syntax/SPSwiftSourceASTRewriter.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "46"
-            endingLineNumber = "46"
-            landmarkName = "visit(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-   </Breakpoints>
 </Bucket>

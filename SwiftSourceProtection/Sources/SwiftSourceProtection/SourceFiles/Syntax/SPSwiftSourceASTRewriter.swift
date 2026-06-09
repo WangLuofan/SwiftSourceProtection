@@ -50,19 +50,19 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var newBindings: [PatternBindingSyntax] = []
         node.bindings.forEach { binding in
             if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
-                guard let confusedSymbolName: String = varSymbol.confusedSymbolName,
-                    let newBinding: PatternBindingSyntax = PatternBindingSyntax(idPatternSyntax
-                        .with(\.identifier, .identifier(confusedSymbolName)
-                            .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
-                            .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
-                        )
-                    ) else {
-                    
+                guard let confusedSymbolName: String = varSymbol.confusedSymbolName else {
                     newBindings.append(binding)
                     return
                 }
                 
+                let newPattern: IdentifierPatternSyntax = idPatternSyntax
+                    .with(\.identifier, .identifier(confusedSymbolName)
+                        .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
+                        .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
+                    )
+                let newBinding = binding.with(\.pattern, PatternSyntax(newPattern))
                 newBindings.append(newBinding)
+                
                 return
             }
             
