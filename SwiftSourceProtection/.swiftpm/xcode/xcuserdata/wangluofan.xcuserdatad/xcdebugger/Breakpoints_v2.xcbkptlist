@@ -7,9 +7,9 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "2D4E0AA1-6A33-401F-92C6-E3A9811731CA"
+            uuid = "2E836BFC-6F5A-403B-8F5D-DE1AFC22DA2C"
             shouldBeEnabled = "Yes"
-            condition = "variableName == &quot;par_isDebugEnvironment_par&quot;"
+            condition = "variableName == &quot;a&quot;"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Sources/SwiftSourceProtection/SourceFiles/Syntax/SPSwiftSourceASTRewriter.swift"

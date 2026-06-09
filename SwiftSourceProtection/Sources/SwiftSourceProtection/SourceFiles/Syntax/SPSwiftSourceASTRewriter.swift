@@ -79,9 +79,14 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
+    
     override func visitPost(_ node: Syntax) {
         switch node.kind {
-        case .classDecl, .variableDecl:
+        case .classDecl, .variableDecl, .functionDecl:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break

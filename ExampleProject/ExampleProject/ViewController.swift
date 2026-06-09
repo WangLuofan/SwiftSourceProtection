@@ -13,10 +13,5 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
-
-    private func testMethod() {
-        let a: Int = 3
-        let b: Int = 4
-    }
 }
 

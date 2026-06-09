@@ -97,16 +97,20 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile)
         symbol.ASTNode = node
         symbol.variableKind = self.variableKind(of: node)
-        symbol.originalSymbolName = node.name.text
         
+        var sigComps: [String] = [node.name.text]
+        node.signature.parameterClause.parameters.forEach { parameter in
+            sigComps.append(parameter.firstName.text)
+            if parameter.firstName.tokenKind != .wildcard {
+                symbol.labels.append(parameter.firstName.text)
+            }
+        }
+        
+        symbol.originalSymbolName = sigComps.joined(separator: "_")
         SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         SPSwiftSourceScopeManager.sharedManager.pushScope()
         
         node.signature.parameterClause.parameters.forEach { parameter in
-            if parameter.firstName.tokenKind != .wildcard {
-                symbol.labels.append(parameter.firstName.text)
-            }
-            
             let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
             paramSymbol.ASTNode = parameter.firstName
             paramSymbol.originalSymbolName = parameter.firstName.text
