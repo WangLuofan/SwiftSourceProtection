@@ -81,7 +81,29 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         SPSwiftSourceScopeManager.sharedManager.pushScope(false)
-        return super.visit(node)
+        
+        var newParameters: [FunctionParameterSyntax] = []
+        node.signature.parameterClause.parameters.forEach { parameter in
+            if let secondName: TokenSyntax = parameter.secondName,
+               let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
+               let confusedParamName: String = paramSymbol.confusedSymbolName {
+                newParameters.append(parameter
+                    .with(\.secondName,
+                        .identifier(confusedParamName)
+                        .with(\.leadingTrivia, secondName.leadingTrivia)
+                        .with(\.trailingTrivia, secondName.trailingTrivia)
+                    )
+                )
+                
+                return
+            }
+            
+            newParameters.append(parameter)
+        }
+        
+        let newNode = node.with(\.signature, node.signature.with(\.parameterClause, node.signature.parameterClause.with(\.parameters, FunctionParameterListSyntax(newParameters))))
+        
+        return super.visit(newNode)
     }
     
     override func visitPost(_ node: Syntax) {
