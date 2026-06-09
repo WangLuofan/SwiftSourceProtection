@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "B827B032-BE01-4C93-BACE-44B050629F07"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2D4E0AA1-6A33-401F-92C6-E3A9811731CA"
+            shouldBeEnabled = "Yes"
+            condition = "variableName == &quot;par_isDebugEnvironment_par&quot;"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sources/SwiftSourceProtection/SourceFiles/Syntax/SPSwiftSourceASTRewriter.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
+            landmarkName = "visit(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
