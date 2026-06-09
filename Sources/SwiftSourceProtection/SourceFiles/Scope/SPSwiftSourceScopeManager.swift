@@ -22,6 +22,7 @@ class SPSwiftSourceScopeManager {
         if bNew {
             SPSwiftSourceScopeManager.scopeIndex += 1
             let newScope: SPSwiftSourceScope = SPSwiftSourceScope(SPSwiftSourceScopeManager.scopeIndex)
+            newScope.prevScope = self.currentScope
             self.currentScope?.nextScope.append(newScope)
             self.currentScope = newScope
             
