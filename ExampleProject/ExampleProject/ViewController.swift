@@ -17,13 +17,15 @@ class ViewController: UIViewController {
             print(i)
         }
         
-        let a: ((_ x: Int, _ y: Int) -> Int) = { (x: Int, y: Int) in
+        let a: (_ x: Int, _ y: Int) -> Int = { (x: Int, y: Int) in
             return x + y
         }
         
         let b: ((_ x: Int, _ y: Int) -> Int) = { x, y in
             return x - y
         }
+        
+        let c: (u: Int, v: Int)
     }
 }
 

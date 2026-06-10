@@ -12,8 +12,6 @@ class SPSwiftSourceVariableSymbol: SPSwiftSourceSymbol {
     
     var isStaticSymbol: Bool = false
     
-    var type: String?
-    
     override init(sourceFile: File, nodeKind: SPSwiftSourceNodeKind = .variable) {
         super.init(sourceFile: sourceFile, nodeKind: nodeKind)
     }

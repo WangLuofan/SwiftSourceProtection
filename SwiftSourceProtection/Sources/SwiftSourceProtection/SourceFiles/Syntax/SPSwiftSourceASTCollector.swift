@@ -46,10 +46,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
                 symbol.originalSymbolName = idPatternSyntax.identifier.text
             }
-            
-            if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self) {
-                symbol.type = typeSyntax.name.text
-            }
         }
         
         node.modifiers.forEach { modifier in
