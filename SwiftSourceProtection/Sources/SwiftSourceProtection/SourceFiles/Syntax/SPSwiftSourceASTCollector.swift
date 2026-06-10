@@ -33,6 +33,15 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         return super.visit(node)
     }
     
+    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ExtensionDeclSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
     override func visitPost(_ node: ClassDeclSyntax) {
         SPSwiftSourceScopeManager.sharedManager.popScope()
     }

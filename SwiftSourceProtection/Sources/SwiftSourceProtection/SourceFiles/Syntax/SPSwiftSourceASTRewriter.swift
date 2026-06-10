@@ -34,6 +34,11 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
+    
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         var variableName: String = ""
         node.bindings.forEach { binding in
@@ -191,7 +196,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     override func visitPost(_ node: Syntax) {
         switch node.kind {
         case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt,
-                .closureExpr:
+                .closureExpr, .extensionDecl:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break
