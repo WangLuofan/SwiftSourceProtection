@@ -112,7 +112,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         
         if let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(newNode.firstName.text) as? SPSwiftSourceVariableSymbol,
            let confusedSymbolName = paramSymbol.confusedSymbolName {
-            newNode = newNode.with(\.secondName, .identifier(confusedSymbolName, leadingTrivia: newNode.firstName.leadingTrivia, trailingTrivia: newNode.firstName.trailingTrivia))
+            newNode = newNode.with(\.firstName, .identifier(confusedSymbolName, leadingTrivia: newNode.firstName.leadingTrivia, trailingTrivia: newNode.firstName.trailingTrivia))
         }
 
         return super.visit(newNode)
