@@ -49,6 +49,8 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         
         var newBindings: [PatternBindingSyntax] = []
         node.bindings.forEach { binding in
+            
+            var newBinding = binding
             if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
                 guard let confusedSymbolName: String = varSymbol.confusedSymbolName else {
                     newBindings.append(binding)
@@ -60,13 +62,25 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                         .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
                         .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
                     )
-                let newBinding = binding.with(\.pattern, PatternSyntax(newPattern))
-                newBindings.append(newBinding)
                 
-                return
+                newBinding = newBinding
+                    .with(\.pattern, PatternSyntax(newPattern)
+                        .with(\.leadingTrivia, binding.pattern.leadingTrivia)
+                        .with(\.trailingTrivia, binding.pattern.trailingTrivia)
+                    )
             }
             
-            newBindings.append(binding)
+            if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self),
+               let typeSymbol: SPSwiftSourceSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(typeSyntax.name.text),
+               let confusedSymbolName = typeSymbol.confusedSymbolName {
+                newBinding = newBinding
+                    .with(\.typeAnnotation, newBinding.typeAnnotation?
+                        .with(\.type, TypeSyntax(IdentifierTypeSyntax(name: .identifier(confusedSymbolName, leadingTrivia: typeSyntax.leadingTrivia, trailingTrivia: typeSyntax.trailingTrivia))
+                        ))
+                    )
+            }
+            
+            newBindings.append(newBinding)
         }
         
         let newNode = node
@@ -106,9 +120,30 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self),
+           let symbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(idPattern.identifier.text) as? SPSwiftSourceVariableSymbol,
+           let confusedSymbolName = symbol.confusedSymbolName {
+            newNode = newNode.with(\.pattern, PatternSyntax(idPattern
+                .with(\.identifier, .identifier(confusedSymbolName, leadingTrivia: idPattern.identifier.leadingTrivia)
+                    .with(\.trailingTrivia, idPattern.identifier.trailingTrivia))
+            ))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visitPost(_ node: Syntax) {
         switch node.kind {
-        case .classDecl, .variableDecl, .functionDecl:
+        case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break

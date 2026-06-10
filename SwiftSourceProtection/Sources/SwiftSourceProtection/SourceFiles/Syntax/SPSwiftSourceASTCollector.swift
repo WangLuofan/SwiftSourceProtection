@@ -133,6 +133,16 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
         SPSwiftSourceScopeManager.sharedManager.pushScope()
+        
+        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+            varSymbol.originalSymbolName = idPattern.identifier.text
+            varSymbol.variableKind = .local
+            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
+            
+            SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+        }
+        
         return super.visit(node)
     }
     
