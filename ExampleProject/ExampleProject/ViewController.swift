@@ -29,3 +29,14 @@ class ViewController: UIViewController {
     }
 }
 
+class TestA {
+    var c: (u: Int, v: Int) {
+        return (3, 4)
+    }
+}
+
+class TestB: TestA {
+    override var c: (k: Int, t: Int) {
+        return (4, 5)
+    }
+}
