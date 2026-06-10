@@ -85,7 +85,9 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         if let firstName = newNode.firstName {
             let confusedFirstName: String = ConfuseHelper.confusedSymbolName(firstName.text)
             newNode = newNode.with(\.firstName, .identifier(confusedFirstName, leadingTrivia: firstName.leadingTrivia, trailingTrivia: firstName.trailingTrivia))
-        } else if let secondName = newNode.secondName {
+        }
+        
+        if let secondName = newNode.secondName {
             let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
             newNode = newNode.with(\.secondName, .identifier(confusedSecondName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
         }
