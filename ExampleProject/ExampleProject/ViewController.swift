@@ -46,3 +46,16 @@ class TestB: TestA {
         return (4, 5)
     }
 }
+
+extension Double {
+    func roundDecimals(_ digit: Int = 2) -> Double {
+
+        let transformationValue = Double(String(format: "%.\(digit)f", self)) ?? 0
+
+        if transformationValue == 0 && self > 0{
+            return 1
+        }
+
+        return transformationValue
+    }
+}
