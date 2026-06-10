@@ -91,6 +91,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: ClosureShorthandParameterSyntax) -> ClosureShorthandParameterSyntax {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: ClosureParameterSyntax) -> ClosureParameterSyntax {
+        return super.visit(node)
+    }
+    
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         SPSwiftSourceScopeManager.sharedManager.pushScope(false)
         return super.visit(node)

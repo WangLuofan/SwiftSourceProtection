@@ -16,6 +16,10 @@ class ViewController: UIViewController {
         for i in 0..<5 {
             print(i)
         }
+        
+        let a: ((_ x: Int, _ y: Int) -> Int) = { x, y in
+            return x + y
+        }
     }
 }
 

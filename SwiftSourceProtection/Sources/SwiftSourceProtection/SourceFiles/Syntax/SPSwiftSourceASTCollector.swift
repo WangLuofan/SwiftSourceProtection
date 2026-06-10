@@ -93,6 +93,22 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         SPSwiftSourceScopeManager.sharedManager.popScope()
     }
     
+    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ClosureExprSyntax) {
+        
+    }
+    
+    override func visit(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
+    }
+    
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
         let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
         paramSymbol.ASTNode =  node.firstName
