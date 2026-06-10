@@ -94,18 +94,31 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClosureExprSyntax) {
-        
+        SPSwiftSourceScopeManager.sharedManager.popScope()
     }
     
     override func visit(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
+        
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+        paramSymbol.originalSymbolName = node.name.text
+        paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.name.text)
+        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        
         return super.visit(node)
     }
     
     override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
+        
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+        paramSymbol.originalSymbolName = node.firstName.text
+        paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.firstName.text)
+        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        
         return super.visit(node)
     }
     

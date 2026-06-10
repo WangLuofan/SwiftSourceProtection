@@ -92,15 +92,30 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
         return super.visit(node)
     }
     
     override func visit(_ node: ClosureShorthandParameterSyntax) -> ClosureShorthandParameterSyntax {
-        return super.visit(node)
+        var newNode = node
+        
+        if let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceVariableSymbol,
+           let confusedSymbolName = paramSymbol.confusedSymbolName {
+            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
+        }
+        
+        return super.visit(newNode)
     }
     
     override func visit(_ node: ClosureParameterSyntax) -> ClosureParameterSyntax {
-        return super.visit(node)
+        var newNode = node
+        
+        if let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(newNode.firstName.text) as? SPSwiftSourceVariableSymbol,
+           let confusedSymbolName = paramSymbol.confusedSymbolName {
+            newNode = newNode.with(\.secondName, .identifier(confusedSymbolName, leadingTrivia: newNode.firstName.leadingTrivia, trailingTrivia: newNode.firstName.trailingTrivia))
+        }
+
+        return super.visit(newNode)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
@@ -159,7 +174,8 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visitPost(_ node: Syntax) {
         switch node.kind {
-        case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt:
+        case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt,
+                .closureExpr:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break
