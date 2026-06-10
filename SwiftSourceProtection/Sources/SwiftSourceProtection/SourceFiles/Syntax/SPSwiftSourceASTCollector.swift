@@ -177,11 +177,48 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
         return super.visit(node)
     }
     
     override func visitPost(_ node: WhileStmtSyntax) {
-        
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: IfExprSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: SwitchExprSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: SwitchCaseSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
+    
+    override func visit(_ node: SwitchDefaultLabelSyntax) -> SyntaxVisitorContinueKind {
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: SwitchDefaultLabelSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
     }
 }
 

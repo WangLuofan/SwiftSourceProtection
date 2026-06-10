@@ -7,6 +7,12 @@
 
 import UIKit
 
+enum TestEnum {
+    case first
+    case second(TestA)
+    case third
+}
+
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
