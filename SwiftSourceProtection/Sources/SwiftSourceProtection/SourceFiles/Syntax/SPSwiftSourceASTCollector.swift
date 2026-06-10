@@ -93,6 +93,21 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         SPSwiftSourceScopeManager.sharedManager.popScope()
     }
     
+    override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+        paramSymbol.ASTNode =  node.firstName
+        paramSymbol.originalSymbolName = node.firstName.text
+        if let secondName: TokenSyntax = node.secondName {
+            paramSymbol.originalSymbolName = secondName.text
+            paramSymbol.variableKind = .local
+            paramSymbol.ASTNode = secondName
+            paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
+        }
+        
+        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        return super.visit(node)
+    }
+    
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile)
         symbol.ASTNode = node
@@ -109,20 +124,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.originalSymbolName = sigComps.joined(separator: "_")
         SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         SPSwiftSourceScopeManager.sharedManager.pushScope()
-        
-        node.signature.parameterClause.parameters.forEach { parameter in
-            let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
-            paramSymbol.ASTNode = parameter.firstName
-            paramSymbol.originalSymbolName = parameter.firstName.text
-            if let secondName: TokenSyntax = parameter.secondName {
-                paramSymbol.originalSymbolName = secondName.text
-                paramSymbol.variableKind = .local
-                paramSymbol.ASTNode = secondName
-                paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
-            }
-            
-            SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
-        }
         
         return super.visit(node)
     }

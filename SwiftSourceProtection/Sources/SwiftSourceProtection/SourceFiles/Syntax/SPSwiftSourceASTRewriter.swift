@@ -25,11 +25,10 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             return super.visit(node)
         }
         
-        let newNode = node
-            .with(\.name, .identifier(confusedSymbolName)
-                .with(\.leadingTrivia, node.name.leadingTrivia)
-                .with(\.trailingTrivia, node.name.trailingTrivia)
-            )
+        let newNode = node.with(\.name, .identifier(confusedSymbolName)
+            .with(\.leadingTrivia, node.name.leadingTrivia)
+            .with(\.trailingTrivia, node.name.trailingTrivia)
+        )
         
         SPSwiftSourceScopeManager.sharedManager.pushScope(false)
         return super.visit(newNode)
@@ -57,34 +56,21 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                     return
                 }
                 
-                let newPattern: IdentifierPatternSyntax = idPatternSyntax
-                    .with(\.identifier, .identifier(confusedSymbolName)
-                        .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
-                        .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
-                    )
+                let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
+                    .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
+                    .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
+                )
                 
-                newBinding = newBinding
-                    .with(\.pattern, PatternSyntax(newPattern)
-                        .with(\.leadingTrivia, binding.pattern.leadingTrivia)
-                        .with(\.trailingTrivia, binding.pattern.trailingTrivia)
-                    )
-            }
-            
-            if let typeSyntax: IdentifierTypeSyntax = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self),
-               let typeSymbol: SPSwiftSourceSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(typeSyntax.name.text),
-               let confusedSymbolName = typeSymbol.confusedSymbolName {
-                newBinding = newBinding
-                    .with(\.typeAnnotation, newBinding.typeAnnotation?
-                        .with(\.type, TypeSyntax(IdentifierTypeSyntax(name: .identifier(confusedSymbolName, leadingTrivia: typeSyntax.leadingTrivia, trailingTrivia: typeSyntax.trailingTrivia))
-                        ))
-                    )
+                newBinding = newBinding.with(\.pattern, PatternSyntax(newPattern)
+                    .with(\.leadingTrivia, binding.pattern.leadingTrivia)
+                    .with(\.trailingTrivia, binding.pattern.trailingTrivia)
+                )
             }
             
             newBindings.append(newBinding)
         }
         
-        let newNode = node
-            .with(\.bindings, PatternBindingListSyntax(newBindings)
+        let newNode = node.with(\.bindings, PatternBindingListSyntax(newBindings)
                 .with(\.leadingTrivia, node.bindings.leadingTrivia)
                 .with(\.trailingTrivia, node.bindings.trailingTrivia)
             )
@@ -93,31 +79,21 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+    override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        var newNode = node
         
-        var newParameters: [FunctionParameterSyntax] = []
-        node.signature.parameterClause.parameters.forEach { parameter in
-            if let secondName: TokenSyntax = parameter.secondName,
-               let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
-               let confusedParamName: String = paramSymbol.confusedSymbolName {
-                newParameters.append(parameter
-                    .with(\.secondName,
-                        .identifier(confusedParamName)
-                        .with(\.leadingTrivia, secondName.leadingTrivia)
-                        .with(\.trailingTrivia, secondName.trailingTrivia)
-                    )
-                )
-                
-                return
-            }
-            
-            newParameters.append(parameter)
+        if let secondName: TokenSyntax = node.secondName,
+           let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
+           let confusedParamName: String = paramSymbol.confusedSymbolName {
+            newNode = newNode.with(\.secondName, .identifier(confusedParamName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
         }
         
-        let newNode = node.with(\.signature, node.signature.with(\.parameterClause, node.signature.parameterClause.with(\.parameters, FunctionParameterListSyntax(newParameters))))
-        
         return super.visit(newNode)
+    }
+    
+    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
     }
     
     override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
@@ -148,6 +124,21 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
            let confusedSymbolName = baseSymbol.confusedSymbolName {
             newNode = newNode.with(\.baseName,
                 .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        if let typeSymbol: SPSwiftSourceSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(node.name.text),
+           let confusedSymbolName = typeSymbol.confusedSymbolName {
+            newNode = newNode.with(\.name, .identifier(
+                confusedSymbolName,
+                leadingTrivia: node.name.leadingTrivia,
+                trailingTrivia: node.name.trailingTrivia)
             )
         }
         
