@@ -141,6 +141,19 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let baseSymbol: SPSwiftSourceSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(node.baseName.text),
+           let confusedSymbolName = baseSymbol.confusedSymbolName {
+            newNode = newNode.with(\.baseName,
+                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visitPost(_ node: Syntax) {
         switch node.kind {
         case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt:
