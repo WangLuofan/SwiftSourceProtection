@@ -12,18 +12,25 @@ class ConfuseHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
     
-    static func confuseSymbol(_ symbol: SPSwiftSourceSymbol) -> String? {
+    static func confuseSymbol(_ symbol: SPSwiftSourceSymbol) {
         guard let originalSymbolName: String = symbol.originalSymbolName,
               self.shouldConfuseSymbol(symbol) else {
-            return nil
+            return
         }
         
-        if let confusedSymbol = symbol.confusedSymbolName {
-            return confusedSymbol
+        if symbol.nodeKind == .function,
+           let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
+            if let funcName: String = funcSymbol.functionName {
+                (symbol as? SPSwiftSourceFunctionSymbol)?.confusedFunctionName = self.confusedSymbolName(funcName)
+            }
+            
+            for label in funcSymbol.labels {
+                (symbol as? SPSwiftSourceFunctionSymbol)?.confusedLabels.append(self.confusedSymbolName(label))
+            }
+        } else if let confusedSymbol = symbol.confusedSymbolName {
+            symbol.confusedSymbolName = self.confusedSymbolName(originalSymbolName)
         }
         
-        let confusedSymbolName: String = self.confusedSymbolName(originalSymbolName)
-        return confusedSymbolName
     }
     
     private static func shouldConfuseSymbol(_ symbol: SPSwiftSourceSymbol) -> Bool {
@@ -37,16 +44,23 @@ class ConfuseHelper {
             symbol.nodeKind == .protocol || symbol.nodeKind == .struct {
             return true
         }
-
-        guard let symbol: SPSwiftSourceVariableSymbol = symbol as? SPSwiftSourceVariableSymbol else {
-            return false
-        }
         
-        if symbol.variableKind == .global ||
-            symbol.variableKind == .local ||
-            symbol.isStaticSymbol ||
-            symbol.accessLevel == .private {
-            return true
+        if symbol.nodeKind == .function,
+           let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
+            if funcSymbol.variableKind == .global ||
+                funcSymbol.variableKind == .local ||
+                funcSymbol.isStaticSymbol ||
+                funcSymbol.accessLevel == .private {
+                return true
+            }
+        } else if symbol.nodeKind == .variable,
+                  let varSymbol: SPSwiftSourceVariableSymbol = symbol as? SPSwiftSourceVariableSymbol {
+            if varSymbol.variableKind == .global ||
+                varSymbol.variableKind == .local ||
+                varSymbol.isStaticSymbol ||
+                varSymbol.accessLevel == .private {
+                return true
+            }
         }
 
         return false
@@ -101,5 +115,14 @@ class ConfuseHelper {
         }
         
         return originalSymbolName
+    }
+    
+    static func generateFunctionSignature(_ node: FunctionDeclSyntax) -> String {
+        var sigComps: [String] = [node.name.text]
+        node.signature.parameterClause.parameters.forEach { parameter in
+            sigComps.append(parameter.firstName.text)
+        }
+        
+        return sigComps.joined(separator: "_")
     }
 }

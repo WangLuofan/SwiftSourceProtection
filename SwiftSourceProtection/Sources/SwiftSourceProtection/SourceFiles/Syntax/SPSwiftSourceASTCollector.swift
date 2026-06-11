@@ -23,9 +23,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.ASTNode = node
         symbol.originalSymbolName = node.name.text
         
-        if let confusedSymbolName: String = ConfuseHelper.confuseSymbol(symbol) {
-            symbol.confusedSymbolName = confusedSymbolName
-        }
+        ConfuseHelper.confuseSymbol(symbol)
         
         SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         SPSwiftSourceScopeManager.sharedManager.pushScope()
@@ -85,9 +83,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        if let confusedName: String = ConfuseHelper.confuseSymbol(symbol) {
-            symbol.confusedSymbolName = confusedName
-        }
+        ConfuseHelper.confuseSymbol(symbol)
         
         SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         SPSwiftSourceScopeManager.sharedManager.pushScope()
@@ -144,18 +140,48 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile)
+        
         symbol.ASTNode = node
         symbol.variableKind = self.variableKind(of: node)
-        
-        var sigComps: [String] = [node.name.text]
+        symbol.functionName = node.name.text
+        symbol.originalSymbolName = ConfuseHelper.generateFunctionSignature(node)
+
         node.signature.parameterClause.parameters.forEach { parameter in
-            sigComps.append(parameter.firstName.text)
             if parameter.firstName.tokenKind != .wildcard {
                 symbol.labels.append(parameter.firstName.text)
             }
         }
         
-        symbol.originalSymbolName = sigComps.joined(separator: "_")
+        node.modifiers.forEach { modifier in
+            if let declModifierSyntax: DeclModifierSyntax = modifier.as(DeclModifierSyntax.self) {
+                switch declModifierSyntax.name.tokenKind {
+                case .keyword(let keyword):
+                    switch keyword {
+                    case .static:
+                        symbol.isStaticSymbol = true
+                    case .open:
+                        symbol.accessLevel = .open
+                    case .public:
+                        symbol.accessLevel = .public
+                    case .package:
+                        symbol.accessLevel = .package
+                    case .internal:
+                        symbol.accessLevel = .internal
+                    case .fileprivate:
+                        symbol.accessLevel = .fileprivate
+                    case .private:
+                        symbol.accessLevel = .private
+                    default:
+                        break
+                    }
+                default:
+                    break
+                }
+            }
+        }
+        
+        ConfuseHelper.confuseSymbol(symbol)
+        
         SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
         SPSwiftSourceScopeManager.sharedManager.pushScope()
         

@@ -140,13 +140,42 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        let sig: String = ConfuseHelper.generateFunctionSignature(node)
+        
+        if let funcSymbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(sig) as? SPSwiftSourceFunctionSymbol {
+            if let confusedFunctionName: String = funcSymbol.confusedFunctionName {
+                newNode = newNode.with(\.name, .identifier(confusedFunctionName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
+            }
+            
+            var confusedParameters: [FunctionParameterSyntax] = []
+            var labelIndex: Int = 0
+            for (_, parameter) in node.signature.parameterClause.parameters.enumerated() {
+                if parameter.firstName.tokenKind == .wildcard {
+                    confusedParameters.append(parameter)
+                }
+                
+                let confusedLabel: String = funcSymbol.confusedLabels[labelIndex]
+                confusedParameters.append(parameter.with(\.firstName, .identifier(confusedLabel, leadingTrivia: parameter.firstName.leadingTrivia, trailingTrivia: parameter.firstName.trailingTrivia)))
+            }
+            
+            newNode = newNode.with(\.signature, newNode.signature
+                .with(\.parameterClause, newNode.signature.parameterClause
+                    .with(\.parameters, FunctionParameterListSyntax(confusedParameters)
+                        .with(\.leadingTrivia, newNode.signature.parameterClause.parameters.leadingTrivia)
+                        .with(\.trailingTrivia, newNode.signature.parameterClause.parameters.trailingTrivia)
+                    )
+                )
+            )
+        }
+        
         SPSwiftSourceScopeManager.sharedManager.pushScope(false)
-        return super.visit(node)
+        return super.visit(newNode)
     }
     
     override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
-        var newNode = node
-        return super.visit(newNode)
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
     }
     
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
@@ -193,10 +222,31 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: SwitchDefaultLabelSyntax) -> SwitchDefaultLabelSyntax {
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        return super.visit(node)
+    }
+    
     override func visitPost(_ node: Syntax) {
         switch node.kind {
         case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt,
-                .closureExpr, .extensionDecl:
+                .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
+                .switchDefaultLabel:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break

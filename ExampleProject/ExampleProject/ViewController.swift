@@ -39,6 +39,10 @@ class TestA {
     var c: (u: Int, v: Int) {
         return (3, 4)
     }
+    
+    private func testFunc(_ num1: Int, num2: Int) -> Int {
+        return num1 * num2
+    }
 }
 
 class TestB: TestA {
