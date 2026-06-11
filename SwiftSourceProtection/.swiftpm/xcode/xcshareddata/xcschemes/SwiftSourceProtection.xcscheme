@@ -53,11 +53,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/wangluofan/Desktop/Project/ic1/ic1_ios_sdk/Panda.xcworkspace"
+            argument = "/Users/wangluofan/Desktop/SwiftSourceProtection/ExampleProject/ExampleProject.xcodeproj"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "PandaSDK"
+            argument = "ExampleProject"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
