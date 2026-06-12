@@ -129,10 +129,10 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         paramSymbol.originalSymbolName = node.firstName.text
         if let secondName: TokenSyntax = node.secondName {
             paramSymbol.originalSymbolName = secondName.text
-            paramSymbol.variableKind = .local
             paramSymbol.ASTNode = secondName
             paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
         }
+        paramSymbol.variableKind = .local
         
         SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
         return super.visit(node)

@@ -27,7 +27,7 @@ class ConfuseHelper {
             for label in funcSymbol.labels {
                 (symbol as? SPSwiftSourceFunctionSymbol)?.confusedLabels.append(self.confusedSymbolName(label))
             }
-        } else if let confusedSymbol = symbol.confusedSymbolName {
+        } else {
             symbol.confusedSymbolName = self.confusedSymbolName(originalSymbolName)
         }
         

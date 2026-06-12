@@ -48,11 +48,6 @@ class SPSchemeInfoProvider {
             try process.run()
             let output = try pipe.fileHandleForReading.readToEnd()
             
-            if let output,
-               let outputString: String = String(data: output, encoding: .utf8) {
-                print(outputString)
-            }
-            
             process.waitUntilExit()
             
             guard process.terminationStatus == 0,

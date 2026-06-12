@@ -103,9 +103,11 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var newNode = node
         
-        if let secondName: TokenSyntax = node.secondName,
-           let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
+        var paramName: String = node.secondName?.text ?? node.firstName.text
+        if let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(paramName) as? SPSwiftSourceVariableSymbol,
            let confusedParamName: String = paramSymbol.confusedSymbolName {
+            if let secondName: TokenSyntax = node.secondName,
+               
             newNode = newNode.with(\.secondName, .identifier(confusedParamName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
         }
         
@@ -151,12 +153,15 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             var confusedParameters: [FunctionParameterSyntax] = []
             var labelIndex: Int = 0
             for (_, parameter) in node.signature.parameterClause.parameters.enumerated() {
-                if parameter.firstName.tokenKind == .wildcard {
+                if parameter.firstName.tokenKind == .wildcard || labelIndex >= funcSymbol.confusedLabels.count {
                     confusedParameters.append(parameter)
+                    continue
                 }
                 
                 let confusedLabel: String = funcSymbol.confusedLabels[labelIndex]
                 confusedParameters.append(parameter.with(\.firstName, .identifier(confusedLabel, leadingTrivia: parameter.firstName.leadingTrivia, trailingTrivia: parameter.firstName.trailingTrivia)))
+                
+                labelIndex += 1
             }
             
             newNode = newNode.with(\.signature, newNode.signature
