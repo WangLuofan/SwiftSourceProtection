@@ -12,6 +12,8 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var sourceTree: SourceFileSyntax
     private var sourceFile: File
     
+    private var currentFunction: SPSwiftSourceFunctionSymbol?
+    
     init(sourceTree: SourceFileSyntax, sourceFile: File) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
@@ -103,12 +105,30 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var newNode = node
         
-        var paramName: String = node.secondName?.text ?? node.firstName.text
-        if let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(paramName) as? SPSwiftSourceVariableSymbol,
-           let confusedParamName: String = paramSymbol.confusedSymbolName {
-            if let secondName: TokenSyntax = node.secondName,
-               
-            newNode = newNode.with(\.secondName, .identifier(confusedParamName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
+        let paramName: String = node.secondName?.text ?? node.firstName.text
+        if paramName == "num2" {
+            print("Hello")
+        }
+        
+        if let currentFunction,
+           let funcDecl: FunctionDeclSyntax = self.nodeParent(node) {
+            for (index, parameter) in funcDecl.signature.parameterClause.parameters.enumerated() {
+                if parameter != node {
+                    continue
+                }
+                
+                if index < currentFunction.confusedLabels.count {
+                    newNode = newNode.with(\.firstName, .identifier(currentFunction.confusedLabels[index], leadingTrivia: node.firstName.leadingTrivia, trailingTrivia: node.firstName.trailingTrivia))
+                    if let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(currentFunction.labels[index]) as? SPSwiftSourceVariableSymbol {
+                        paramSymbol.confusedSymbolName = currentFunction.confusedLabels[index]
+                    }
+                }
+                
+                if let secondName = node.secondName {
+                    let confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
+                    newNode = newNode.with(\.secondName, .identifier(confusedSymbolName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
+                }
+            }
         }
         
         return super.visit(newNode)
@@ -150,28 +170,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                 newNode = newNode.with(\.name, .identifier(confusedFunctionName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
             }
             
-            var confusedParameters: [FunctionParameterSyntax] = []
-            var labelIndex: Int = 0
-            for (_, parameter) in node.signature.parameterClause.parameters.enumerated() {
-                if parameter.firstName.tokenKind == .wildcard || labelIndex >= funcSymbol.confusedLabels.count {
-                    confusedParameters.append(parameter)
-                    continue
-                }
-                
-                let confusedLabel: String = funcSymbol.confusedLabels[labelIndex]
-                confusedParameters.append(parameter.with(\.firstName, .identifier(confusedLabel, leadingTrivia: parameter.firstName.leadingTrivia, trailingTrivia: parameter.firstName.trailingTrivia)))
-                
-                labelIndex += 1
-            }
-            
-            newNode = newNode.with(\.signature, newNode.signature
-                .with(\.parameterClause, newNode.signature.parameterClause
-                    .with(\.parameters, FunctionParameterListSyntax(confusedParameters)
-                        .with(\.leadingTrivia, newNode.signature.parameterClause.parameters.leadingTrivia)
-                        .with(\.trailingTrivia, newNode.signature.parameterClause.parameters.trailingTrivia)
-                    )
-                )
-            )
+            self.currentFunction = funcSymbol
         }
         
         SPSwiftSourceScopeManager.sharedManager.pushScope(false)
@@ -249,7 +248,10 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visitPost(_ node: Syntax) {
         switch node.kind {
-        case .classDecl, .variableDecl, .functionDecl, .whileStmt, .forStmt,
+        case .functionDecl:
+            self.currentFunction = nil
+            fallthrough
+        case .classDecl, .variableDecl, .whileStmt, .forStmt,
                 .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
                 .switchDefaultLabel:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
@@ -263,5 +265,18 @@ extension SPSwiftSourceASTRewriter {
     func rewrite() -> String {
         let rewritten = self.visit(self.sourceTree)
         return rewritten.description
+    }
+    
+    private func nodeParent<T: SyntaxProtocol>(_ node: SyntaxProtocol) -> T? {
+        var parent = node.parent
+        while parent != nil {
+            if let parent: T = parent?.as(T.self) {
+                return parent
+            }
+            
+            parent = parent?.parent
+        }
+        
+        return nil
     }
 }

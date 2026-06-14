@@ -20,10 +20,7 @@ class ConfuseHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
-            if let funcName: String = funcSymbol.functionName {
-                (symbol as? SPSwiftSourceFunctionSymbol)?.confusedFunctionName = self.confusedSymbolName(funcName)
-            }
-            
+            (symbol as? SPSwiftSourceFunctionSymbol)?.confusedFunctionName = self.confusedSymbolName(funcSymbol.functionName)
             for label in funcSymbol.labels {
                 (symbol as? SPSwiftSourceFunctionSymbol)?.confusedLabels.append(self.confusedSymbolName(label))
             }
@@ -123,6 +120,11 @@ class ConfuseHelper {
             sigComps.append(parameter.firstName.text)
         }
         
+        return sigComps.joined(separator: "_")
+    }
+    
+    static func generateFunctionSignature(_ symbol: SPSwiftSourceFunctionSymbol) -> String {
+        let sigComps: [String] = [symbol.functionName] + symbol.labels
         return sigComps.joined(separator: "_")
     }
 }

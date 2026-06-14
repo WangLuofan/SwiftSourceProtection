@@ -139,7 +139,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile)
+        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile, funcName: node.name.text)
         
         symbol.ASTNode = node
         symbol.variableKind = self.variableKind(of: node)
@@ -147,9 +147,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.originalSymbolName = ConfuseHelper.generateFunctionSignature(node)
 
         node.signature.parameterClause.parameters.forEach { parameter in
-            if parameter.firstName.tokenKind != .wildcard {
-                symbol.labels.append(parameter.firstName.text)
-            }
+            symbol.labels.append(parameter.firstName.text)
         }
         
         node.modifiers.forEach { modifier in

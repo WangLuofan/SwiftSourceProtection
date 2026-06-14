@@ -48,12 +48,16 @@ class SPSchemeInfoProvider {
             try process.run()
             let output = try pipe.fileHandleForReading.readToEnd()
             
+            guard let output,
+                  let outputString: String = String(data: output, encoding: .utf8) else {
+                print("Failed to retrieve output from Xcode: Unknown Error.")
+                return nil
+            }
+            
             process.waitUntilExit()
             
-            guard process.terminationStatus == 0,
-                  let output,
-                  let outputString: String = String(data: output, encoding: .utf8) else {
-                print("Failed to retrieve output from Xcode.")
+            guard process.terminationStatus == 0 else {
+                print("Failed to retrieve output from Xcode: \(outputString)")
                 return nil
             }
             
