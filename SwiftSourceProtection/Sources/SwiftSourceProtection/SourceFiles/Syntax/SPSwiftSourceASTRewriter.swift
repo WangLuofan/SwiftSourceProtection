@@ -105,11 +105,6 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var newNode = node
         
-        let paramName: String = node.secondName?.text ?? node.firstName.text
-        if paramName == "num2" {
-            print("Hello")
-        }
-        
         if let currentFunction,
            let funcDecl: FunctionDeclSyntax = self.nodeParent(node) {
             for (index, parameter) in funcDecl.signature.parameterClause.parameters.enumerated() {
