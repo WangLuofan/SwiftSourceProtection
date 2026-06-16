@@ -32,6 +32,12 @@ class ViewController: UIViewController {
         }
         
         let c: (u: Int, v: Int)
+        let d: TestA? = TestA()
+        
+        guard let d else {
+            return
+        }
+        d.c
     }
 }
 
