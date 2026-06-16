@@ -241,6 +241,40 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
+    override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
+        var newNode = node
+        var confusedConditions: [ConditionElementSyntax] = []
+        
+        node.conditions.forEach { condition in
+            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self) {
+                if let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self),
+                   let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(idPattern.identifier.text) as? SPSwiftSourceVariableSymbol,
+                   let confusedSymbolName = paramSymbol.confusedSymbolName {
+                    confusedConditions.append(condition
+                        .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
+                            .with(\.pattern, PatternSyntax(idPattern
+                                .with(\.identifier, .identifier(confusedSymbolName, leadingTrivia: idPattern.identifier.leadingTrivia, trailingTrivia: idPattern.identifier.trailingTrivia)
+                                     )
+                            ))
+                        ))
+                    )
+                } else {
+                    confusedConditions.append(condition)
+                }
+            } else {
+                confusedConditions.append(condition)
+            }
+        }
+        
+        newNode = newNode.with(\.conditions, ConditionElementListSyntax(confusedConditions)
+            .with(\.leadingTrivia, newNode.conditions.leadingTrivia)
+            .with(\.trailingTrivia, newNode.conditions.trailingTrivia)
+        )
+        SPSwiftSourceScopeManager.sharedManager.pushScope(false)
+        
+        return super.visit(newNode)
+    }
+    
     override func visitPost(_ node: Syntax) {
         switch node.kind {
         case .functionDecl:
@@ -248,7 +282,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             fallthrough
         case .classDecl, .variableDecl, .whileStmt, .forStmt,
                 .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
-                .switchDefaultLabel:
+                .switchDefaultLabel, .guardStmt:
             SPSwiftSourceScopeManager.sharedManager.popScope(true)
         default:
             break

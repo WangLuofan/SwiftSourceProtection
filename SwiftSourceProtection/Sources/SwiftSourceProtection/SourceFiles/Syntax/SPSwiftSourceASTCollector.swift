@@ -253,6 +253,30 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visitPost(_ node: SwitchDefaultLabelSyntax) {
         SPSwiftSourceScopeManager.sharedManager.popScope()
     }
+    
+    override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
+        node.conditions.forEach { condition in
+            if let condition: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self) {
+                if let _ = condition.initializer,
+                   let idPattern: IdentifierPatternSyntax = condition.pattern.as(IdentifierPatternSyntax.self) {
+                    let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+                    paramSymbol.variableKind = .local
+                    paramSymbol.ASTNode = idPattern
+                    paramSymbol.originalSymbolName = idPattern.identifier.text
+                    paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
+                    
+                    SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+                }
+            }
+        }
+        
+        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: GuardStmtSyntax) {
+        SPSwiftSourceScopeManager.sharedManager.popScope()
+    }
 }
 
 extension SPSwiftSourceASTCollector {
