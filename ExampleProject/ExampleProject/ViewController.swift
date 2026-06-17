@@ -34,6 +34,10 @@ class ViewController: UIViewController {
         let c: (u: Int, v: Int)
         let d: TestA? = TestA()
         
+        if let e: Int = d?.testFunc(num1: 3, num2: 4) {
+            print(e)
+        }
+        
         guard let d else {
             return
         }
@@ -44,6 +48,10 @@ class ViewController: UIViewController {
 class TestA {
     var c: (u: Int, v: Int) {
         return (3, 4)
+    }
+    
+    func testFunc(num1: Int, num2: Int) -> Int {
+        return self.testFunc(num1, num2: num2)
     }
     
     private func testFunc(_ num1: Int, num2: Int) -> Int {
