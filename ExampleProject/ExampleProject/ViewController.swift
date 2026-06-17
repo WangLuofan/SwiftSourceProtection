@@ -32,7 +32,7 @@ class ViewController: UIViewController {
         }
         
         let c: (u: Int, v: Int)
-        let d: TestA? = TestA()
+        let d: TestA? = TestA(s: 3)
         
         if let e: Int = d?.testFunc(num1: 3, num2: 4) {
             print(e)
@@ -46,6 +46,12 @@ class ViewController: UIViewController {
 }
 
 class TestA {
+    var n: Int
+    
+    init(s: Int) {
+        self.n = s
+    }
+    
     var c: (u: Int, v: Int) {
         return (3, 4)
     }
