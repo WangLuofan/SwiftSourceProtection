@@ -11,16 +11,17 @@ import SwiftSyntax
 class SPSwiftSourceSymbol {
     var sourceFile: File
     
-    var nodeKind: SPSwiftSourceNodeKind
+    var nodeKind: NodeKind
+    
+    var symbolScope: SymbolScope
     
     var originalSymbolName: String?
     
     var confusedSymbolName: String?
     
-    var ASTNode: SyntaxProtocol?
-    
-    init(sourceFile: File, nodeKind: SPSwiftSourceNodeKind) {
+    init(sourceFile: File, symbolScope: SymbolScope, nodeKind: NodeKind) {
         self.sourceFile = sourceFile
         self.nodeKind = nodeKind
+        self.symbolScope = symbolScope
     }
 }

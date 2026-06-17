@@ -44,16 +44,16 @@ class ConfuseHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
-            if funcSymbol.variableKind == .global ||
-                funcSymbol.variableKind == .local ||
+            if funcSymbol.symbolScope == .global ||
+                funcSymbol.symbolScope == .local ||
                 funcSymbol.isStaticSymbol ||
                 funcSymbol.accessLevel == .private {
                 return true
             }
         } else if symbol.nodeKind == .variable,
                   let varSymbol: SPSwiftSourceVariableSymbol = symbol as? SPSwiftSourceVariableSymbol {
-            if varSymbol.variableKind == .global ||
-                varSymbol.variableKind == .local ||
+            if varSymbol.symbolScope == .global ||
+                varSymbol.symbolScope == .local ||
                 varSymbol.isStaticSymbol ||
                 varSymbol.accessLevel == .private {
                 return true

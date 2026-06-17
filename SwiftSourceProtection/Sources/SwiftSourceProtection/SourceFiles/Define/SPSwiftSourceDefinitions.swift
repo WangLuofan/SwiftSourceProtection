@@ -5,7 +5,7 @@
 //  Created by 王落凡 on 2026/6/8.
 //
 
-enum SPSwiftSourceAccessLevel {
+enum AccessLevel {
     case `open`
     case `public`
     case `package`
@@ -14,7 +14,7 @@ enum SPSwiftSourceAccessLevel {
     case `private`
 }
 
-enum SPSwiftSourceNodeKind {
+enum NodeKind {
     case `class`
     case `protocol`
     case `struct`
@@ -25,7 +25,7 @@ enum SPSwiftSourceNodeKind {
     case enumCase
 }
 
-enum SPSwiftSourceVariableKind {
+enum SymbolScope {
     case member
     case global
     case local

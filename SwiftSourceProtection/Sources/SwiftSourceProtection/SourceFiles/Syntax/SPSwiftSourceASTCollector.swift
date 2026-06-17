@@ -10,6 +10,10 @@ import SwiftSyntax
 class SPSwiftSourceASTCollector: SyntaxVisitor {
     private var sourceTree: SourceFileSyntax
     private var sourceFile: File
+    private var topScope: SPSwiftSourceScope = SPSwiftSourceScope()
+    private lazy var currentScope: SPSwiftSourceScope = self.topScope
+    
+    private var parentStack: [SPSwiftSourceClassSymbol] = []
     
     init(sourceTree: SourceFileSyntax, sourceFile: File) {
         self.sourceTree = sourceTree
@@ -19,35 +23,40 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile)
-        symbol.ASTNode = node
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
         symbol.originalSymbolName = node.name.text
+        
+        if !self.parentStack.isEmpty {
+            self.parentStack.last?.children.append(symbol)
+        }
+        self.parentStack.append(symbol)
         
         ConfuseHelper.confuseSymbol(symbol)
         
-        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope(true)
         
         return super.visit(node)
     }
     
+    override func visitPost(_ node: ClassDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeFirst()
+        }
+        self.currentScope = self.currentScope.popScope(false)
+    }
+    
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ExtensionDeclSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
-    }
-    
-    override func visitPost(_ node: ClassDeclSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
-        symbol.ASTNode = node
-        symbol.variableKind = self.variableKind(of: node)
+        let symbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
         
         node.bindings.forEach { binding in
             if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
@@ -83,66 +92,68 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        ConfuseHelper.confuseSymbol(symbol)
+        if symbol.symbolScope == .local,
+           let originalSymbolName: String = symbol.originalSymbolName {
+            symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(originalSymbolName)
+        } else if symbol.symbolScope == .member {
+            if !self.parentStack.isEmpty {
+                self.parentStack.last?.children.append(symbol)
+            }
+        }
         
-        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClosureExprSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
         
-        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
         paramSymbol.originalSymbolName = node.name.text
         paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.name.text)
-        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        self.currentScope.pushSymbol(paramSymbol)
         
         return super.visit(node)
     }
     
     override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
         
-        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
         paramSymbol.originalSymbolName = node.firstName.text
         paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.firstName.text)
-        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        self.currentScope.pushSymbol(paramSymbol)
         
         return super.visit(node)
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
-        paramSymbol.ASTNode =  node.firstName
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
         paramSymbol.originalSymbolName = node.firstName.text
         if let secondName: TokenSyntax = node.secondName {
             paramSymbol.originalSymbolName = secondName.text
-            paramSymbol.ASTNode = secondName
             paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
         }
-        paramSymbol.variableKind = .local
         
-        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+        self.currentScope.pushSymbol(paramSymbol)
         return super.visit(node)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile, funcName: node.name.text)
+        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile, funcName: node.name.text, symbolScope: node.symbolScope)
         
-        symbol.ASTNode = node
-        symbol.variableKind = self.variableKind(of: node)
         symbol.functionName = node.name.text
         symbol.originalSymbolName = ConfuseHelper.generateFunctionSignature(node)
 
@@ -178,60 +189,63 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        ConfuseHelper.confuseSymbol(symbol)
+        if symbol.symbolScope == .local {
+            ConfuseHelper.confuseSymbol(symbol)
+        } else if symbol.symbolScope == .member {
+            if !self.parentStack.isEmpty {
+                self.parentStack.last?.children.append(symbol)
+            }
+        }
         
-        SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(symbol)
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope(true)
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: FunctionDeclSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         
         if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
-            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
             varSymbol.originalSymbolName = idPattern.identifier.text
-            varSymbol.variableKind = .local
             varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
             
-            SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+            self.currentScope.pushSymbol(varSymbol)
         }
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: ForStmtSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: WhileStmtSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         
         node.conditions.forEach { condition in
             if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
                let _ = optBindCondSyntax.initializer,
                let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
-                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
-                varSymbol.ASTNode = idPattern
+                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
                 varSymbol.originalSymbolName = idPattern.identifier.text
-                varSymbol.variableKind = .local
                 varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
                 
-                SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+                self.currentScope.pushSymbol(varSymbol)
             }
         }
         
@@ -239,34 +253,34 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: IfExprSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: SwitchExprSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: SwitchCaseSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: SwitchDefaultLabelSyntax) -> SyntaxVisitorContinueKind {
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: SwitchDefaultLabelSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
     
     override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
@@ -274,29 +288,28 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             if let condition: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self) {
                 if let _ = condition.initializer,
                    let idPattern: IdentifierPatternSyntax = condition.pattern.as(IdentifierPatternSyntax.self) {
-                    let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
-                    paramSymbol.variableKind = .local
-                    paramSymbol.ASTNode = idPattern
+                    let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
                     paramSymbol.originalSymbolName = idPattern.identifier.text
                     paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
                     
-                    SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(paramSymbol)
+                    self.currentScope.pushSymbol(paramSymbol)
                 }
             }
         }
         
-        SPSwiftSourceScopeManager.sharedManager.pushScope()
+        self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
     
     override func visitPost(_ node: GuardStmtSyntax) {
-        SPSwiftSourceScopeManager.sharedManager.popScope()
+        self.currentScope = self.currentScope.popScope(false)
     }
 }
 
 extension SPSwiftSourceASTCollector {
-    func walk() {
+    func walk() -> SPSwiftSourceScope {
         self.walk(self.sourceTree)
+        return self.topScope
     }
     
     func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray) {
@@ -309,31 +322,5 @@ extension SPSwiftSourceASTCollector {
 //            return
 //        }
         
-    }
-}
-
-extension SPSwiftSourceASTCollector {
-    func variableKind(of node: DeclSyntaxProtocol) -> SPSwiftSourceVariableKind {
-        var current = node.parent
-
-        while let syntax = current {
-
-            if syntax.is(FunctionDeclSyntax.self) ||
-               syntax.is(InitializerDeclSyntax.self) ||
-               syntax.is(ClosureExprSyntax.self) {
-                return .local
-            }
-
-            if syntax.is(StructDeclSyntax.self) ||
-               syntax.is(ClassDeclSyntax.self) ||
-               syntax.is(EnumDeclSyntax.self) ||
-               syntax.is(ActorDeclSyntax.self) {
-                return .member
-            }
-
-            current = syntax.parent
-        }
-
-        return .global
     }
 }

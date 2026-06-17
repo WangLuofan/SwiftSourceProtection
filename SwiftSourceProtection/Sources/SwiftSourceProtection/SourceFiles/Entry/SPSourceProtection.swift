@@ -24,6 +24,7 @@ class SPSourceProtection {
         }
         
         var sourceTrees: [String: SourceFileSyntax] = [:]
+        var fileScopes: [String: SPSwiftSourceScope] = [:]
         
         let logger: Logger = Logger()
         let sourceKit = SourceKit(logger: Logger())
@@ -44,7 +45,9 @@ class SPSourceProtection {
                 sourceTrees[$0.path] = foldedSourceTree ?? sourceTree
                 
                 let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: foldedSourceTree ?? sourceTree, sourceFile: $0)
-                astCollector.walk()
+                let scope: SPSwiftSourceScope = astCollector.walk()
+                
+                fileScopes[$0.path] = scope
                 
                 logger.log("--- Indexing: \($0.name)")
                 astCollector.index(sourceKit, compilerArguments)
@@ -55,11 +58,12 @@ class SPSourceProtection {
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 logger.log("--- Rewriting: \($0.name)")
                 
-                guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path] else {
+                guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path],
+                      let scope: SPSwiftSourceScope = fileScopes[$0.path] else {
                     return
                 }
                 
-                let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(sourceTree: sourceTree, sourceFile: $0)
+                let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(sourceTree: sourceTree, sourceFile: $0, scope: scope)
                 let confusedContent = rewriter.rewrite()
                 
                 try? confusedContent.write(toFile: $0.path, atomically: true, encoding: .utf8)

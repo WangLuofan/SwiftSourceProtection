@@ -12,8 +12,8 @@ class SPSwiftSourceFunctionSymbol: SPSwiftSourceVariableSymbol {
     var functionName: String
     var confusedFunctionName: String?
     
-    init(sourceFile: File, funcName: String) {
+    init(sourceFile: File, funcName: String, symbolScope: SymbolScope) {
         self.functionName = funcName
-        super.init(sourceFile: sourceFile, nodeKind: .function)
+        super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: .function)
     }
 }

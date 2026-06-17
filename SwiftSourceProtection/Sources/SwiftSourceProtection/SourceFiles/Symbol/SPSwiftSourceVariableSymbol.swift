@@ -6,13 +6,11 @@
 //
 
 class SPSwiftSourceVariableSymbol: SPSwiftSourceSymbol {
-    var accessLevel: SPSwiftSourceAccessLevel = .internal
-    
-    var variableKind: SPSwiftSourceVariableKind = .global
+    var accessLevel: AccessLevel = .internal
     
     var isStaticSymbol: Bool = false
     
-    override init(sourceFile: File, nodeKind: SPSwiftSourceNodeKind = .variable) {
-        super.init(sourceFile: sourceFile, nodeKind: nodeKind)
+    override init(sourceFile: File, symbolScope: SymbolScope, nodeKind: NodeKind = .variable) {
+        super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: nodeKind)
     }
 }

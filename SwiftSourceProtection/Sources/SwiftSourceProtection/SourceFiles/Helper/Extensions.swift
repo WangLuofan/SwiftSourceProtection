@@ -5,6 +5,8 @@
 //  Created by 王落凡 on 2026/6/8.
 //
 
+import SwiftSyntax
+
 extension String {
     var isSwiftKeyWord: Bool {
         let swiftKeywords = [
@@ -154,5 +156,31 @@ extension String {
         ]
         
         return swiftKeywords.contains(self)
+    }
+}
+
+extension DeclSyntaxProtocol {
+    var symbolScope: SymbolScope {
+        var current = self.parent
+
+        while let syntax = current {
+
+            if syntax.is(FunctionDeclSyntax.self) ||
+               syntax.is(InitializerDeclSyntax.self) ||
+               syntax.is(ClosureExprSyntax.self) {
+                return .local
+            }
+
+            if syntax.is(StructDeclSyntax.self) ||
+               syntax.is(ClassDeclSyntax.self) ||
+               syntax.is(EnumDeclSyntax.self) ||
+               syntax.is(ActorDeclSyntax.self) {
+                return .member
+            }
+
+            current = syntax.parent
+        }
+
+        return .global
     }
 }

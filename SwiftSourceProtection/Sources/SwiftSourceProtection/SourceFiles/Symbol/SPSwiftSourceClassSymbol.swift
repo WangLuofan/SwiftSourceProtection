@@ -6,7 +6,9 @@
 //
 
 class SPSwiftSourceClassSymbol: SPSwiftSourceSymbol {
-    init(sourceFile: File) {
-        super.init(sourceFile: sourceFile, nodeKind: .class)
+    var children: [SPSwiftSourceSymbol] = []
+    
+    init(sourceFile: File, symbolScope: SymbolScope) {
+        super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: .class)
     }
 }
