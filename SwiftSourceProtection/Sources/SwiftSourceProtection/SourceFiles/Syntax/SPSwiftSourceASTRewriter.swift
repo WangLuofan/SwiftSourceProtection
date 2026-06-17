@@ -223,7 +223,30 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
         SPSwiftSourceScopeManager.sharedManager.pushScope(false)
-        return super.visit(node)
+        
+        var confusedConditions: [ConditionElementSyntax] = []
+        node.conditions.forEach { condition in
+            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
+               let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self),
+               let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceScopeManager.sharedManager.findSymbolWithSymbolName(idPattern.identifier.text) as? SPSwiftSourceVariableSymbol,
+               let confusedSymbolName = varSymbol.confusedSymbolName {
+                confusedConditions.append(condition
+                    .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
+                        .with(\.pattern, PatternSyntax(idPattern
+                            .with(\.identifier, .identifier(confusedSymbolName, leadingTrivia: idPattern.identifier.leadingTrivia, trailingTrivia: idPattern.identifier.trailingTrivia))
+                        ))
+                    ))
+                )
+            } else {
+                confusedConditions.append(condition)
+            }
+        }
+        
+        let newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConditions)
+            .with(\.leadingTrivia, node.conditions.leadingTrivia)
+            .with(\.trailingTrivia, node.conditions.trailingTrivia)
+        )
+        return super.visit(newNode)
     }
     
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {

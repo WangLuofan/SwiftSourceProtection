@@ -220,6 +220,21 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
         SPSwiftSourceScopeManager.sharedManager.pushScope()
+        
+        node.conditions.forEach { condition in
+            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
+               let _ = optBindCondSyntax.initializer,
+               let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile)
+                varSymbol.ASTNode = idPattern
+                varSymbol.originalSymbolName = idPattern.identifier.text
+                varSymbol.variableKind = .local
+                varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
+                
+                SPSwiftSourceScopeManager.sharedManager.currentScope?.pushSymbol(varSymbol)
+            }
+        }
+        
         return super.visit(node)
     }
     
