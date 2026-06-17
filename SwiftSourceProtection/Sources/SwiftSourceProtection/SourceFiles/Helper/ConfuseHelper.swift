@@ -114,17 +114,12 @@ class ConfuseHelper {
         return originalSymbolName
     }
     
-    static func generateFunctionSignature(_ node: FunctionDeclSyntax) -> String {
-        var sigComps: [String] = [node.name.text]
-        node.signature.parameterClause.parameters.forEach { parameter in
+    static func generateSignature(funcName: String, parameters: FunctionParameterListSyntax) -> String {
+        var sigComps: [String] = [funcName]
+        parameters.forEach { parameter in
             sigComps.append(parameter.firstName.text)
         }
         
-        return sigComps.joined(separator: "_")
-    }
-    
-    static func generateFunctionSignature(_ symbol: SPSwiftSourceFunctionSymbol) -> String {
-        let sigComps: [String] = [symbol.functionName] + symbol.labels
         return sigComps.joined(separator: "_")
     }
 }

@@ -14,7 +14,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var topScope: SPSwiftSourceScope
     private var currentScope: SPSwiftSourceScope
     
-    private var currentFunction: FunctionDeclSyntax?
+    private var currentFunction: DeclSyntaxProtocol?
     
     init(sourceTree: SourceFileSyntax, sourceFile: File, scope: SPSwiftSourceScope) {
         self.sourceTree = sourceTree
@@ -106,17 +106,26 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
         var newNode = node
         
+        var parameters: FunctionParameterListSyntax?
         if let funcDecl: FunctionDeclSyntax = self.nodeParent(node) {
-            for (_, parameter) in funcDecl.signature.parameterClause.parameters.enumerated() {
-                if parameter != node {
-                    continue
-                }
-                
-                if let secondName = node.secondName,
-                   let paramSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
-                   let confusedSymbolName = paramSymbol.confusedSymbolName {
-                    newNode = newNode.with(\.secondName, .identifier(confusedSymbolName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
-                }
+            parameters = funcDecl.signature.parameterClause.parameters
+        } else if let initDecl: InitializerDeclSyntax = self.nodeParent(node) {
+            parameters = initDecl.signature.parameterClause.parameters
+        }
+        
+        guard let parameters, !parameters.isEmpty else {
+            return super.visit(newNode)
+        }
+        
+        for (_, parameter) in parameters.enumerated() {
+            if parameter != node {
+                continue
+            }
+            
+            if let secondName = node.secondName,
+               let paramSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
+               let confusedSymbolName = paramSymbol.confusedSymbolName {
+                newNode = newNode.with(\.secondName, .identifier(confusedSymbolName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
             }
         }
         
@@ -139,6 +148,12 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        self.currentFunction = node
+        self.currentScope = self.currentScope.pushScope(false)
+        return super.visit(node)
+    }
+    
     override func visit(_ node: ClosureParameterSyntax) -> ClosureParameterSyntax {
         var newNode = node
         
@@ -152,7 +167,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
-        let sig: String = ConfuseHelper.generateFunctionSignature(node)
+        let sig: String = ConfuseHelper.generateSignature(funcName: node.name.text, parameters: node.signature.parameterClause.parameters)
         
         if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(sig) as? SPSwiftSourceFunctionSymbol,
            let confusedFunctionName: String = funcSymbol.confusedFunctionName {
@@ -297,7 +312,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             fallthrough
         case .classDecl, .variableDecl, .whileStmt, .forStmt,
                 .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
-                .switchDefaultLabel, .guardStmt:
+                .switchDefaultLabel, .guardStmt, .initializerDecl:
             self.currentScope = self.currentScope.popScope(true)
         default:
             break
