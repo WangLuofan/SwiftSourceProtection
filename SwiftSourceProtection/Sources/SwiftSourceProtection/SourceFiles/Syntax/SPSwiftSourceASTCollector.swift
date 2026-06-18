@@ -74,11 +74,11 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
-        
-        node.bindings.forEach { binding in
-            if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
-                symbol.originalSymbolName = idPatternSyntax.identifier.text
+        let symbols: [SPSwiftSourceVariableSymbol] = node.bindings.flatMap {
+            self.extractPatternNames($0.pattern).map {
+                let symbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                symbol.originalSymbolName = $0
+                return symbol
             }
         }
         
@@ -88,19 +88,19 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 case .keyword(let keyword):
                     switch keyword {
                     case .static:
-                        symbol.isStaticSymbol = true
+                        symbols.forEach { $0.isStaticSymbol = true }
                     case .open:
-                        symbol.accessLevel = .open
+                        symbols.forEach { $0.accessLevel = .open }
                     case .public:
-                        symbol.accessLevel = .public
+                        symbols.forEach { $0.accessLevel = .public }
                     case .package:
-                        symbol.accessLevel = .package
+                        symbols.forEach { $0.accessLevel = .package }
                     case .internal:
-                        symbol.accessLevel = .internal
+                        symbols.forEach { $0.accessLevel = .internal }
                     case .fileprivate:
-                        symbol.accessLevel = .fileprivate
+                        symbols.forEach { $0.accessLevel = .fileprivate }
                     case .private:
-                        symbol.accessLevel = .private
+                        symbols.forEach { $0.accessLevel = .private }
                     default:
                         break
                     }
@@ -110,16 +110,19 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        if symbol.symbolScope == .local,
-           let originalSymbolName: String = symbol.originalSymbolName {
-            symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(originalSymbolName)
-        } else if symbol.symbolScope == .member {
-            if !self.parentStack.isEmpty {
-                self.parentStack.last?.children.append(symbol)
+        symbols.forEach {
+            if $0.symbolScope == .local,
+               let originalSymbolName: String = $0.originalSymbolName {
+                $0.confusedSymbolName = ConfuseHelper.confusedSymbolName(originalSymbolName)
+            } else if $0.symbolScope == .member {
+                if !self.parentStack.isEmpty {
+                    self.parentStack.last?.children.append($0)
+                }
             }
+            
+            self.currentScope.pushSymbol($0)
         }
         
-        self.currentScope.pushSymbol(symbol)
         self.currentScope = self.currentScope.pushScope(true)
         return super.visit(node)
     }
@@ -326,6 +329,16 @@ extension SPSwiftSourceASTCollector {
     func walk() -> SPSwiftSourceScope {
         self.walk(self.sourceTree)
         return self.topScope
+    }
+    
+    func extractPatternNames(_ pattern: PatternSyntax) -> [String] {
+        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
+            return [idPatternSyntax.identifier.text]
+        } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
+            return tupPatternSyntax.elements.flatMap { extractPatternNames($0.pattern) }
+        }
+        
+        return []
     }
     
     func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray) {

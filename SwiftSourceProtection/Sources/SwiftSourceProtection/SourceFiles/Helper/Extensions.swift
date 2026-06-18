@@ -159,7 +159,20 @@ extension String {
     }
 }
 
-extension DeclSyntaxProtocol {
+extension SyntaxProtocol {
+    func getParentNode<T: SyntaxProtocol>() -> T? {
+        var current = self.parent
+        while current != nil {
+            if let node: T = current?.as(T.self) {
+                return node
+            }
+            
+            current = current?.parent
+        }
+        
+        return nil
+    }
+    
     var symbolScope: SymbolScope {
         var current = self.parent
 
