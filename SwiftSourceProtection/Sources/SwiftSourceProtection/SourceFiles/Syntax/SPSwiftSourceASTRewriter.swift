@@ -45,43 +45,17 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        var variableName: String = ""
+        var newBindings: [PatternBindingSyntax] = []
         node.bindings.forEach { binding in
-            if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
-                variableName = idPatternSyntax.identifier.text
+            if let confusedPattern: PatternSyntax = self.confuseNodePattern(binding.pattern) {
+                newBindings.append(binding.with(\.pattern, confusedPattern))
             }
         }
         
-        if let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(variableName) as? SPSwiftSourceVariableSymbol {
-            var newBindings: [PatternBindingSyntax] = []
-            node.bindings.forEach { binding in
-                
-                var newBinding = binding
-                if let idPatternSyntax: IdentifierPatternSyntax = binding.pattern.as(IdentifierPatternSyntax.self) {
-                    guard let confusedSymbolName: String = varSymbol.confusedSymbolName else {
-                        newBindings.append(binding)
-                        return
-                    }
-                    
-                    let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
-                        .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
-                        .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
-                    )
-                    
-                    newBinding = newBinding.with(\.pattern, PatternSyntax(newPattern)
-                        .with(\.leadingTrivia, binding.pattern.leadingTrivia)
-                        .with(\.trailingTrivia, binding.pattern.trailingTrivia)
-                    )
-                }
-                
-                newBindings.append(newBinding)
-            }
-            
-            newNode = newNode.with(\.bindings, PatternBindingListSyntax(newBindings)
-                .with(\.leadingTrivia, node.bindings.leadingTrivia)
-                .with(\.trailingTrivia, node.bindings.trailingTrivia)
-            )
-        }
+        newNode = newNode.with(\.bindings, PatternBindingListSyntax(newBindings)
+            .with(\.leadingTrivia, node.bindings.leadingTrivia)
+            .with(\.trailingTrivia, node.bindings.trailingTrivia)
+        )
         
         self.currentScope = self.currentScope.pushScope(false)
         return super.visit(newNode)
@@ -324,6 +298,33 @@ extension SPSwiftSourceASTRewriter {
     func rewrite() -> String {
         let rewritten = self.visit(self.sourceTree)
         return rewritten.description
+    }
+    
+    private func confuseNodePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
+        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
+            guard let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPatternSyntax.identifier.text) as? SPSwiftSourceVariableSymbol,
+                  let confusedSymbolName = varSymbol.confusedSymbolName else {
+                return PatternSyntax(idPatternSyntax)
+            }
+            
+            let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
+                .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
+                .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
+            )
+            return PatternSyntax(newPattern)
+        } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
+            let confusedTupPatternSyntaxElems: [TuplePatternElementSyntax] = tupPatternSyntax.elements.compactMap {
+                guard let pattern: PatternSyntax = self.confuseNodePattern($0.pattern) else {
+                    return $0
+                }
+                
+                return $0.with(\.pattern, PatternSyntax(pattern))
+            }
+            
+            return PatternSyntax(tupPatternSyntax.with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)))
+        }
+        
+        return nil
     }
     
     private func nodeParent<T: SyntaxProtocol>(_ node: SyntaxProtocol) -> T? {

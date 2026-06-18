@@ -331,7 +331,7 @@ extension SPSwiftSourceASTCollector {
         return self.topScope
     }
     
-    func extractPatternNames(_ pattern: PatternSyntax) -> [String] {
+    private func extractPatternNames(_ pattern: PatternSyntax) -> [String] {
         if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
             return [idPatternSyntax.identifier.text]
         } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
