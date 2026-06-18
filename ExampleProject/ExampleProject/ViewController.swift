@@ -63,6 +63,10 @@ class TestA {
         self.n = s
     }
     
+    init(_ s: Int) {
+        self.n = s
+    }
+    
     var c: (u: Int, v: Int) {
         return (3, 4)
     }
