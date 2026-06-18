@@ -166,8 +166,9 @@ extension DeclSyntaxProtocol {
         while let syntax = current {
 
             if syntax.is(FunctionDeclSyntax.self) ||
-               syntax.is(InitializerDeclSyntax.self) ||
-               syntax.is(ClosureExprSyntax.self) {
+                syntax.is(InitializerDeclSyntax.self) ||
+                syntax.is(ClosureExprSyntax.self) ||
+                syntax.is(AccessorBlockSyntax.self) {
                 return .local
             }
 
