@@ -121,6 +121,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             if let paramClause: EnumCaseParameterClauseSyntax = $0.parameterClause {
                 paramClause.parameters.forEach {
                     if let idTypeSyntax: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
+                        symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idTypeSyntax.name.text)
                         symbol.relatedType.append(idTypeSyntax.name.text)
                     }
                 }

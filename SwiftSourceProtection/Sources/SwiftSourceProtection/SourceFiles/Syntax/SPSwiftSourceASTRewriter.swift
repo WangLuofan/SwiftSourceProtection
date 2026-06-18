@@ -66,6 +66,38 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
+    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        if let clsSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
+           let confusedSymbolName = clsSymbol.confusedSymbolName {
+            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia))
+        }
+        
+        self.currentScope = self.currentScope.pushScope(false)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var confusedElems: [EnumCaseElementSyntax] = []
+        node.elements.forEach {
+            if let symbol: SPSwiftSourceEnumCaseSymbol = self.currentScope.findSymbolWithSymbolName($0.name.text) as? SPSwiftSourceEnumCaseSymbol,
+               let confusedSymbolName: String = symbol.confusedSymbolName {
+                confusedElems.append($0.with(\.name, .identifier(confusedSymbolName, leadingTrivia: $0.name.leadingTrivia, trailingTrivia: $0.name.trailingTrivia)))
+            } else {
+                confusedElems.append($0)
+            }
+        }
+        
+        newNode = newNode.with(\.elements, EnumCaseElementListSyntax(confusedElems)
+            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
+            .with(\.trailingTrivia, newNode.elements.trailingTrivia)
+        )
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         var newNode = node
         
