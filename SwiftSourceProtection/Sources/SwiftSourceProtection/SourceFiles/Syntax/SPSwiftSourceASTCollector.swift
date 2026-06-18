@@ -423,6 +423,8 @@ extension SPSwiftSourceASTCollector {
             return [idPatternSyntax.identifier.text]
         } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
             return tupPatternSyntax.elements.flatMap { extractPatternNames($0.pattern) }
+        } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
+            
         }
         
         return []
