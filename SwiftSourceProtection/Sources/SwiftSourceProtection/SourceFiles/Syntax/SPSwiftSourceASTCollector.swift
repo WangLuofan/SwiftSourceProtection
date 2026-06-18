@@ -41,8 +41,59 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visitPost(_ node: ClassDeclSyntax) {
         if !self.parentStack.isEmpty {
-            self.parentStack.removeFirst()
+            self.parentStack.removeLast()
         }
+        
+        self.currentScope = self.currentScope.popScope(false)
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        symbol.originalSymbolName = node.name.text
+        
+        if !self.parentStack.isEmpty {
+            self.parentStack.last?.children.append(symbol)
+        }
+        self.parentStack.append(symbol)
+        
+        ConfuseHelper.confuseSymbol(symbol)
+        
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope(true)
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: StructDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
+        self.currentScope = self.currentScope.popScope(false)
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        symbol.originalSymbolName = node.name.text
+        
+        if !self.parentStack.isEmpty {
+            self.parentStack.last?.children.append(symbol)
+        }
+        self.parentStack.append(symbol)
+        
+        ConfuseHelper.confuseSymbol(symbol)
+        
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope(true)
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: ProtocolDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
         self.currentScope = self.currentScope.popScope(false)
     }
     

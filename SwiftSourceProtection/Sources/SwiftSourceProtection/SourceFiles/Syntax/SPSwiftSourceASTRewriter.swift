@@ -37,6 +37,30 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        if let classSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
+              let confusedSymbolName: String = classSymbol.confusedSymbolName {
+            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia)
+            )
+        }
+        
+        self.currentScope = self.currentScope.pushScope(false)
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        if let classSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
+              let confusedSymbolName: String = classSymbol.confusedSymbolName {
+            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia)
+            )
+        }
+        
+        self.currentScope = self.currentScope.pushScope(false)
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         self.currentScope = self.currentScope.pushScope(false)
         return super.visit(node)
@@ -174,18 +198,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-        var newNode = node
-        
-        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
-           let confusedSymbolName = baseSymbol.confusedSymbolName {
-            newNode = newNode.with(\.baseName,
-                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
-            )
-        }
-        
-        return super.visit(newNode)
-    }
+//    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+//        var newNode = node
+//        
+//        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
+//           let confusedSymbolName = baseSymbol.confusedSymbolName {
+//            newNode = newNode.with(\.baseName,
+//                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
+//            )
+//        }
+//        
+//        return super.visit(newNode)
+//    }
     
     override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
         var newNode = node
@@ -286,7 +310,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             fallthrough
         case .classDecl, .variableDecl, .whileStmt, .forStmt,
                 .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
-                .switchDefaultLabel, .guardStmt, .initializerDecl:
+                .switchDefaultLabel, .guardStmt, .initializerDecl, .structDecl, .protocolDecl:
             self.currentScope = self.currentScope.popScope(true)
         default:
             break
