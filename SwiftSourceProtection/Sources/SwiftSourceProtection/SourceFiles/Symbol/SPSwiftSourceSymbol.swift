@@ -15,7 +15,7 @@ class SPSwiftSourceSymbol {
     
     var symbolScope: SymbolScope
     
-    var originalSymbolName: String?
+    var originalSymbolName: String = ""
     
     var confusedSymbolName: String?
     

@@ -47,11 +47,11 @@ class SPSwiftSourceScope {
     }
     
     func pushSymbol(_ symbol: SPSwiftSourceSymbol) {
-        guard let originalSymbolName: String = symbol.originalSymbolName else {
+        guard !symbol.originalSymbolName.isEmpty  else {
             return
         }
         
-        self.symbols[originalSymbolName] = symbol
+        self.symbols[symbol.originalSymbolName] = symbol
     }
     
     func findSymbolWithSymbolName(_ symbolName: String) -> SPSwiftSourceSymbol? {

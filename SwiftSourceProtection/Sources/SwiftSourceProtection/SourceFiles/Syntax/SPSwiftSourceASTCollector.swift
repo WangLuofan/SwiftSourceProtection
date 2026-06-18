@@ -162,9 +162,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         }
         
         symbols.forEach {
-            if $0.symbolScope == .local,
-               let originalSymbolName: String = $0.originalSymbolName {
-                $0.confusedSymbolName = ConfuseHelper.confusedSymbolName(originalSymbolName)
+            if $0.symbolScope == .local {
+                $0.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.originalSymbolName)
             } else if $0.symbolScope == .member {
                 if !self.parentStack.isEmpty {
                     self.parentStack.last?.children.append($0)

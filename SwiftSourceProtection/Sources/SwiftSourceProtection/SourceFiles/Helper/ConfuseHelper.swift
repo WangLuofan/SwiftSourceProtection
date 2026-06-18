@@ -13,7 +13,7 @@ class ConfuseHelper {
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
     
     static func confuseSymbol(_ symbol: SPSwiftSourceSymbol) {
-        guard let originalSymbolName: String = symbol.originalSymbolName,
+        guard !symbol.originalSymbolName.isEmpty,
               self.shouldConfuseSymbol(symbol) else {
             return
         }
@@ -25,14 +25,13 @@ class ConfuseHelper {
                 (symbol as? SPSwiftSourceFunctionSymbol)?.confusedLabels.append(self.confusedSymbolName(label))
             }
         } else {
-            symbol.confusedSymbolName = self.confusedSymbolName(originalSymbolName)
+            symbol.confusedSymbolName = self.confusedSymbolName(symbol.originalSymbolName)
         }
         
     }
     
     private static func shouldConfuseSymbol(_ symbol: SPSwiftSourceSymbol) -> Bool {
-        guard let originalSymbolName: String = symbol.originalSymbolName,
-              !originalSymbolName.isEmpty else {
+        guard !symbol.originalSymbolName.isEmpty else {
             return false
         }
         
