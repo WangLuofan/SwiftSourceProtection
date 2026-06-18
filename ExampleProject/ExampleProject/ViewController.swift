@@ -68,6 +68,17 @@ class TestA {
     }
     
     func testFunc(num1: Int, num2: Int) -> Int {
+        let a: TestEnum = .first
+        
+        switch a {
+        case .first:
+            let b = 0
+        case .second(let u):
+            let c = u.c
+        case .third:
+            let t = 0
+        }
+        
         return self.testFunc(num1, num2: num2)
     }
     
