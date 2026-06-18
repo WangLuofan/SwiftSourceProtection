@@ -198,18 +198,19 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-//    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-//        var newNode = node
-//        
-//        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
-//           let confusedSymbolName = baseSymbol.confusedSymbolName {
-//            newNode = newNode.with(\.baseName,
-//                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
+    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
+        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
+           baseSymbol.symbolScope == .local,
+           let confusedSymbolName = baseSymbol.confusedSymbolName {
+            newNode = newNode.with(\.baseName,
+                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
     
     override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
         var newNode = node
@@ -308,7 +309,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         case .functionDecl:
             self.currentFunction = nil
             fallthrough
-        case .classDecl, .variableDecl, .whileStmt, .forStmt,
+        case .classDecl, .variableDecl, .whileStmt, .forStmt, .enumDecl,
                 .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
                 .switchDefaultLabel, .guardStmt, .initializerDecl, .structDecl, .protocolDecl:
             self.currentScope = self.currentScope.popScope(true)

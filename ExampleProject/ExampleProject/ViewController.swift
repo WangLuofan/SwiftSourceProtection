@@ -8,7 +8,7 @@
 import UIKit
 
 enum TestEnum {
-    case first
+    case first, forth, fifth
     case second(TestA)
     case third
 }
@@ -75,7 +75,7 @@ class TestA {
         let a: TestEnum = .first
         
         switch a {
-        case .first:
+        case .first, .forth, .fifth:
             let b = 0
         case .second(let u):
             let c = u.c

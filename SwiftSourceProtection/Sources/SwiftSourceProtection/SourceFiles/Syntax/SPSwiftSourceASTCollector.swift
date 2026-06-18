@@ -26,9 +26,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
         symbol.originalSymbolName = node.name.text
         
-        if !self.parentStack.isEmpty {
-            self.parentStack.last?.children.append(symbol)
-        }
+        self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
         ConfuseHelper.confuseSymbol(symbol)
@@ -48,12 +46,10 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .struct)
         symbol.originalSymbolName = node.name.text
         
-        if !self.parentStack.isEmpty {
-            self.parentStack.last?.children.append(symbol)
-        }
+        self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
         ConfuseHelper.confuseSymbol(symbol)
@@ -73,12 +69,10 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .protocol)
         symbol.originalSymbolName = node.name.text
         
-        if !self.parentStack.isEmpty {
-            self.parentStack.last?.children.append(symbol)
-        }
+        self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
         ConfuseHelper.confuseSymbol(symbol)
@@ -97,14 +91,55 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         self.currentScope = self.currentScope.popScope(false)
     }
     
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .enum)
+        symbol.originalSymbolName = node.name.text
+        
+        self.parentStack.last?.children.append(symbol)
+        self.parentStack.append(symbol)
+        
+        ConfuseHelper.confuseSymbol(symbol)
+        
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope(true)
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: EnumDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
+        self.currentScope = self.currentScope.popScope(false)
+    }
+    
+    override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
+        node.elements.forEach {
+            let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+            symbol.originalSymbolName = $0.name.text
+            
+            if let paramClause: EnumCaseParameterClauseSyntax = $0.parameterClause {
+                paramClause.parameters.forEach {
+                    if let idTypeSyntax: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
+                        symbol.relatedType.append(idTypeSyntax.name.text)
+                    }
+                }
+            }
+            
+            self.currentScope.pushSymbol(symbol)
+            
+            self.parentStack.last?.children.append(symbol)
+        }
+        
+        return super.visit(node)
+    }
+    
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile, funcName: node.initKeyword.text, symbolScope: node.symbolScope)
         
         symbol.originalSymbolName = ConfuseHelper.generateSignature(funcName: node.initKeyword.text, parameters: node.signature.parameterClause.parameters)
         
-        if !self.parentStack.isEmpty {
-            self.parentStack.last?.children.append(symbol)
-        }
+        self.parentStack.last?.children.append(symbol)
         
         self.currentScope.pushSymbol(symbol)
         self.currentScope = self.currentScope.pushScope(true)
@@ -165,9 +200,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             if $0.symbolScope == .local {
                 $0.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.originalSymbolName)
             } else if $0.symbolScope == .member {
-                if !self.parentStack.isEmpty {
-                    self.parentStack.last?.children.append($0)
-                }
+                self.parentStack.last?.children.append($0)
             }
             
             self.currentScope.pushSymbol($0)
@@ -261,9 +294,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         if symbol.symbolScope == .local {
             ConfuseHelper.confuseSymbol(symbol)
         } else if symbol.symbolScope == .member {
-            if !self.parentStack.isEmpty {
-                self.parentStack.last?.children.append(symbol)
-            }
+            self.parentStack.last?.children.append(symbol)
         }
         
         self.currentScope.pushSymbol(symbol)
@@ -341,6 +372,10 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visitPost(_ node: SwitchCaseSyntax) {
         self.currentScope = self.currentScope.popScope(false)
+    }
+    
+    override func visit(_ node: SwitchCaseItemSyntax) -> SyntaxVisitorContinueKind {
+        return super.visit(node)
     }
     
     override func visit(_ node: SwitchDefaultLabelSyntax) -> SyntaxVisitorContinueKind {

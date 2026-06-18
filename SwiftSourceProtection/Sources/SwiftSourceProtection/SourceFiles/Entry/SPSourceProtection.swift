@@ -40,11 +40,11 @@ class SPSourceProtection {
                 
                 logger.log("--- Collecting: \($0.name)")
                 let sourceTree: SourceFileSyntax = Parser.parse(source: sourceCode)
-                let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
+//                let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
                 
-                sourceTrees[$0.path] = foldedSourceTree ?? sourceTree
+                sourceTrees[$0.path] = sourceTree
                 
-                let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: foldedSourceTree ?? sourceTree, sourceFile: $0)
+                let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: sourceTree, sourceFile: $0)
                 let scope: SPSwiftSourceScope = astCollector.walk()
                 
                 fileScopes[$0.path] = scope
