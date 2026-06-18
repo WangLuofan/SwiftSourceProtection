@@ -164,21 +164,15 @@ extension DeclSyntaxProtocol {
         var current = self.parent
 
         while let syntax = current {
-
-            if syntax.is(FunctionDeclSyntax.self) ||
-                syntax.is(InitializerDeclSyntax.self) ||
-                syntax.is(ClosureExprSyntax.self) ||
-                syntax.is(AccessorBlockSyntax.self) {
+            switch syntax.kind {
+            case .functionDecl, .initializerDecl, .closureExpr, .accessorBlock:
                 return .local
-            }
-
-            if syntax.is(StructDeclSyntax.self) ||
-               syntax.is(ClassDeclSyntax.self) ||
-               syntax.is(EnumDeclSyntax.self) ||
-               syntax.is(ActorDeclSyntax.self) {
+            case .structDecl, .classDecl, .enumDecl, .actorDecl, .extensionDecl, .protocolDecl:
                 return .member
+            default:
+                break
             }
-
+            
             current = syntax.parent
         }
 
