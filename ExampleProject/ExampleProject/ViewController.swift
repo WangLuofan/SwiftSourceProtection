@@ -16,6 +16,8 @@ enum TestEnum {
 class ViewController: UIViewController {
     
     var u: Int {
+        let (a, (s, (c, d))) = (3, (4, (5, 6)))
+        
         let i: Int = 3
         let b: Int = 4
         
