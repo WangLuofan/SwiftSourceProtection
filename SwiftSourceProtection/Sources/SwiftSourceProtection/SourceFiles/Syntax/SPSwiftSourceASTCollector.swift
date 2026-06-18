@@ -116,12 +116,13 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
         node.elements.forEach {
             let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
-            symbol.originalSymbolName = $0.name.text
             
+            symbol.originalSymbolName = $0.name.text
+            symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.name.text)
+
             if let paramClause: EnumCaseParameterClauseSyntax = $0.parameterClause {
                 paramClause.parameters.forEach {
                     if let idTypeSyntax: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
-                        symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idTypeSyntax.name.text)
                         symbol.relatedType.append(idTypeSyntax.name.text)
                     }
                 }
