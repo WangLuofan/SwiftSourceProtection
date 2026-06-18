@@ -14,6 +14,13 @@ enum TestEnum {
 }
 
 class ViewController: UIViewController {
+    
+    var u: Int {
+        let i: Int = 3
+        let b: Int = 4
+        
+        return i + b
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +40,8 @@ class ViewController: UIViewController {
         
         let c: (u: Int, v: Int)
         let d: TestA? = TestA(s: 3)
+        
+        let (k, t) = (3, 4.5)
         
         if let e: Int = d?.testFunc(num1: 3, num2: 4) {
             print(e)
