@@ -211,7 +211,27 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
         self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(node)
+        
+        var newNode = node
+        var confusedConds: [ConditionElementSyntax] = []
+        
+        node.conditions.forEach {
+            if let optBindCondSyntax: OptionalBindingConditionSyntax = $0.condition.as(OptionalBindingConditionSyntax.self),
+               let confusedPattern = self.confuseNodePattern(optBindCondSyntax.pattern) {
+                confusedConds.append($0.with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
+                    .with(\.pattern, confusedPattern))
+                ))
+            } else {
+                confusedConds.append($0)
+            }
+        }
+        
+        newNode = newNode.with(\.conditions, ConditionElementListSyntax(confusedConds)
+            .with(\.leadingTrivia, newNode.conditions.leadingTrivia)
+            .with(\.trailingTrivia, newNode.conditions.trailingTrivia)
+        )
+        
+        return super.visit(newNode)
     }
     
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
