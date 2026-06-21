@@ -302,6 +302,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
+    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+        var newNode = node
+        if let confusedPattern = self.confuseNodePattern(node.pattern) {
+            newNode = newNode.with(\.pattern, confusedPattern
+                .with(\.leadingTrivia, node.pattern.leadingTrivia)
+                .with(\.trailingTrivia, node.pattern.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
         var newNode = node
         var confusedConditions: [ConditionElementSyntax] = []
@@ -368,6 +380,7 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
                 .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
             )
+            
             return PatternSyntax(newPattern)
         } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
             let confusedTupPatternSyntaxElems: [TuplePatternElementSyntax] = tupPatternSyntax.elements.compactMap {
@@ -375,13 +388,78 @@ extension SPSwiftSourceASTRewriter {
                     return $0
                 }
                 
-                return $0.with(\.pattern, PatternSyntax(pattern))
+                return $0.with(\.pattern, PatternSyntax(pattern)
+                    .with(\.leadingTrivia, $0.pattern.leadingTrivia)
+                    .with(\.trailingTrivia, $0.pattern.trailingTrivia)
+                )
             }
             
-            return PatternSyntax(tupPatternSyntax.with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)))
+            return PatternSyntax(tupPatternSyntax
+                .with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)
+                    .with(\.leadingTrivia, tupPatternSyntax.elements.leadingTrivia)
+                    .with(\.trailingTrivia, tupPatternSyntax.elements.trailingTrivia)
+                )
+            )
+        } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
+            guard let confusedExprPattern: ExprSyntax = self.confuseExpression(exprPatternSyntax.expression) else {
+                return pattern
+            }
+            
+            return PatternSyntax(exprPatternSyntax
+                .with(\.expression, confusedExprPattern
+                    .with(\.leadingTrivia, exprPatternSyntax.leadingTrivia)
+                    .with(\.trailingTrivia, exprPatternSyntax.trailingTrivia)
+                )
+            )
+        } else if let valBindPatternSyntax: ValueBindingPatternSyntax = pattern.as(ValueBindingPatternSyntax.self) {
+            guard let confusedPattern = self.confuseNodePattern(valBindPatternSyntax.pattern) else {
+                return pattern
+            }
+            
+            return PatternSyntax(valBindPatternSyntax
+                .with(\.pattern, confusedPattern
+                    .with(\.leadingTrivia, valBindPatternSyntax.pattern.leadingTrivia)
+                    .with(\.trailingTrivia, valBindPatternSyntax.pattern.trailingTrivia)
+                )
+            )
         }
         
-        return nil
+        return pattern
+    }
+    
+    private func confuseExpression(_ fromExpr: ExprSyntax) -> ExprSyntax? {
+        if let patternSyntax: PatternExprSyntax = fromExpr.as(PatternExprSyntax.self) {
+            guard let confusedPattern = self.confuseNodePattern(patternSyntax.pattern) else {
+                return fromExpr
+            }
+            
+            return ExprSyntax(patternSyntax.with(\.pattern, confusedPattern
+                .with(\.leadingTrivia, patternSyntax.pattern.leadingTrivia)
+                .with(\.trailingTrivia, patternSyntax.pattern.trailingTrivia)
+            ))
+        } else if let exprSyntax: FunctionCallExprSyntax = fromExpr.as(FunctionCallExprSyntax.self) {
+            guard let confusedArguments: [LabeledExprSyntax] = exprSyntax.arguments.flatMap({
+                guard let confusedPattern = self.confuseExpression($0.expression) else {
+                    return $0
+                }
+                
+                return $0.with(\.expression, confusedPattern
+                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
+                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
+                )
+            }) as? [LabeledExprSyntax] else {
+                return fromExpr
+            }
+            
+            return ExprSyntax(exprSyntax
+                .with(\.arguments, LabeledExprListSyntax(confusedArguments)
+                    .with(\.leadingTrivia, exprSyntax.arguments.leadingTrivia)
+                    .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
+                )
+            )
+        }
+        
+        return fromExpr
     }
     
     private func nodeParent<T: SyntaxProtocol>(_ node: SyntaxProtocol) -> T? {

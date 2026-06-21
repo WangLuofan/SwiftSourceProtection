@@ -377,6 +377,13 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: SwitchCaseItemSyntax) -> SyntaxVisitorContinueKind {
+        let symbols: [String] = self.extractPatternNames(node.pattern)
+        symbols.forEach {
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+            varSymbol.originalSymbolName = $0
+            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+            self.currentScope.pushSymbol(varSymbol)
+        }
         return super.visit(node)
     }
     
@@ -423,10 +430,25 @@ extension SPSwiftSourceASTCollector {
             return [idPatternSyntax.identifier.text]
         } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
             return tupPatternSyntax.elements.flatMap { extractPatternNames($0.pattern) }
+        } else if let valueBindingPatternSyntax: ValueBindingPatternSyntax = pattern.as(ValueBindingPatternSyntax.self) {
+            return extractPatternNames(valueBindingPatternSyntax.pattern)
         } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
-            
+            return extractPatternNames(fromExpr: exprPatternSyntax.expression)
         }
-        
+
+        return []
+    }
+
+    private func extractPatternNames(fromExpr expr: ExprSyntax) -> [String] {
+        if let patternExprSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
+            return extractPatternNames(patternExprSyntax.pattern)
+        } else if let functionCallExprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
+            return functionCallExprSyntax.arguments.flatMap { extractPatternNames(fromExpr: $0.expression) }
+        } else if let tupleExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
+            return tupleExprSyntax.elements.flatMap { extractPatternNames(fromExpr: $0.expression) }
+        }
+
+        // MemberAccessExpr（`.second`）、字面量等没有绑定，忽略
         return []
     }
     
