@@ -331,7 +331,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
         self.currentScope = self.currentScope.pushScope(true)
         
-        var varSymbols: [SPSwiftSourceVariableSymbol] = []
         node.conditions.forEach {
             if let optBindCondSyntax: OptionalBindingConditionSyntax = $0.condition.as(OptionalBindingConditionSyntax.self),
                let _ = optBindCondSyntax.initializer {
@@ -341,12 +340,19 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
-                    varSymbols.append(varSymbol)
+                    self.currentScope.pushSymbol(varSymbol)
+               }
+            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = $0.condition.as(MatchingPatternConditionSyntax.self) {
+                let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
+                symbols.forEach {
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                    varSymbol.originalSymbolName = $0
+                    varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+                    
+                    self.currentScope.pushSymbol(varSymbol)
                 }
             }
         }
-        
-        varSymbols.forEach { self.currentScope.pushSymbol($0) }
         
         return super.visit(node)
     }
@@ -364,6 +370,15 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 let symbols: [String] = self.extractPatternNames(optBindCondSyntax.pattern)
                 symbols.forEach {
                     let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+                    varSymbol.originalSymbolName = $0
+                    varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+                    
+                    self.currentScope.pushSymbol(varSymbol)
+                }
+            }  else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self) {
+                let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
+                symbols.forEach {
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
@@ -429,6 +444,15 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                         
                         self.currentScope.pushSymbol(paramSymbol)
                     }
+                }
+            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self) {
+                let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
+                symbols.forEach {
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                    varSymbol.originalSymbolName = $0
+                    varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+                    
+                    self.currentScope.pushSymbol(varSymbol)
                 }
             }
         }

@@ -221,6 +221,13 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                 confusedConds.append($0.with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
                     .with(\.pattern, confusedPattern))
                 ))
+            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = $0.condition.as(MatchingPatternConditionSyntax.self),
+                      let confusedPattern = self.confuseNodePattern(matchPatternCondSyntax.pattern) {
+                confusedConds.append($0
+                    .with(\.condition, ConditionElementSyntax.Condition(matchPatternCondSyntax
+                        .with(\.pattern, confusedPattern)
+                    ))
+                )
             } else {
                 confusedConds.append($0)
             }
@@ -288,6 +295,15 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                         .with(\.trailingTrivia, optBindCondSyntax.pattern.trailingTrivia)
                     ))
                 )
+            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self),
+                      let confusedPattern = self.confuseNodePattern(matchPatternCondSyntax.pattern) {
+                confusedConditions.append(condition
+                    .with(\.condition, ConditionElementSyntax.Condition(matchPatternCondSyntax
+                        .with(\.pattern, confusedPattern)
+                        .with(\.leadingTrivia, matchPatternCondSyntax.pattern.leadingTrivia)
+                        .with(\.trailingTrivia, matchPatternCondSyntax.pattern.trailingTrivia)
+                    ))
+                )
             } else {
                 confusedConditions.append(condition)
             }
@@ -339,7 +355,17 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                         .with(\.pattern, confusedPattern))
                     )
                 )
-            } else {
+            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self),
+                       let confusedPattern = self.confuseNodePattern(matchPatternCondSyntax.pattern) {
+                 confusedConditions.append(condition
+                     .with(\.condition, ConditionElementSyntax.Condition(matchPatternCondSyntax
+                         .with(\.pattern, confusedPattern)
+                         .with(\.leadingTrivia, matchPatternCondSyntax.pattern.leadingTrivia)
+                         .with(\.trailingTrivia, matchPatternCondSyntax.pattern.trailingTrivia)
+                     ))
+                 )
+             }
+            else {
                 confusedConditions.append(condition)
             }
         }
