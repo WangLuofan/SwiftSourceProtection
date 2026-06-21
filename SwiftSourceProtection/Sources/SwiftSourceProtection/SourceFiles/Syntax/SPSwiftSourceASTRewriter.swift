@@ -218,13 +218,8 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var newNode = node
         
         self.currentScope = self.currentScope.pushScope(false)
-        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self),
-           let symbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPattern.identifier.text) as? SPSwiftSourceVariableSymbol,
-           let confusedSymbolName = symbol.confusedSymbolName {
-            newNode = newNode.with(\.pattern, PatternSyntax(idPattern
-                .with(\.identifier, .identifier(confusedSymbolName, leadingTrivia: idPattern.identifier.leadingTrivia)
-                    .with(\.trailingTrivia, idPattern.identifier.trailingTrivia))
-            ))
+        if let confusedPattern = self.confuseNodePattern(node.pattern) {
+            newNode = newNode.with(\.pattern, confusedPattern)
         }
         
         return super.visit(newNode)
@@ -265,14 +260,12 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var confusedConditions: [ConditionElementSyntax] = []
         node.conditions.forEach { condition in
             if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
-               let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self),
-               let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPattern.identifier.text) as? SPSwiftSourceVariableSymbol,
-               let confusedSymbolName = varSymbol.confusedSymbolName {
+               let confusedPattern = self.confuseNodePattern(optBindCondSyntax.pattern) {
                 confusedConditions.append(condition
                     .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
-                        .with(\.pattern, PatternSyntax(idPattern
-                            .with(\.identifier, .identifier(confusedSymbolName, leadingTrivia: idPattern.identifier.leadingTrivia, trailingTrivia: idPattern.identifier.trailingTrivia))
-                        ))
+                        .with(\.pattern, confusedPattern)
+                        .with(\.leadingTrivia, optBindCondSyntax.pattern.leadingTrivia)
+                        .with(\.trailingTrivia, optBindCondSyntax.pattern.trailingTrivia)
                     ))
                 )
             } else {
@@ -319,21 +312,13 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var confusedConditions: [ConditionElementSyntax] = []
         
         node.conditions.forEach { condition in
-            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self) {
-                if let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self),
-                   let paramSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPattern.identifier.text) as? SPSwiftSourceVariableSymbol,
-                   let confusedSymbolName = paramSymbol.confusedSymbolName {
-                    confusedConditions.append(condition
-                        .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
-                            .with(\.pattern, PatternSyntax(idPattern
-                                .with(\.identifier, .identifier(confusedSymbolName, leadingTrivia: idPattern.identifier.leadingTrivia, trailingTrivia: idPattern.identifier.trailingTrivia)
-                                     )
-                            ))
-                        ))
+            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
+               let confusedPattern = self.confuseNodePattern(optBindCondSyntax.pattern) {
+                confusedConditions.append(condition
+                    .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
+                        .with(\.pattern, confusedPattern))
                     )
-                } else {
-                    confusedConditions.append(condition)
-                }
+                )
             } else {
                 confusedConditions.append(condition)
             }
@@ -348,13 +333,31 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: CatchClauseSyntax) -> CatchClauseSyntax {
+        self.currentScope = self.currentScope.pushScope(false)
+        return super.visit(node)
+    }
+    
+    override func visit(_ node: CatchItemSyntax) -> CatchItemSyntax {
+        var newNode = node
+        
+        if let pattern: PatternSyntax = node.pattern {
+            newNode = newNode.with(\.pattern, self.confuseNodePattern(pattern)?
+                .with(\.leadingTrivia, pattern.leadingTrivia)
+                .with(\.trailingTrivia, pattern.trailingTrivia)
+            )
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visitPost(_ node: Syntax) {
         switch node.kind {
         case .functionDecl:
             self.currentFunction = nil
             fallthrough
         case .classDecl, .variableDecl, .whileStmt, .forStmt, .enumDecl,
-                .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase,
+                .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase, .catchClause,
                 .switchDefaultLabel, .guardStmt, .initializerDecl, .structDecl, .protocolDecl:
             self.currentScope = self.currentScope.popScope(true)
         default:
@@ -456,6 +459,20 @@ extension SPSwiftSourceASTRewriter {
                     .with(\.leadingTrivia, exprSyntax.arguments.leadingTrivia)
                     .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
                 )
+            )
+        } else if let seqExprSyntax: SequenceExprSyntax = fromExpr.as(SequenceExprSyntax.self) {
+            let confusedExprList = seqExprSyntax.elements.flatMap {
+                guard let confusedExpr = self.confuseExpression($0) else {
+                    return $0
+                }
+                
+                return confusedExpr.with(\.leadingTrivia, $0.leadingTrivia).with(\.trailingTrivia, $0.trailingTrivia)
+            }
+            
+            return ExprSyntax(seqExprSyntax
+                .with(\.elements, ExprListSyntax(confusedExprList))
+                .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
+                .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
             )
         }
         

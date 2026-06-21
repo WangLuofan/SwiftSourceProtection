@@ -312,10 +312,11 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
         self.currentScope = self.currentScope.pushScope(true)
         
-        if let idPattern: IdentifierPatternSyntax = node.pattern.as(IdentifierPatternSyntax.self) {
+        let symbols: [String] = self.extractPatternNames(node.pattern)
+        symbols.forEach {
             let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
-            varSymbol.originalSymbolName = idPattern.identifier.text
-            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
+            varSymbol.originalSymbolName = $0
+            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
             
             self.currentScope.pushSymbol(varSymbol)
         }
@@ -341,13 +342,15 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         
         node.conditions.forEach { condition in
             if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
-               let _ = optBindCondSyntax.initializer,
-               let idPattern: IdentifierPatternSyntax = optBindCondSyntax.pattern.as(IdentifierPatternSyntax.self) {
-                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
-                varSymbol.originalSymbolName = idPattern.identifier.text
-                varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
-                
-                self.currentScope.pushSymbol(varSymbol)
+               let _ = optBindCondSyntax.initializer {
+                let symbols: [String] = self.extractPatternNames(optBindCondSyntax.pattern)
+                symbols.forEach {
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+                    varSymbol.originalSymbolName = $0
+                    varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+                    
+                    self.currentScope.pushSymbol(varSymbol)
+                }
             }
         }
         
@@ -399,13 +402,15 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
         node.conditions.forEach { condition in
             if let condition: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self) {
-                if let _ = condition.initializer,
-                   let idPattern: IdentifierPatternSyntax = condition.pattern.as(IdentifierPatternSyntax.self) {
-                    let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
-                    paramSymbol.originalSymbolName = idPattern.identifier.text
-                    paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPattern.identifier.text)
-                    
-                    self.currentScope.pushSymbol(paramSymbol)
+                if let _ = condition.initializer {
+                    let symbols: [String] = self.extractPatternNames(condition.pattern)
+                    symbols.forEach {
+                        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+                        paramSymbol.originalSymbolName = $0
+                        paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+                        
+                        self.currentScope.pushSymbol(paramSymbol)
+                    }
                 }
             }
         }
@@ -416,6 +421,30 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visitPost(_ node: GuardStmtSyntax) {
         self.currentScope = self.currentScope.popScope(false)
+    }
+    
+    override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
+        self.currentScope = self.currentScope.pushScope(true)
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: CatchClauseSyntax) {
+        self.currentScope = self.currentScope.popScope(false)
+    }
+    
+    override func visit(_ node: CatchItemSyntax) -> SyntaxVisitorContinueKind {
+        if let pattern: PatternSyntax = node.pattern {
+            let symbols: [String] = self.extractPatternNames(pattern)
+            symbols.forEach {
+                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                varSymbol.originalSymbolName = $0
+                varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
+                
+                self.currentScope.pushSymbol(varSymbol)
+            }
+        }
+        
+        return super.visit(node)
     }
 }
 
@@ -443,9 +472,11 @@ extension SPSwiftSourceASTCollector {
         if let patternExprSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
             return extractPatternNames(patternExprSyntax.pattern)
         } else if let functionCallExprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
-            return functionCallExprSyntax.arguments.flatMap { extractPatternNames(fromExpr: $0.expression) }
+            return functionCallExprSyntax.arguments.flatMap { self.extractPatternNames(fromExpr: $0.expression) }
         } else if let tupleExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
-            return tupleExprSyntax.elements.flatMap { extractPatternNames(fromExpr: $0.expression) }
+            return tupleExprSyntax.elements.flatMap { self.extractPatternNames(fromExpr: $0.expression) }
+        } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
+            return seqExprSyntax.elements.flatMap { self.extractPatternNames(fromExpr: $0) }
         }
 
         // MemberAccessExpr（`.second`）、字面量等没有绑定，忽略
