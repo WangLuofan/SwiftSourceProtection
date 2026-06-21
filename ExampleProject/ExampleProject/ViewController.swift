@@ -53,6 +53,63 @@ class ViewController: UIViewController {
             return
         }
         d.c
+
+        self.testLocalBindings()
+    }
+
+    func testLocalBindings() {
+        let array: [TestEnum] = [.first, .second(TestA(s: 1))]
+
+        // while let / while case let
+        var iterator = array.makeIterator()
+        while let element = iterator.next() {
+            print(element)
+        }
+        while case let .second(item) = array.first {
+            print(item.n)
+            break
+        }
+
+        // if case / guard case 模式匹配绑定
+        if case let .second(value) = array.first {
+            print(value.n)
+        }
+
+        // for case let / for 元组绑定
+        for case let .second(node) in array {
+            print(node.n)
+        }
+        for (index, value) in array.enumerated() {
+            print(index, value)
+        }
+
+        // catch 绑定
+        do {
+            try self.mayThrow()
+        } catch let error as NSError {
+            print(error.code)
+        }
+        do {
+            try self.mayThrow()
+        } catch let otherError {
+            print(otherError)
+        }
+
+        // 闭包捕获列表里的新绑定
+        let closure = { [weak self, captured = array.count] in
+            print(self as Any, captured)
+        }
+        closure()
+
+        // guard case 绑定
+        guard case let .second(last) = array.last else {
+            return
+        }
+        print(last.n)
+    }
+
+    func mayThrow() throws {
+        throw NSError(domain: "test", code: -1)
     }
 }
 
