@@ -43,7 +43,7 @@ class SPSourceProtection {
                 
                 sourceTrees[$0.path] = sourceTree
                 
-                let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: sourceTree, sourceFile: $0)
+                let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: sourceTree, sourceFile: $0, module: module)
                 let scope: SPSwiftSourceScope = astCollector.walk()
                 
                 fileScopes[$0.path] = scope

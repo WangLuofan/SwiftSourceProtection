@@ -11,7 +11,7 @@ class IndexStore {
     static let indexStore: IndexStore = IndexStore()
     
     private var fileForUSR: [String: File] = [:]
-    private var response: [File: SKResponseDictionary] = [:]
+    private var response: [String: SKResponseDictionary] = [:]
 }
 
 extension IndexStore {
@@ -19,7 +19,7 @@ extension IndexStore {
         self.fileForUSR[usr] = toFile
     }
     
-    func set(resp: SKResponseDictionary, toFile: File) {
-        self.response[toFile] = resp
+    func set(resp: SKResponseDictionary, toUSR: String) {
+        self.response[toUSR] = resp
     }
 }

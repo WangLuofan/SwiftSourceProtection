@@ -11,14 +11,16 @@ import sourcekitd
 class SPSwiftSourceASTCollector: SyntaxVisitor {
     private var sourceTree: SourceFileSyntax
     private var sourceFile: File
+    private var module: Module
     private var topScope: SPSwiftSourceScope = SPSwiftSourceScope()
     private lazy var currentScope: SPSwiftSourceScope = self.topScope
     
     private var parentStack: [SPSwiftSourceClassSymbol] = []
     
-    init(sourceTree: SourceFileSyntax, sourceFile: File) {
+    init(sourceTree: SourceFileSyntax, sourceFile: File, module: Module) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
+        self.module = module
         
         super.init(viewMode: .sourceAccurate)
     }
@@ -547,12 +549,18 @@ extension SPSwiftSourceASTCollector {
         do {
             let resp = try sourceKit.sendSync(req)
             resp.recurseEntities { (dict: SKResponseDictionary) in
-                IndexStore.indexStore.set(resp: dict, toFile: self.sourceFile)
                 guard let usr: String = dict[sourceKit.keys.usr] else {
                     return
                 }
                 
                 IndexStore.indexStore.set(usr: usr, toFile: self.sourceFile)
+                
+                let receiver: String? = dict[sourceKit.keys.receiver]
+                guard receiver == nil else {
+                    return
+                }
+                
+                IndexStore.indexStore.set(resp: dict, toUSR: usr)
             }
             
             resp.recurseEntities { (dict: SKResponseDictionary) in
@@ -590,7 +598,9 @@ extension SPSwiftSourceASTCollector {
                         guard let varSymbol else { break }
                         varSymbol.symbolUSR = dict[sourceKit.keys.usr]
                         
-                        
+                        if !self.inheritedFromAnyExternal(varSymbol) {
+                            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(varSymbol.originalSymbolName)
+                        }
                     }
                         break
                     case .method: do {
@@ -606,5 +616,9 @@ extension SPSwiftSourceASTCollector {
         } catch let error {
             print(error)
         }
+    }
+    
+    private func inheritedFromAnyExternal(_ varSymbol: SPSwiftSourceSymbol?) -> Bool {
+        return false
     }
 }
