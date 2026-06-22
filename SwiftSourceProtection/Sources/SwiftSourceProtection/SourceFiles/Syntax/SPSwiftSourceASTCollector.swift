@@ -245,6 +245,18 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         return super.visit(node)
     }
     
+    override func visit(_ node: ClosureCaptureSyntax) -> SyntaxVisitorContinueKind {
+        if !node.name.text.isSwiftKeyWord {
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+            varSymbol.originalSymbolName = node.name.text
+            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.name.text)
+            
+            self.currentScope.pushSymbol(varSymbol)
+        }
+        
+        return super.visit(node)
+    }
+    
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
         let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
         paramSymbol.originalSymbolName = node.firstName.text

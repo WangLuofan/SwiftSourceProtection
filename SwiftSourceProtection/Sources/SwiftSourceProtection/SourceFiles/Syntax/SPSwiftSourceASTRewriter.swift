@@ -195,6 +195,17 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: ClosureCaptureSyntax) -> ClosureCaptureSyntax {
+        var newNode = node
+        
+        if let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceVariableSymbol,
+           let confusedSymbolName = varSymbol.confusedSymbolName {
+            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var newNode = node
         let sig: String = ConfuseHelper.generateSignature(funcName: node.name.text, parameters: node.signature.parameterClause.parameters)
