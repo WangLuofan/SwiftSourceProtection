@@ -537,14 +537,19 @@ extension SPSwiftSourceASTCollector {
         return []
     }
     
-    func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray) {
+    func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray, _ scope: SPSwiftSourceScope) {
         let req: SKRequestDictionary = SKRequestDictionary(sourcekitd: sourceKit)
         req[sourceKit.keys.request] = sourceKit.requests.indexsource
         req[sourceKit.keys.sourcefile] = self.sourceFile.path
         req[sourceKit.keys.compilerargs] = compilerArguments
         
-        guard let response = try? sourceKit.sendSync(req) else {
-            return
+        do {
+            let resp = try sourceKit.sendSync(req)
+            resp.recurseEntities { dict in
+                
+            }
+        } catch let error {
+            print(error)
         }
     }
 }

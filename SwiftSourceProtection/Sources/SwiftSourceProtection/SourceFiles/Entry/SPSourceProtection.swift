@@ -40,7 +40,6 @@ class SPSourceProtection {
                 
                 logger.log("--- Collecting: \($0.name)")
                 let sourceTree: SourceFileSyntax = Parser.parse(source: sourceCode)
-//                let foldedSourceTree: SourceFileSyntax? = try? OperatorTable.standardOperators.foldAll(sourceTree).cast(SourceFileSyntax.self)
                 
                 sourceTrees[$0.path] = sourceTree
                 
@@ -50,7 +49,7 @@ class SPSourceProtection {
                 fileScopes[$0.path] = scope
                 
                 logger.log("--- Indexing: \($0.name)")
-                astCollector.index(sourceKit, compilerArguments)
+                astCollector.index(sourceKit, compilerArguments, scope)
             }
         }
         

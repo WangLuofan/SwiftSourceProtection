@@ -172,7 +172,7 @@ class SPSchemeInfoProvider {
             args[indexOfOutputMap + 1] = nil
         }
         
-        let forbiddenArgs = ["-parseable-output", "-incremental", "-serialize-diagnostics", "-emit-dependencies", "-enforce-exclusivity\\=checked", "-no-serialize-debugging-options"]
+        let forbiddenArgs = ["-parseable-output", "-incremental", "-serialize-diagnostics", "-emit-dependencies", "-enforce-exclusivity\\=checked", "-no-serialize-debugging-options", "-default-isolation\\=MainActor"]
         
         for (index, arg) in args.enumerated() {
             if forbiddenArgs.contains(arg ?? "") {

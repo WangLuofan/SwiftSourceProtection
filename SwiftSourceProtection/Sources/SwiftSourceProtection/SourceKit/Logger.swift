@@ -33,7 +33,7 @@ public struct Logger: LoggerProtocol {
 
     public func fatalError(forMessage message: String) -> NSError {
         NSError(
-            domain: "com.rockbruno.swiftshield",
+            domain: "com.wangluofan.SwiftSourceProtection",
             code: 0,
             userInfo: [NSLocalizedDescriptionKey: message]
         )
