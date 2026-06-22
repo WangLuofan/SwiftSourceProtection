@@ -19,6 +19,8 @@ class SPSwiftSourceSymbol {
     
     var confusedSymbolName: String?
     
+    var symbolUSR: String?
+    
     init(sourceFile: File, symbolScope: SymbolScope, nodeKind: NodeKind) {
         self.sourceFile = sourceFile
         self.nodeKind = nodeKind

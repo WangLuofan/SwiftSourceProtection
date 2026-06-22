@@ -6,6 +6,7 @@
 //
 
 import SwiftSyntax
+import sourcekitd
 
 class SPSwiftSourceASTCollector: SyntaxVisitor {
     private var sourceTree: SourceFileSyntax
@@ -545,8 +546,38 @@ extension SPSwiftSourceASTCollector {
         
         do {
             let resp = try sourceKit.sendSync(req)
-            resp.recurseEntities { dict in
+            resp.recurseEntities { (dict: SKResponseDictionary) in
+                guard let entryKind: SKUID = dict[sourceKit.keys.kind],
+                      let kind: SourceKit.DeclarationType = entryKind.declarationType() else {
+                    return
+                }
                 
+                switch kind {
+                case .object: do {
+                    
+                }
+                    break
+                case .protocol: do {
+                    
+                }
+                    break
+                case .property: do {
+                    
+                }
+                    break
+                case .method: do {
+                    
+                }
+                    break
+                case .enum: do {
+                    
+                }
+                    break
+                case .enumelement: do {
+                    
+                }
+                    break
+                }
             }
         } catch let error {
             print(error)
