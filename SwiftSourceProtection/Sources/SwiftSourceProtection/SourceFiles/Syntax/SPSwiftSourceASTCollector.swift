@@ -538,14 +538,13 @@ extension SPSwiftSourceASTCollector {
     }
     
     func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray) {
-//        let req: SKRequestDictionary = SKRequestDictionary(sourcekitd: sourceKit)
-//        req[sourceKit.keys.request] = sourceKit.requests.indexsource
-//        req[sourceKit.keys.sourcefile] = self.sourceFile.path
-//        req[sourceKit.keys.compilerargs] = compilerArguments
-//        
-//        guard let response = try? sourceKit.sendSync(req) else {
-//            return
-//        }
+        let req: SKRequestDictionary = SKRequestDictionary(sourcekitd: sourceKit)
+        req[sourceKit.keys.request] = sourceKit.requests.indexsource
+        req[sourceKit.keys.sourcefile] = self.sourceFile.path
+        req[sourceKit.keys.compilerargs] = compilerArguments
         
+        guard let response = try? sourceKit.sendSync(req) else {
+            return
+        }
     }
 }
