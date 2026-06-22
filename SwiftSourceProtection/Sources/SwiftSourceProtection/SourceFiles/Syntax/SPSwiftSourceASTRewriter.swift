@@ -531,6 +531,24 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
                 .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
             )
+        } else if let tupExprSyntax: TupleExprSyntax = fromExpr.as(TupleExprSyntax.self) {
+            let confusedExprList = tupExprSyntax.elements.flatMap {
+                guard let confusedExpr = self.confuseExpression($0.expression) else {
+                    return $0
+                }
+                
+                return $0.with(\.expression, confusedExpr
+                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
+                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
+                )
+            }
+            
+            return ExprSyntax(tupExprSyntax
+                .with(\.elements, LabeledExprListSyntax(confusedExprList)
+                    .with(\.leadingTrivia, tupExprSyntax.elements.leadingTrivia)
+                    .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
+                )
+            )
         }
         
         return fromExpr
