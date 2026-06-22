@@ -571,24 +571,26 @@ extension SPSwiftSourceASTCollector {
                         break
                     case .property: do {
                         guard let name: String = dict[sourceKit.keys.name] else { break }
-                        guard let _: SKUID = dict.parent[sourceKit.keys.kind] else {
-                            if let varSymbol: SPSwiftSourceVariableSymbol = self.topScope.findSymbolInCurrentScope(name, .variable) as? SPSwiftSourceVariableSymbol {
-                                varSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                            }
-                            break
-                        }
                         
-                        guard let parentName: String = dict.parent[sourceKit.keys.name],
-                              let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol else {
-                            break
-                        }
-                        
-                        for child in parentSymbol.children {
-                            if child.originalSymbolName == name && child.nodeKind == .variable {
-                                child.symbolUSR = dict[sourceKit.keys.usr]
-                                break
+                        var varSymbol: SPSwiftSourceVariableSymbol?
+                        if let _: SKUID = dict.parent[sourceKit.keys.kind] {
+                            varSymbol = self.topScope.findSymbolInCurrentScope(name, .variable) as? SPSwiftSourceVariableSymbol
+                        } else {
+                            if let parentName: String = dict.parent[sourceKit.keys.name],
+                               let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
+                                for child in parentSymbol.children {
+                                    if child.originalSymbolName == name && child.nodeKind == .variable {
+                                        varSymbol = child as? SPSwiftSourceVariableSymbol
+                                        break
+                                    }
+                                }
                             }
                         }
+                        
+                        guard let varSymbol else { break }
+                        varSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                        
+                        
                     }
                         break
                     case .method: do {
