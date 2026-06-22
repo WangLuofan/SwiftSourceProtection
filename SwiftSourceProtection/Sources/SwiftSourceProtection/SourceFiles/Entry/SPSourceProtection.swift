@@ -49,7 +49,7 @@ class SPSourceProtection {
                 fileScopes[$0.path] = scope
                 
                 logger.log("--- Indexing: \($0.name)")
-                astCollector.index(sourceKit, compilerArguments, scope)
+                astCollector.index(sourceKit, compilerArguments)
             }
         }
         

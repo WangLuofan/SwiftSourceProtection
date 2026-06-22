@@ -538,7 +538,7 @@ extension SPSwiftSourceASTCollector {
         return []
     }
     
-    func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray, _ scope: SPSwiftSourceScope) {
+    func index(_ sourceKit: SourceKit, _ compilerArguments: SKRequestArray) {
         let req: SKRequestDictionary = SKRequestDictionary(sourcekitd: sourceKit)
         req[sourceKit.keys.request] = sourceKit.requests.indexsource
         req[sourceKit.keys.sourcefile] = self.sourceFile.path
@@ -547,36 +547,58 @@ extension SPSwiftSourceASTCollector {
         do {
             let resp = try sourceKit.sendSync(req)
             resp.recurseEntities { (dict: SKResponseDictionary) in
+                IndexStore.indexStore.set(resp: dict, toFile: self.sourceFile)
+                guard let usr: String = dict[sourceKit.keys.usr] else {
+                    return
+                }
+                
+                IndexStore.indexStore.set(usr: usr, toFile: self.sourceFile)
+            }
+            
+            resp.recurseEntities { (dict: SKResponseDictionary) in
                 guard let entryKind: SKUID = dict[sourceKit.keys.kind],
                       let kind: SourceKit.DeclarationType = entryKind.declarationType() else {
                     return
                 }
                 
                 switch kind {
-                case .object: do {
-                    
-                }
-                    break
-                case .protocol: do {
-                    
-                }
-                    break
-                case .property: do {
-                    
-                }
-                    break
-                case .method: do {
-                    
-                }
-                    break
-                case .enum: do {
-                    
-                }
-                    break
-                case .enumelement: do {
-                    
-                }
-                    break
+                    case .object, .protocol, .enum: do {
+                        if let name: String = dict[sourceKit.keys.name],
+                           let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(name) as? SPSwiftSourceClassSymbol {
+                            clsSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                        }
+                    }
+                        break
+                    case .property: do {
+                        guard let name: String = dict[sourceKit.keys.name] else { break }
+                        guard let _: SKUID = dict.parent[sourceKit.keys.kind] else {
+                            if let varSymbol: SPSwiftSourceVariableSymbol = self.topScope.findSymbolInCurrentScope(name, .variable) as? SPSwiftSourceVariableSymbol {
+                                varSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                            }
+                            break
+                        }
+                        
+                        guard let parentName: String = dict.parent[sourceKit.keys.name],
+                              let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol else {
+                            break
+                        }
+                        
+                        for child in parentSymbol.children {
+                            if child.originalSymbolName == name && child.nodeKind == .variable {
+                                child.symbolUSR = dict[sourceKit.keys.usr]
+                                break
+                            }
+                        }
+                    }
+                        break
+                    case .method: do {
+                        
+                    }
+                        break
+                    case .enumelement: do {
+                        
+                    }
+                        break
                 }
             }
         } catch let error {
