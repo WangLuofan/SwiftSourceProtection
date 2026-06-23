@@ -581,16 +581,12 @@ extension SPSwiftSourceASTCollector {
                         guard let name: String = dict[sourceKit.keys.name] else { break }
                         
                         var varSymbol: SPSwiftSourceVariableSymbol?
-                        if let _: SKUID = dict.parent[sourceKit.keys.kind] {
-                            varSymbol = self.topScope.findSymbolInCurrentScope(name, .variable) as? SPSwiftSourceVariableSymbol
-                        } else {
-                            if let parentName: String = dict.parent[sourceKit.keys.name],
-                               let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
-                                for child in parentSymbol.children {
-                                    if child.originalSymbolName == name && child.nodeKind == .variable {
-                                        varSymbol = child as? SPSwiftSourceVariableSymbol
-                                        break
-                                    }
+                        if let parentName: String = dict.parent[sourceKit.keys.name],
+                           let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
+                            for child in parentSymbol.children {
+                                if child.originalSymbolName == name && child.nodeKind == .variable {
+                                    varSymbol = child as? SPSwiftSourceVariableSymbol
+                                    break
                                 }
                             }
                         }
@@ -637,12 +633,9 @@ extension SPSwiftSourceASTCollector {
                 return
             }
             
-            if IndexStore.indexStore.getFile(usr: usr) == nil {
+            guard IndexStore.indexStore.getFile(usr: usr) == nil,
+                  let relatedDict: SKResponseDictionary = IndexStore.indexStore.getResponse(usr: usr) else {
                 isReference = true
-                return
-            }
-            
-            guard let relatedDict: SKResponseDictionary = IndexStore.indexStore.getResponse(usr: usr) else {
                 return
             }
             

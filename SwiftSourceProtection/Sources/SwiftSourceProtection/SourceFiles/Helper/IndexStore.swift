@@ -11,10 +11,19 @@ class IndexStore {
     static let indexStore: IndexStore = IndexStore()
     
     private var fileForUSR: [String: File] = [:]
+    private var symbolForUSR: [String: SPSwiftSourceSymbol] = [:]
     private var response: [String: SKResponseDictionary] = [:]
 }
 
 extension IndexStore {
+    func set(usr: String, forSymbol: SPSwiftSourceSymbol) {
+        self.symbolForUSR[usr] = forSymbol
+    }
+    
+    func getSymbol(usr: String) -> SPSwiftSourceSymbol? {
+        return self.symbolForUSR[usr]
+    }
+    
     func set(usr: String, toFile: File) {
         self.fileForUSR[usr] = toFile
     }

@@ -19,7 +19,13 @@ class SPSwiftSourceSymbol {
     
     var confusedSymbolName: String?
     
-    var symbolUSR: String?
+    var symbolUSR: String? {
+        didSet {
+            if let symbolUSR {
+                IndexStore.indexStore.set(usr: symbolUSR, forSymbol: self)
+            }
+        }
+    }
     
     init(sourceFile: File, symbolScope: SymbolScope, nodeKind: NodeKind) {
         self.sourceFile = sourceFile
