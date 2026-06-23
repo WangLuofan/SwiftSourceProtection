@@ -140,9 +140,16 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile, funcName: node.initKeyword.text, symbolScope: node.symbolScope)
+        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(
+            sourceFile: self.sourceFile,
+            signature: ConfuseHelper.generateSignature(
+                funcName: node.initKeyword.text,
+                parameters: node.signature.parameterClause.parameters
+            ),
+            symbolScope: node.symbolScope
+        )
         
-        symbol.originalSymbolName = ConfuseHelper.generateSignature(funcName: node.initKeyword.text, parameters: node.signature.parameterClause.parameters)
+        symbol.originalSymbolName = node.initKeyword.text
         
         self.parentStack.last?.children.append(symbol)
         
@@ -273,8 +280,15 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(sourceFile: self.sourceFile, funcName: node.name.text, symbolScope: node.symbolScope)
-        symbol.originalSymbolName = ConfuseHelper.generateSignature(funcName: node.name.text, parameters: node.signature.parameterClause.parameters)
+        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(
+            sourceFile: self.sourceFile,
+            signature: ConfuseHelper.generateSignature(
+                funcName: node.name.text,
+                parameters: node.signature.parameterClause.parameters
+            ),
+            symbolScope: node.symbolScope
+        )
+        symbol.originalSymbolName = node.name.text
 
         node.signature.parameterClause.parameters.forEach { parameter in
             symbol.labels.append(parameter.firstName.text)

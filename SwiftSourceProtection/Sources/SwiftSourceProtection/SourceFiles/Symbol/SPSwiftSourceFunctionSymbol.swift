@@ -9,11 +9,11 @@ class SPSwiftSourceFunctionSymbol: SPSwiftSourceVariableSymbol {
     var labels: [String] = []
     var confusedLabels: [String] = []
     
-    var functionName: String
+    var signature: String
     var confusedFunctionName: String?
     
-    init(sourceFile: File, funcName: String, symbolScope: SymbolScope) {
-        self.functionName = funcName
+    init(sourceFile: File, signature: String, symbolScope: SymbolScope) {
+        self.signature = signature
         super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: .function)
     }
 }
