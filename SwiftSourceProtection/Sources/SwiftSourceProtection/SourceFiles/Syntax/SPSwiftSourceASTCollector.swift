@@ -604,7 +604,20 @@ extension SPSwiftSourceASTCollector {
                     }
                         break
                     case .enumelement: do {
+                        guard let fullName: String = dict[sourceKit.keys.name],
+                              let parentName: String = dict.parent[sourceKit.keys.name],
+                              let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
+                                SPSwiftSourceClassSymbol else {
+                            break
+                        }
                         
+                        let baseName = fullName.components(separatedBy: "(").first ?? fullName
+                        for child in parentSymbol.children {
+                            if child.originalSymbolName == baseName, child.nodeKind == .enumCase {
+                                child.symbolUSR = dict[sourceKit.keys.usr]
+                                break
+                            }
+                        }
                     }
                         break
                 }
