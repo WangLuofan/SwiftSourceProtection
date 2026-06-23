@@ -114,11 +114,7 @@ class ConfuseHelper {
     }
     
     static func generateSignature(funcName: String, parameters: FunctionParameterListSyntax) -> String {
-        var sigComps: [String] = []
-        parameters.forEach { parameter in
-            sigComps.append(parameter.firstName.text)
-        }
-        
-        return funcName + "(" + sigComps.joined() + ")"
+        let labels = parameters.map { $0.firstName.text + ":" }
+        return funcName + "(" + labels.joined() + ")"
     }
 }
