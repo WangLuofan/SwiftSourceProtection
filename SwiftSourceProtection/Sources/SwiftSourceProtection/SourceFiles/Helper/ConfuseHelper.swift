@@ -20,9 +20,9 @@ class ConfuseHelper {
         
         if symbol.nodeKind == .function,
            let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
-            (symbol as? SPSwiftSourceFunctionSymbol)?.confusedFunctionName = self.confusedSymbolName(funcSymbol.originalSymbolName)
+            funcSymbol.confusedSymbolName = self.confusedSymbolName(funcSymbol.originalSymbolName)
             for label in funcSymbol.labels {
-                (symbol as? SPSwiftSourceFunctionSymbol)?.confusedLabels.append(self.confusedSymbolName(label))
+                funcSymbol.confusedLabels.append(self.confusedSymbolName(label))
             }
         } else {
             symbol.confusedSymbolName = self.confusedSymbolName(symbol.originalSymbolName)

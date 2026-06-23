@@ -10,7 +10,6 @@ class SPSwiftSourceFunctionSymbol: SPSwiftSourceVariableSymbol {
     var confusedLabels: [String] = []
     
     var signature: String
-    var confusedFunctionName: String?
     
     init(sourceFile: File, signature: String, symbolScope: SymbolScope) {
         self.signature = signature

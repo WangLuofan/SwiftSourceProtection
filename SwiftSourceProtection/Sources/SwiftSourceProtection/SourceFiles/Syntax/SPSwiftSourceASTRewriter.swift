@@ -211,8 +211,26 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         let sig: String = ConfuseHelper.generateSignature(funcName: node.name.text, parameters: node.signature.parameterClause.parameters)
         
         if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(sig) as? SPSwiftSourceFunctionSymbol,
-           let confusedFunctionName: String = funcSymbol.confusedFunctionName {
-            newNode = newNode.with(\.name, .identifier(confusedFunctionName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
+           let confusedFunctionName: String = funcSymbol.confusedSymbolName {
+            
+            var paramIndex: Int = 0
+            var confusedParameters: [FunctionParameterSyntax] = []
+            node.signature.parameterClause.parameters.forEach {
+                let confusedParam: FunctionParameterSyntax = $0.with(\.firstName, .identifier(funcSymbol.confusedLabels[paramIndex], leadingTrivia: $0.firstName.leadingTrivia).with(\.trailingTrivia, $0.firstName.trailingTrivia))
+                confusedParameters.append(confusedParam)
+                
+                paramIndex += 1
+            }
+            
+            newNode = newNode.with(\.name, .identifier(confusedFunctionName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia)
+            ).with(\.signature, newNode.signature
+                .with(\.parameterClause, newNode.signature.parameterClause
+                    .with(\.parameters, FunctionParameterListSyntax(confusedParameters)
+                        .with(\.leadingTrivia, newNode.signature.parameterClause.parameters.leadingTrivia)
+                        .with(\.trailingTrivia, newNode.signature.parameterClause.parameters.trailingTrivia)
+                    )
+                )
+            )
         }
         
         self.currentFunction = node

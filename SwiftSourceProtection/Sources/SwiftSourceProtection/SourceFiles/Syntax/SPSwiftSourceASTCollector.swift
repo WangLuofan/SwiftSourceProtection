@@ -614,7 +614,32 @@ extension SPSwiftSourceASTCollector {
                     }
                         break
                     case .method: do {
+                        guard let fullName: String = dict[sourceKit.keys.name],
+                              let parentName: String = dict.parent[sourceKit.keys.name],
+                              let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
+                                SPSwiftSourceClassSymbol else {
+                            break
+                        }
                         
+                        var funcSymbol: SPSwiftSourceFunctionSymbol?
+                        for child in parentSymbol.children {
+                            guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
+                                continue
+                            }
+                            
+                            if fSymbol.signature == fullName, child.nodeKind == .function {
+                                funcSymbol = fSymbol
+                                break
+                            }
+                        }
+                        
+                        guard let funcSymbol else { break }
+                        funcSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                        
+                        if !self.inheritedFromAnyExternal(sourceKit, dict) {
+                            funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
+                            funcSymbol.labels.forEach { funcSymbol.confusedLabels.append(ConfuseHelper.confusedSymbolName($0)) }
+                        }
                     }
                         break
                     case .enumelement: do {

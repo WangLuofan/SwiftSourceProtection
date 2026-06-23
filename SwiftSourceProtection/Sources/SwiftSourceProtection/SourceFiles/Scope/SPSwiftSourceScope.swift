@@ -51,7 +51,11 @@ class SPSwiftSourceScope {
             return
         }
         
-        self.symbols[symbol.originalSymbolName] = symbol
+        if let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
+            self.symbols[funcSymbol.signature] = symbol
+        } else {
+            self.symbols[symbol.originalSymbolName] = symbol
+        }
     }
     
     func findSymbolWithSymbolName(_ symbolName: String) -> SPSwiftSourceSymbol? {
