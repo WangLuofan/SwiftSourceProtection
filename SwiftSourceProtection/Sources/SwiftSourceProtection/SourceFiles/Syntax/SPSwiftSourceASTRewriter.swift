@@ -281,32 +281,27 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
-    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-        var newNode = node
-        
-        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
-           baseSymbol.symbolScope == .local,
-           let confusedSymbolName = baseSymbol.confusedSymbolName {
-            newNode = newNode.with(\.baseName,
-                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
-            )
-        }
-        
+//    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
+//        var newNode = node
+//        
+//        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
+//           baseSymbol.symbolScope == .local,
+//           let confusedSymbolName = baseSymbol.confusedSymbolName {
+//            newNode = newNode.with(\.baseName,
+//                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
+//            )
+//        }
+//        
+//        return super.visit(newNode)
+//    }
+    
+    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
+        let newNode = self.confuseTypeSyntax(node) as? IdentifierTypeSyntax ?? node
         return super.visit(newNode)
     }
     
-    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
-        var newNode = node
-        
-        if let typeSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text),
-           let confusedSymbolName = typeSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(
-                confusedSymbolName,
-                leadingTrivia: node.name.leadingTrivia,
-                trailingTrivia: node.name.trailingTrivia)
-            )
-        }
-        
+    override func visit(_ node: OptionalTypeSyntax) -> TypeSyntax {
+        let newNode = self.confuseTypeSyntax(node) as? OptionalTypeSyntax ?? node
         return super.visit(newNode)
     }
     
@@ -423,6 +418,11 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             )
         }
         
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        var newNode = node
         return super.visit(newNode)
     }
     
@@ -570,6 +570,28 @@ extension SPSwiftSourceASTRewriter {
         }
         
         return fromExpr
+    }
+    
+    private func confuseTypeSyntax(_ typeSyntax: TypeSyntaxProtocol) -> TypeSyntaxProtocol? {
+        if let idTypeSyntax: IdentifierTypeSyntax = typeSyntax.as(IdentifierTypeSyntax.self) {
+            if let typeSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(idTypeSyntax.name.text),
+               let confusedSymbolName = typeSymbol.confusedSymbolName {
+                return idTypeSyntax.with(\.name, .identifier(
+                    confusedSymbolName,
+                    leadingTrivia: idTypeSyntax.name.leadingTrivia,
+                    trailingTrivia: idTypeSyntax.name.trailingTrivia)
+                )
+            }
+        } else if let optTypeSyntax: OptionalTypeSyntax = typeSyntax.as(OptionalTypeSyntax.self),
+                  let confusedWrappedTypeSyntax: TypeSyntax = self.confuseTypeSyntax(optTypeSyntax.wrappedType) as? TypeSyntax {
+            
+            return optTypeSyntax.with(\.wrappedType, confusedWrappedTypeSyntax
+                .with(\.leadingTrivia, optTypeSyntax.wrappedType.leadingTrivia)
+                .with(\.trailingTrivia, optTypeSyntax.wrappedType.trailingTrivia)
+            )
+        }
+        
+        return typeSyntax
     }
     
     private func nodeParent<T: SyntaxProtocol>(_ node: SyntaxProtocol) -> T? {

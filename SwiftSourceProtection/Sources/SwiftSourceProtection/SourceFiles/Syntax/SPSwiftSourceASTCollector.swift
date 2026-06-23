@@ -16,6 +16,10 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     private lazy var currentScope: SPSwiftSourceScope = self.topScope
     
     private var parentStack: [SPSwiftSourceClassSymbol] = []
+    private lazy var locationConverter = SourceLocationConverter(
+        fileName: self.sourceFile.path,
+        tree: self.sourceTree
+    )
     
     init(sourceTree: SourceFileSyntax, sourceFile: File, module: Module) {
         self.sourceTree = sourceTree
@@ -115,6 +119,12 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         
         self.currentScope = self.currentScope.popScope(false)
     }
+    
+//    override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+//        let location = self.locationConverter.location(for: node.baseName.positionAfterSkippingLeadingTrivia)
+//        print("++++name: \(node.baseName.text), line: \(location.line), column: \(location.column)")
+//        return super.visit(node)
+//    }
     
     override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
         node.elements.forEach {
