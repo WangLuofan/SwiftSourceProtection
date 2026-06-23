@@ -598,7 +598,7 @@ extension SPSwiftSourceASTCollector {
                         guard let varSymbol else { break }
                         varSymbol.symbolUSR = dict[sourceKit.keys.usr]
                         
-                        if !self.inheritedFromAnyExternal(varSymbol) {
+                        if !self.inheritedFromAnyExternal(sourceKit, dict) {
                             varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(varSymbol.originalSymbolName)
                         }
                     }
@@ -618,7 +618,37 @@ extension SPSwiftSourceASTCollector {
         }
     }
     
-    private func inheritedFromAnyExternal(_ varSymbol: SPSwiftSourceSymbol?) -> Bool {
-        return false
+    private func inheritedFromAnyExternal(_ sourceKit: SourceKit, _ dict: SKResponseDictionary) -> Bool {
+        guard let kindID: SKUID = dict[sourceKit.keys.kind] else {
+            return false
+        }
+        
+        let type = kindID.declarationType()
+        guard type == .property || type == .method,
+              let usr: String = dict[sourceKit.keys.usr],
+              IndexStore.indexStore.getFile(usr: usr) != nil else {
+            return false
+        }
+        
+        var isReference: Bool = false
+        dict.recurse(uid: sourceKit.keys.related) { [weak self] dict in
+            guard isReference == false,
+                  let usr: String = dict[sourceKit.keys.usr] else {
+                return
+            }
+            
+            if IndexStore.indexStore.getFile(usr: usr) == nil {
+                isReference = true
+                return
+            }
+            
+            guard let relatedDict: SKResponseDictionary = IndexStore.indexStore.getResponse(usr: usr) else {
+                return
+            }
+            
+            isReference = (self?.inheritedFromAnyExternal(sourceKit, relatedDict) ?? false)
+        }
+        
+        return isReference
     }
 }

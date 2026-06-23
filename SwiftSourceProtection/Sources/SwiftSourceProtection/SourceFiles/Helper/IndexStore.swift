@@ -19,7 +19,15 @@ extension IndexStore {
         self.fileForUSR[usr] = toFile
     }
     
+    func getFile(usr: String) -> File? {
+        return self.fileForUSR[usr]
+    }
+    
     func set(resp: SKResponseDictionary, toUSR: String) {
         self.response[toUSR] = resp
+    }
+    
+    func getResponse(usr: String) -> SKResponseDictionary? {
+        return self.response[usr]
     }
 }
