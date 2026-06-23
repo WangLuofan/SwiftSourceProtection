@@ -589,6 +589,32 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.leadingTrivia, optTypeSyntax.wrappedType.leadingTrivia)
                 .with(\.trailingTrivia, optTypeSyntax.wrappedType.trailingTrivia)
             )
+        } else if let arrTypeSyntax: ArrayTypeSyntax = typeSyntax.as(ArrayTypeSyntax.self),
+                  let confusedElement: TypeSyntax = self.confuseTypeSyntax(arrTypeSyntax.element) as? TypeSyntax {
+            return arrTypeSyntax.with(\.element, confusedElement
+                .with(\.leadingTrivia, arrTypeSyntax.element.leadingTrivia)
+                .with(\.trailingTrivia, arrTypeSyntax.element.trailingTrivia)
+            )
+        } else if let dicTypeSyntax: DictionaryTypeSyntax = typeSyntax.as(DictionaryTypeSyntax.self),
+                  let confusedKeyType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.key) as? TypeSyntax,
+                  let confusedValueType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.value) as? TypeSyntax {
+            return dicTypeSyntax.with(\.key, confusedKeyType
+                .with(\.leadingTrivia, dicTypeSyntax.key.leadingTrivia)
+                .with(\.trailingTrivia, dicTypeSyntax.key.trailingTrivia))
+            .with(\.value, confusedValueType
+                .with(\.leadingTrivia, dicTypeSyntax.value.leadingTrivia)
+                .with(\.trailingTrivia, dicTypeSyntax.value.trailingTrivia)
+            )
+        } else if let tupTypeSyntax: TupleTypeSyntax = typeSyntax.as(TupleTypeSyntax.self) {
+            
+        } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
+            
+        } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
+                  let confusedBaseTypeSyntax: TypeSyntax = self.confuseTypeSyntax(metaTypeSyntax.baseType) as? TypeSyntax {
+            return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
+                .with(\.leadingTrivia, metaTypeSyntax.baseType.leadingTrivia)
+                .with(\.trailingTrivia, metaTypeSyntax.baseType.trailingTrivia)
+            )
         }
         
         return typeSyntax
