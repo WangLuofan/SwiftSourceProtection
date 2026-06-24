@@ -213,10 +213,11 @@ class TestA {
                 let t = 0
         }
         
-        return self.testFunc(num1, num2: num2)
+        return self.testFunc2(num1, num2: num2)
     }
     
-    private func testFunc(_ num1: Int, num2: Int) -> Int {
+    private func testFunc2(_ num1: Int, num2: Int) -> Int {
+        let fun: (_ num: Int, _ num2: Int) -> Int = testFunc
         return num1 * num2
     }
 }

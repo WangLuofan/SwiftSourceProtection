@@ -623,7 +623,36 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)
             )
         } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
+            var confusedFuncType = funcTypeSyntax
+            if let confusedRetType: TypeSyntax = self.confuseTypeSyntax(funcTypeSyntax.returnClause.type) as? TypeSyntax {
+                confusedFuncType = confusedFuncType.with(\.returnClause, confusedFuncType.returnClause
+                    .with(\.type, confusedRetType
+                        .with(\.leadingTrivia, confusedFuncType.returnClause.type.leadingTrivia)
+                        .with(\.trailingTrivia, confusedFuncType.returnClause.type.trailingTrivia)
+                    )
+                )
+            }
             
+            var confusedParams: [TupleTypeElementSyntax] = []
+            confusedFuncType.parameters.forEach {
+                if let secondName = $0.secondName {
+                    let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
+                    confusedParams.append($0
+                        .with(\.secondName, .identifier(
+                            confusedSecondName,
+                            leadingTrivia: secondName.leadingTrivia,
+                            trailingTrivia: secondName.trailingTrivia)
+                        )
+                    )
+                } else {
+                    confusedParams.append($0)
+                }
+            }
+            
+            return confusedFuncType.with(\.parameters, TupleTypeElementListSyntax(confusedParams)
+                .with(\.leadingTrivia, confusedFuncType.parameters.leadingTrivia)
+                .with(\.trailingTrivia, confusedFuncType.parameters.trailingTrivia)
+            )
         } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
                   let confusedBaseTypeSyntax: TypeSyntax = self.confuseTypeSyntax(metaTypeSyntax.baseType) as? TypeSyntax {
             return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
@@ -643,7 +672,24 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.trailingTrivia, impUnwrappedOptTypeSyntax.wrappedType.trailingTrivia)
             )
         } else if let memTypeSyntax: MemberTypeSyntax = typeSyntax.as(MemberTypeSyntax.self) {
+            var confusedMemTypeSyntax = memTypeSyntax
+            if let confusedType: TypeSyntax = self.confuseTypeSyntax(memTypeSyntax.baseType) as? TypeSyntax {
+                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.baseType, confusedType
+                    .with(\.leadingTrivia, confusedMemTypeSyntax.baseType.leadingTrivia)
+                    .with(\.trailingTrivia, confusedMemTypeSyntax.baseType.trailingTrivia)
+                )
+            }
             
+            if let varSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(memTypeSyntax.name.text),
+               let confusedSymbolName = varSymbol.confusedSymbolName {
+                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.name, .identifier(
+                    confusedSymbolName,
+                    leadingTrivia: confusedMemTypeSyntax.name.leadingTrivia,
+                    trailingTrivia: confusedMemTypeSyntax.name.trailingTrivia
+                ))
+            }
+            
+            return confusedMemTypeSyntax
         } else if let compTypeSyntax: CompositionTypeSyntax = typeSyntax.as(CompositionTypeSyntax.self) {
             var confusedCompElemType: [CompositionTypeElementSyntax] = []
             compTypeSyntax.elements.forEach {
