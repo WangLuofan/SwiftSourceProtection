@@ -606,7 +606,22 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.trailingTrivia, dicTypeSyntax.value.trailingTrivia)
             )
         } else if let tupTypeSyntax: TupleTypeSyntax = typeSyntax.as(TupleTypeSyntax.self) {
+            var confusedTupleElemType: [TupleTypeElementSyntax] = []
+            tupTypeSyntax.elements.forEach {
+                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
+                    confusedTupleElemType.append($0.with(\.type, confusedType
+                        .with(\.leadingTrivia, $0.type.leadingTrivia)
+                        .with(\.trailingTrivia, $0.type.trailingTrivia)
+                    ))
+                } else {
+                    confusedTupleElemType.append($0)
+                }
+            }
             
+            return tupTypeSyntax.with(\.elements, TupleTypeElementListSyntax(confusedTupleElemType)
+                .with(\.leadingTrivia, tupTypeSyntax.elements.leadingTrivia)
+                .with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)
+            )
         } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
             
         } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
@@ -614,6 +629,43 @@ extension SPSwiftSourceASTRewriter {
             return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
                 .with(\.leadingTrivia, metaTypeSyntax.baseType.leadingTrivia)
                 .with(\.trailingTrivia, metaTypeSyntax.baseType.trailingTrivia)
+            )
+        } else if let someAnyTypeSyntax: SomeOrAnyTypeSyntax = typeSyntax.as(SomeOrAnyTypeSyntax.self),
+                  let confusedConstraintTypeSyntax: TypeSyntax = self.confuseTypeSyntax(someAnyTypeSyntax.constraint) as? TypeSyntax {
+            return someAnyTypeSyntax.with(\.constraint, confusedConstraintTypeSyntax
+                .with(\.leadingTrivia, someAnyTypeSyntax.constraint.leadingTrivia)
+                .with(\.trailingTrivia, someAnyTypeSyntax.constraint.trailingTrivia)
+            )
+        } else if let impUnwrappedOptTypeSyntax: ImplicitlyUnwrappedOptionalTypeSyntax = typeSyntax.as(ImplicitlyUnwrappedOptionalTypeSyntax.self),
+                  let confusedWrappedType: TypeSyntax = self.confuseTypeSyntax(impUnwrappedOptTypeSyntax.wrappedType) as? TypeSyntax {
+            return impUnwrappedOptTypeSyntax.with(\.wrappedType, confusedWrappedType
+                .with(\.leadingTrivia, impUnwrappedOptTypeSyntax.wrappedType.leadingTrivia)
+                .with(\.trailingTrivia, impUnwrappedOptTypeSyntax.wrappedType.trailingTrivia)
+            )
+        } else if let memTypeSyntax: MemberTypeSyntax = typeSyntax.as(MemberTypeSyntax.self) {
+            
+        } else if let compTypeSyntax: CompositionTypeSyntax = typeSyntax.as(CompositionTypeSyntax.self) {
+            var confusedCompElemType: [CompositionTypeElementSyntax] = []
+            compTypeSyntax.elements.forEach {
+                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
+                    confusedCompElemType.append($0.with(\.type, confusedType
+                        .with(\.leadingTrivia, $0.type.leadingTrivia)
+                        .with(\.trailingTrivia, $0.type.trailingTrivia)
+                    ))
+                } else {
+                    confusedCompElemType.append($0)
+                }
+            }
+            
+            return compTypeSyntax.with(\.elements, CompositionTypeElementListSyntax(confusedCompElemType)
+                .with(\.leadingTrivia, compTypeSyntax.elements.leadingTrivia)
+                .with(\.trailingTrivia, compTypeSyntax.elements.trailingTrivia)
+            )
+        } else if let attrTypeSyntax: AttributedTypeSyntax = typeSyntax.as(AttributedTypeSyntax.self),
+                  let confusedBaseType: TypeSyntax = self.confuseTypeSyntax(attrTypeSyntax.baseType) as? TypeSyntax {
+            return attrTypeSyntax.with(\.baseType, confusedBaseType
+                .with(\.leadingTrivia, attrTypeSyntax.baseType.leadingTrivia)
+                .with(\.trailingTrivia, attrTypeSyntax.baseType.trailingTrivia)
             )
         }
         
