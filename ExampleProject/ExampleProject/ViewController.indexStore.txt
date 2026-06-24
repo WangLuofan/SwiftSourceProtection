@@ -3,19 +3,19 @@
     {
       key.kind: source.lang.swift.import.module.swift,
       key.name: "Swift",
-      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
       key.is_system: 1
     },
     {
       key.kind: source.lang.swift.import.module.swift,
       key.name: "Swift",
-      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
       key.is_system: 1,
       key.dependencies: [
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Swift",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         }
       ]
@@ -23,25 +23,25 @@
     {
       key.kind: source.lang.swift.import.module.clang,
       key.name: "_SwiftConcurrencyShims",
-      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
       key.is_system: 1
     },
     {
       key.kind: source.lang.swift.import.module.swift,
       key.name: "Swift",
-      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
       key.is_system: 1,
       key.dependencies: [
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Swift",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.clang,
           key.name: "SwiftShims",
-          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/SwiftShims-ETMZL06LU75E.pcm",
+          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/SwiftShims-ETMZL06LU75E.pcm",
           key.is_system: 1
         }
       ]
@@ -49,67 +49,67 @@
     {
       key.kind: source.lang.swift.import.module.swift,
       key.name: "UIKit",
-      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/UIKit.framework/Modules/UIKit.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/UIKit.framework/Modules/UIKit.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
       key.is_system: 1,
       key.dependencies: [
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Accessibility",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Accessibility.framework/Modules/Accessibility.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Accessibility.framework/Modules/Accessibility.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "Accessibility",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Accessibility-1Z316V48C4FD4.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Accessibility-1Z316V48C4FD4.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Combine",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1,
                   key.dependencies: [
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Darwin",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1,
                       key.dependencies: [
                         {
                           key.kind: source.lang.swift.import.module.clang,
                           key.name: "Darwin",
-                          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Darwin-3OSIGR9MJU32L.pcm",
+                          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Darwin-3OSIGR9MJU32L.pcm",
                           key.is_system: 1
                         },
                         {
                           key.kind: source.lang.swift.import.module.swift,
                           key.name: "Swift",
-                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                           key.is_system: 1
                         },
                         {
                           key.kind: source.lang.swift.import.module.swift,
                           key.name: "_Builtin_float",
-                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Builtin_float.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Builtin_float.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                           key.is_system: 1,
                           key.dependencies: [
                             {
                               key.kind: source.lang.swift.import.module.swift,
                               key.name: "Swift",
-                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_Builtin_float",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_Builtin_float-2OQWMRBVRD4OJ.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_Builtin_float-2OQWMRBVRD4OJ.pcm",
                               key.is_system: 1
                             }
                           ]
@@ -117,31 +117,31 @@
                         {
                           key.kind: source.lang.swift.import.module.swift,
                           key.name: "_DarwinFoundation1",
-                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_DarwinFoundation1.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_DarwinFoundation1.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                           key.is_system: 1,
                           key.dependencies: [
                             {
                               key.kind: source.lang.swift.import.module.swift,
                               key.name: "Swift",
-                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_DarwinFoundation1",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation1-1VVNCHK8CCI1.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation1-1VVNCHK8CCI1.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_errno",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation1-1VVNCHK8CCI1.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation1-1VVNCHK8CCI1.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_math",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation1-1VVNCHK8CCI1.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation1-1VVNCHK8CCI1.pcm",
                               key.is_system: 1
                             }
                           ]
@@ -149,37 +149,37 @@
                         {
                           key.kind: source.lang.swift.import.module.swift,
                           key.name: "_DarwinFoundation2",
-                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_DarwinFoundation2.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_DarwinFoundation2.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                           key.is_system: 1,
                           key.dependencies: [
                             {
                               key.kind: source.lang.swift.import.module.swift,
                               key.name: "Swift",
-                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_DarwinFoundation2",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_stdio",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_time",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "timeval",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation2-VWZR1UH1FZG0.pcm",
                               key.is_system: 1
                             }
                           ]
@@ -187,37 +187,37 @@
                         {
                           key.kind: source.lang.swift.import.module.swift,
                           key.name: "_DarwinFoundation3",
-                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_DarwinFoundation3.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_DarwinFoundation3.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                           key.is_system: 1,
                           key.dependencies: [
                             {
                               key.kind: source.lang.swift.import.module.swift,
                               key.name: "Swift",
-                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_DarwinFoundation3",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation3-15DVCJU77XYIF.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation3-15DVCJU77XYIF.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "_signal",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation3-15DVCJU77XYIF.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation3-15DVCJU77XYIF.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "pthread",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation3-15DVCJU77XYIF.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation3-15DVCJU77XYIF.pcm",
                               key.is_system: 1
                             },
                             {
                               key.kind: source.lang.swift.import.module.clang,
                               key.name: "unistd",
-                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_DarwinFoundation3-15DVCJU77XYIF.pcm",
+                              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_DarwinFoundation3-15DVCJU77XYIF.pcm",
                               key.is_system: 1
                             }
                           ]
@@ -225,13 +225,13 @@
                         {
                           key.kind: source.lang.swift.import.module.clang,
                           key.name: "message",
-                          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Darwin-3OSIGR9MJU32L.pcm",
+                          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Darwin-3OSIGR9MJU32L.pcm",
                           key.is_system: 1
                         },
                         {
                           key.kind: source.lang.swift.import.module.clang,
                           key.name: "sys_types",
-                          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/sys_types-VWZR1UH1FZG0.pcm",
+                          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/sys_types-VWZR1UH1FZG0.pcm",
                           key.is_system: 1
                         }
                       ]
@@ -239,25 +239,25 @@
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "_SwiftConcurrencyShims",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                       key.is_system: 1
                     }
                   ]
@@ -265,37 +265,37 @@
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "CoreFoundation",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/CoreFoundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/CoreFoundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1,
                   key.dependencies: [
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "CoreFoundation",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/CoreFoundation-3PRXEYCYTZ0ZF.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/CoreFoundation-3PRXEYCYTZ0ZF.pcm",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "_SwiftConcurrencyShims",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                       key.is_system: 1
                     }
                   ]
@@ -303,49 +303,49 @@
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Darwin",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Dispatch",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Dispatch.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Dispatch.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1,
                   key.dependencies: [
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Combine",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "Dispatch",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Dispatch-D5NPGC7AJE6P.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Dispatch-D5NPGC7AJE6P.pcm",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "_SwiftConcurrencyShims",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                       key.is_system: 1
                     }
                   ]
@@ -353,43 +353,43 @@
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "Foundation",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Foundation-2D6I54GZO0EPV.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Foundation-2D6I54GZO0EPV.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "ObjectiveC",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/ObjectiveC.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/ObjectiveC.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1,
                   key.dependencies: [
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "ObjectiveC",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/ObjectiveC-2PWORDSQEHK5X.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/ObjectiveC-2PWORDSQEHK5X.pcm",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "_SwiftConcurrencyShims",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                       key.is_system: 1
                     }
                   ]
@@ -397,37 +397,37 @@
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Observation",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Observation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Observation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1,
                   key.dependencies: [
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Darwin",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "_SwiftConcurrencyShims",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "lock",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Darwin-3OSIGR9MJU32L.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Darwin-3OSIGR9MJU32L.pcm",
                       key.is_system: 1
                     }
                   ]
@@ -435,49 +435,49 @@
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "System",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/System.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/System.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1,
                   key.dependencies: [
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Darwin",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "Mach",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Darwin-3OSIGR9MJU32L.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Darwin-3OSIGR9MJU32L.pcm",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.swift,
                       key.name: "Swift",
-                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                      key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                       key.is_system: 1
                     },
                     {
                       key.kind: source.lang.swift.import.module.clang,
                       key.name: "_SwiftConcurrencyShims",
-                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                      key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                       key.is_system: 1
                     }
                   ]
@@ -485,31 +485,31 @@
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "sysdir",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Darwin-3OSIGR9MJU32L.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Darwin-3OSIGR9MJU32L.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "uuid",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Darwin-3OSIGR9MJU32L.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Darwin-3OSIGR9MJU32L.pcm",
                   key.is_system: 1
                 }
               ]
@@ -517,25 +517,25 @@
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             }
           ]
@@ -543,49 +543,49 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "CoreGraphics",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreGraphics.framework/Modules/CoreGraphics.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreGraphics.framework/Modules/CoreGraphics.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "CoreFoundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/CoreFoundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/CoreFoundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "CoreGraphics",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/CoreGraphics-19GMCQK1P6XM3.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/CoreGraphics-19GMCQK1P6XM3.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             }
           ]
@@ -593,67 +593,67 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "CoreText",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreText.framework/Modules/CoreText.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreText.framework/Modules/CoreText.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "CoreText",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/CoreText-2C7KN0R8TNZFM.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/CoreText-2C7KN0R8TNZFM.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "UniformTypeIdentifiers",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/UniformTypeIdentifiers.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/UniformTypeIdentifiers.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Foundation",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "UniformTypeIdentifiers",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/UniformTypeIdentifiers-J2SEKBNCVKL8.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/UniformTypeIdentifiers-J2SEKBNCVKL8.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 }
               ]
@@ -661,19 +661,19 @@
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             }
           ]
@@ -681,43 +681,43 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "DataDetection",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/DataDetection.framework/Modules/DataDetection.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/DataDetection.framework/Modules/DataDetection.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "DataDetection",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/DataDetection-VKJA9VK2L9FR.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/DataDetection-VKJA9VK2L9FR.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             }
           ]
@@ -725,121 +725,121 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "DeveloperToolsSupport",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/DeveloperToolsSupport.framework/Modules/DeveloperToolsSupport.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/DeveloperToolsSupport.framework/Modules/DeveloperToolsSupport.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "CoreGraphics",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreGraphics.framework/Modules/CoreGraphics.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreGraphics.framework/Modules/CoreGraphics.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "DeveloperToolsSupport",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/DeveloperToolsSupport-2B3PEGL0O3SHB.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/DeveloperToolsSupport-2B3PEGL0O3SHB.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "lock",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "log",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "os",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/os.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/os.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "ObjectiveC",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/ObjectiveC.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/ObjectiveC.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "log",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "os",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "signpost",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "workgroup",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
                   key.is_system: 1
                 }
               ]
@@ -849,55 +849,55 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Dispatch",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Dispatch.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Dispatch.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Foundation",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "QuartzCore",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/QuartzCore.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/QuartzCore.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "QuartzCore",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/QuartzCore-1PGA94LEHPAST.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/QuartzCore-1PGA94LEHPAST.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             }
           ]
@@ -905,97 +905,97 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Swift",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "SwiftUICore",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/SwiftUICore.framework/Modules/SwiftUICore.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/SwiftUICore.framework/Modules/SwiftUICore.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1,
           key.dependencies: [
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Accessibility",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Accessibility.framework/Modules/Accessibility.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Accessibility.framework/Modules/Accessibility.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Combine",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "CoreFoundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/CoreFoundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/CoreFoundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "CoreTransferable",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreTransferable.framework/Modules/CoreTransferable.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/CoreTransferable.framework/Modules/CoreTransferable.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Combine",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Combine.framework/Modules/Combine.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "CoreTransferable",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/CoreTransferable-16AVK0JPGWW6Y.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/CoreTransferable-16AVK0JPGWW6Y.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Foundation",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "UniformTypeIdentifiers",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/UniformTypeIdentifiers.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/UniformTypeIdentifiers.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "log",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "os",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/os.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/os.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 }
               ]
@@ -1003,55 +1003,55 @@
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "DeveloperToolsSupport",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/DeveloperToolsSupport.framework/Modules/DeveloperToolsSupport.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/DeveloperToolsSupport.framework/Modules/DeveloperToolsSupport.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Foundation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "OSLog",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/OSLog.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/OSLog.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Foundation",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Foundation.framework/Modules/Foundation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "OSLog",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/OSLog-3SZK3I11U7OTF.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/OSLog-3SZK3I11U7OTF.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 }
               ]
@@ -1059,43 +1059,43 @@
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Observation",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Observation.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Observation.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Spatial",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Spatial.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Spatial.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "Spatial",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Spatial-1HOKQLWXNANNU.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Spatial-1HOKQLWXNANNU.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 }
               ]
@@ -1103,49 +1103,49 @@
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "SwiftUICore",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/SwiftUICore-QNUEZR0E8HH6.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/SwiftUICore-QNUEZR0E8HH6.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Symbols",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Symbols.framework/Modules/Symbols.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Symbols.framework/Modules/Symbols.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "Symbols",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/Symbols-1DNV4QDBC5QS9.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/Symbols-1DNV4QDBC5QS9.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 }
               ]
@@ -1153,79 +1153,79 @@
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "UniformTypeIdentifiers",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/UniformTypeIdentifiers.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/UniformTypeIdentifiers.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "Swift",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "_SwiftConcurrencyShims",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.clang,
               key.name: "log",
-              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/os-35YBQJQ2YC966.pcm",
+              key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/os-35YBQJQ2YC966.pcm",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "os",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/os.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/os.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1
             },
             {
               key.kind: source.lang.swift.import.module.swift,
               key.name: "simd",
-              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/simd.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+              key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/simd.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
               key.is_system: 1,
               key.dependencies: [
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Darwin",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Darwin.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/Swift.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.swift,
                   key.name: "Swift",
-                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+                  key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "_SwiftConcurrencyShims",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
                   key.is_system: 1
                 },
                 {
                   key.kind: source.lang.swift.import.module.clang,
                   key.name: "simd",
-                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/simd-1UMVU90N80PW8.pcm",
+                  key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/simd-1UMVU90N80PW8.pcm",
                   key.is_system: 1
                 }
               ]
@@ -1235,43 +1235,43 @@
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Symbols",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Symbols.framework/Modules/Symbols.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/System/Library/Frameworks/Symbols.framework/Modules/Symbols.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.clang,
           key.name: "UIKit",
-          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/UIKit-1WUOUYQ3HJCSW.pcm",
+          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/UIKit-1WUOUYQ3HJCSW.pcm",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.clang,
           key.name: "UIMainMenuSystem",
-          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/UIKit-1WUOUYQ3HJCSW.pcm",
+          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/UIKit-1WUOUYQ3HJCSW.pcm",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.clang,
           key.name: "UIMenuSystem",
-          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/UIKit-1WUOUYQ3HJCSW.pcm",
+          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/UIKit-1WUOUYQ3HJCSW.pcm",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Swift",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_Concurrency.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.swift,
           key.name: "Swift",
-          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/x86_64-apple-ios-simulator.swiftinterface",
+          key.filepath: "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk/usr/lib/swift/_StringProcessing.swiftmodule/arm64-apple-ios-simulator.swiftinterface",
           key.is_system: 1
         },
         {
           key.kind: source.lang.swift.import.module.clang,
           key.name: "_SwiftConcurrencyShims",
-          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/2GRA59UE72YVB/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
+          key.filepath: "/Users/wangluofan/Library/Developer/Xcode/DerivedData/ExampleProject-bxnivygplehrledqhlghoqcpyple/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/1R4DNZ7LNYO32/_SwiftConcurrencyShims-ETMZL06LU75E.pcm",
           key.is_system: 1
         }
       ]
@@ -2787,9 +2787,107 @@
         },
         {
           key.kind: source.lang.swift.decl.function.method.instance,
+          key.name: "viewWillAppear(_:)",
+          key.usr: "c:@M@ExampleProject@objc(cs)ViewController(im)viewWillAppear:",
+          key.line: 32,
+          key.column: 19,
+          key.is_dynamic: 1,
+          key.related: [
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.name: "viewWillAppear(_:)",
+              key.usr: "c:objc(cs)UIViewController(im)viewWillAppear:"
+            }
+          ],
+          key.entities: [
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Bool",
+              key.usr: "s:Sb",
+              key.line: 32,
+              key.column: 46
+            },
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.name: "viewWillAppear(_:)",
+              key.usr: "c:objc(cs)UIViewController(im)viewWillAppear:",
+              key.line: 33,
+              key.column: 15
+            }
+          ],
+          key.attributes: [
+            {
+              key.attribute: source.decl.attribute.dynamic
+            },
+            {
+              key.attribute: source.decl.attribute.objc.name
+            },
+            {
+              key.attribute: source.decl.attribute.preconcurrency
+            },
+            {
+              key.attribute: source.decl.attribute._custom
+            },
+            {
+              key.attribute: source.decl.attribute.override
+            }
+          ],
+          key.effective_access: source.decl.effective_access.internal
+        },
+        {
+          key.kind: source.lang.swift.decl.function.method.instance,
+          key.name: "viewDidAppear(_:)",
+          key.usr: "c:@M@ExampleProject@objc(cs)ViewController(im)viewDidAppear:",
+          key.line: 36,
+          key.column: 19,
+          key.is_dynamic: 1,
+          key.related: [
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.name: "viewDidAppear(_:)",
+              key.usr: "c:objc(cs)UIViewController(im)viewDidAppear:"
+            }
+          ],
+          key.entities: [
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Bool",
+              key.usr: "s:Sb",
+              key.line: 36,
+              key.column: 45
+            },
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.name: "viewDidAppear(_:)",
+              key.usr: "c:objc(cs)UIViewController(im)viewDidAppear:",
+              key.line: 37,
+              key.column: 15
+            }
+          ],
+          key.attributes: [
+            {
+              key.attribute: source.decl.attribute.dynamic
+            },
+            {
+              key.attribute: source.decl.attribute.objc.name
+            },
+            {
+              key.attribute: source.decl.attribute.preconcurrency
+            },
+            {
+              key.attribute: source.decl.attribute._custom
+            },
+            {
+              key.attribute: source.decl.attribute.override
+            }
+          ],
+          key.effective_access: source.decl.effective_access.internal
+        },
+        {
+          key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "viewDidLoad()",
           key.usr: "c:@M@ExampleProject@objc(cs)ViewController(im)viewDidLoad",
-          key.line: 32,
+          key.line: 40,
           key.column: 19,
           key.is_dynamic: 1,
           key.related: [
@@ -2804,27 +2902,27 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "viewDidLoad()",
               key.usr: "c:objc(cs)UIViewController(im)viewDidLoad",
-              key.line: 33,
+              key.line: 41,
               key.column: 15
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "..<(_:_:)",
               key.usr: "s:SLsE3zzloiySnyxGx_xtFZ",
-              key.line: 36,
+              key.line: 44,
               key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:Slss16IndexingIteratorVyxG0B0RtzrlE04makeB0ACyF",
-              key.line: 36,
+              key.line: 44,
               key.column: 9,
               key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s16IndexingIteratorV4next7ElementQzSgyF",
-              key.line: 36,
+              key.line: 44,
               key.column: 9,
               key.is_implicit: 1
             },
@@ -2832,126 +2930,126 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 37,
+              key.line: 45,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 40,
+              key.line: 48,
               key.column: 22
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 40,
+              key.line: 48,
               key.column: 32
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 40,
+              key.line: 48,
               key.column: 40
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 40,
+              key.line: 48,
               key.column: 52
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 40,
+              key.line: 48,
               key.column: 60
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "+(_:_:)",
               key.usr: "s:Si1poiyS2i_SitFZ",
-              key.line: 41,
+              key.line: 49,
               key.column: 22
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 44,
+              key.line: 52,
               key.column: 23
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 44,
+              key.line: 52,
               key.column: 33
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 44,
+              key.line: 52,
               key.column: 41
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "-(_:_:)",
               key.usr: "s:Si1soiyS2i_SitFZ",
-              key.line: 45,
+              key.line: 53,
               key.column: 22
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 48,
+              key.line: 56,
               key.column: 20
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 48,
+              key.line: 56,
               key.column: 28
             },
             {
               key.kind: source.lang.swift.ref.class,
               key.name: "TestA",
               key.usr: "s:14ExampleProject5TestAC",
-              key.line: 49,
+              key.line: 57,
               key.column: 16
             },
             {
               key.kind: source.lang.swift.ref.class,
               key.name: "TestA",
               key.usr: "s:14ExampleProject5TestAC",
-              key.line: 49,
+              key.line: 57,
               key.column: 25
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.name: "init(s:)",
               key.usr: "s:14ExampleProject5TestAC1sACSi_tcfc",
-              key.line: 49,
+              key.line: 57,
               key.column: 25
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 53,
+              key.line: 61,
               key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "testFunc(num1:num2:)",
               key.usr: "s:14ExampleProject5TestAC8testFunc4num14num2S2i_SitF",
-              key.line: 53,
+              key.line: 61,
               key.column: 28,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1
@@ -2960,14 +3058,14 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 54,
+              key.line: 62,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "c",
               key.usr: "s:14ExampleProject5TestAC1cSi1u_Si1vtvp",
-              key.line: 60,
+              key.line: 68,
               key.column: 11,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -2975,7 +3073,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:14ExampleProject5TestAC1cSi1u_Si1vtvg",
-                  key.line: 60,
+                  key.line: 68,
                   key.column: 11,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -2987,7 +3085,7 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "testLocalBindings()",
               key.usr: "s:14ExampleProject14ViewControllerC17testLocalBindingsyyF",
-              key.line: 62,
+              key.line: 70,
               key.column: 14,
               key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
               key.is_dynamic: 1
@@ -2996,7 +3094,7 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "testExtraLocalBindings()",
               key.usr: "s:14ExampleProject14ViewControllerC22testExtraLocalBindingsyyF",
-              key.line: 63,
+              key.line: 71,
               key.column: 14,
               key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
               key.is_dynamic: 1
@@ -3005,7 +3103,7 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "testAsyncBindings()",
               key.usr: "s:14ExampleProject14ViewControllerC17testAsyncBindingsyyF",
-              key.line: 64,
+              key.line: 72,
               key.column: 14,
               key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
               key.is_dynamic: 1
@@ -3034,7 +3132,7 @@
           key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "testLocalBindings()",
           key.usr: "s:14ExampleProject14ViewControllerC17testLocalBindingsyyF",
-          key.line: 67,
+          key.line: 75,
           key.column: 10,
           key.is_dynamic: 1,
           key.entities: [
@@ -3042,13 +3140,13 @@
               key.kind: source.lang.swift.ref.enum,
               key.name: "TestEnum",
               key.usr: "s:14ExampleProject8TestEnumO",
-              key.line: 68,
+              key.line: 76,
               key.column: 21
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.usr: "s:Sa12arrayLiteralSayxGxd_tcfc",
-              key.line: 68,
+              key.line: 76,
               key.column: 33,
               key.is_implicit: 1
             },
@@ -3056,35 +3154,35 @@
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "first",
               key.usr: "s:14ExampleProject8TestEnumO5firstyA2CmF",
-              key.line: 68,
+              key.line: 76,
               key.column: 35
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "second(_:)",
               key.usr: "s:14ExampleProject8TestEnumO6secondyAcA0C1ACcACmF",
-              key.line: 68,
+              key.line: 76,
               key.column: 43
             },
             {
               key.kind: source.lang.swift.ref.class,
               key.name: "TestA",
               key.usr: "s:14ExampleProject5TestAC",
-              key.line: 68,
+              key.line: 76,
               key.column: 50
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.name: "init(s:)",
               key.usr: "s:14ExampleProject5TestAC1sACSi_tcfc",
-              key.line: 68,
+              key.line: 76,
               key.column: 50
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "makeIterator()",
               key.usr: "s:Slss16IndexingIteratorVyxG0B0RtzrlE04makeB0ACyF",
-              key.line: 71,
+              key.line: 79,
               key.column: 30,
               key.receiver_usr: "s:Sa",
               key.is_dynamic: 1
@@ -3093,28 +3191,28 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "next()",
               key.usr: "s:s16IndexingIteratorV4next7ElementQzSgyF",
-              key.line: 72,
+              key.line: 80,
               key.column: 38
             },
             {
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 73,
+              key.line: 81,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "second(_:)",
               key.usr: "s:14ExampleProject8TestEnumO6secondyAcA0C1ACcACmF",
-              key.line: 75,
+              key.line: 83,
               key.column: 25
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "first",
               key.usr: "s:SlsE5first7ElementQzSgvp",
-              key.line: 75,
+              key.line: 83,
               key.column: 46,
               key.receiver_usr: "s:Sa",
               key.is_dynamic: 1,
@@ -3122,7 +3220,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:SlsE5first7ElementQzSgvg",
-                  key.line: 75,
+                  key.line: 83,
                   key.column: 46,
                   key.receiver_usr: "s:Sa",
                   key.is_dynamic: 1,
@@ -3134,14 +3232,14 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 76,
+              key.line: 84,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "n",
               key.usr: "s:14ExampleProject5TestAC1nSivp",
-              key.line: 76,
+              key.line: 84,
               key.column: 24,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -3149,7 +3247,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:14ExampleProject5TestAC1nSivg",
-                  key.line: 76,
+                  key.line: 84,
                   key.column: 24,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -3161,14 +3259,14 @@
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "second(_:)",
               key.usr: "s:14ExampleProject8TestEnumO6secondyAcA0C1ACcACmF",
-              key.line: 81,
+              key.line: 89,
               key.column: 22
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "first",
               key.usr: "s:SlsE5first7ElementQzSgvp",
-              key.line: 81,
+              key.line: 89,
               key.column: 44,
               key.receiver_usr: "s:Sa",
               key.is_dynamic: 1,
@@ -3176,7 +3274,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:SlsE5first7ElementQzSgvg",
-                  key.line: 81,
+                  key.line: 89,
                   key.column: 44,
                   key.receiver_usr: "s:Sa",
                   key.is_dynamic: 1,
@@ -3188,14 +3286,14 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 82,
+              key.line: 90,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "n",
               key.usr: "s:14ExampleProject5TestAC1nSivp",
-              key.line: 82,
+              key.line: 90,
               key.column: 25,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -3203,7 +3301,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:14ExampleProject5TestAC1nSivg",
-                  key.line: 82,
+                  key.line: 90,
                   key.column: 25,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -3215,20 +3313,20 @@
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "second(_:)",
               key.usr: "s:14ExampleProject8TestEnumO6secondyAcA0C1ACcACmF",
-              key.line: 86,
+              key.line: 94,
               key.column: 23
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:Slss16IndexingIteratorVyxG0B0RtzrlE04makeB0ACyF",
-              key.line: 86,
+              key.line: 94,
               key.column: 9,
               key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s16IndexingIteratorV4next7ElementQzSgyF",
-              key.line: 86,
+              key.line: 94,
               key.column: 9,
               key.is_implicit: 1
             },
@@ -3236,14 +3334,14 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 87,
+              key.line: 95,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "n",
               key.usr: "s:14ExampleProject5TestAC1nSivp",
-              key.line: 87,
+              key.line: 95,
               key.column: 24,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -3251,7 +3349,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:14ExampleProject5TestAC1nSivg",
-                  key.line: 87,
+                  key.line: 95,
                   key.column: 24,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -3263,7 +3361,7 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "enumerated()",
               key.usr: "s:STsE10enumerateds18EnumeratedSequenceVyxGyF",
-              key.line: 89,
+              key.line: 97,
               key.column: 37,
               key.receiver_usr: "s:Sa",
               key.is_dynamic: 1
@@ -3271,14 +3369,14 @@
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s18EnumeratedSequenceV12makeIteratorAB0D0Vyx_GyF",
-              key.line: 89,
+              key.line: 97,
               key.column: 9,
               key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s18EnumeratedSequenceV8IteratorV4nextSi6offset_7ElementQz7elementtSgyF",
-              key.line: 89,
+              key.line: 97,
               key.column: 9,
               key.is_implicit: 1
             },
@@ -3286,14 +3384,14 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 90,
+              key.line: 98,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "mayThrow()",
               key.usr: "s:14ExampleProject14ViewControllerC8mayThrowyyKF",
-              key.line: 95,
+              key.line: 103,
               key.column: 22,
               key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
               key.is_dynamic: 1
@@ -3302,21 +3400,21 @@
               key.kind: source.lang.swift.ref.class,
               key.name: "NSError",
               key.usr: "c:objc(cs)NSError",
-              key.line: 96,
+              key.line: 104,
               key.column: 30
             },
             {
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 97,
+              key.line: 105,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "code",
               key.usr: "c:objc(cs)NSError(py)code",
-              key.line: 97,
+              key.line: 105,
               key.column: 25,
               key.receiver_usr: "c:objc(cs)NSError",
               key.is_dynamic: 1,
@@ -3324,7 +3422,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "c:objc(cs)NSError(im)code",
-                  key.line: 97,
+                  key.line: 105,
                   key.column: 25,
                   key.receiver_usr: "c:objc(cs)NSError",
                   key.is_dynamic: 1,
@@ -3336,7 +3434,7 @@
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "mayThrow()",
               key.usr: "s:14ExampleProject14ViewControllerC8mayThrowyyKF",
-              key.line: 100,
+              key.line: 108,
               key.column: 22,
               key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
               key.is_dynamic: 1
@@ -3345,20 +3443,20 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 102,
+              key.line: 110,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "count",
               key.usr: "s:Sa5countSivp",
-              key.line: 106,
+              key.line: 114,
               key.column: 54,
               key.entities: [
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:Sa5countSivg",
-                  key.line: 106,
+                  key.line: 114,
                   key.column: 54,
                   key.is_implicit: 1
                 }
@@ -3368,21 +3466,21 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 107,
+              key.line: 115,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "second(_:)",
               key.usr: "s:14ExampleProject8TestEnumO6secondyAcA0C1ACcACmF",
-              key.line: 112,
+              key.line: 120,
               key.column: 25
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "last",
               key.usr: "s:SKsE4last7ElementQzSgvp",
-              key.line: 112,
+              key.line: 120,
               key.column: 46,
               key.receiver_usr: "s:Sa",
               key.is_dynamic: 1,
@@ -3390,7 +3488,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:SKsE4last7ElementQzSgvg",
-                  key.line: 112,
+                  key.line: 120,
                   key.column: 46,
                   key.receiver_usr: "s:Sa",
                   key.is_dynamic: 1,
@@ -3402,14 +3500,14 @@
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 115,
+              key.line: 123,
               key.column: 9
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "n",
               key.usr: "s:14ExampleProject5TestAC1nSivp",
-              key.line: 115,
+              key.line: 123,
               key.column: 20,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -3417,7 +3515,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:14ExampleProject5TestAC1nSivg",
-                  key.line: 115,
+                  key.line: 123,
                   key.column: 20,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -3440,7 +3538,7 @@
           key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "testExtraLocalBindings()",
           key.usr: "s:14ExampleProject14ViewControllerC22testExtraLocalBindingsyyF",
-          key.line: 118,
+          key.line: 126,
           key.column: 10,
           key.is_dynamic: 1,
           key.entities: [
@@ -3448,49 +3546,49 @@
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 119,
+              key.line: 127,
               key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 120,
+              key.line: 128,
               key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 124,
+              key.line: 132,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 131,
+              key.line: 139,
               key.column: 9
             },
             {
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 135,
+              key.line: 143,
               key.column: 9
             },
             {
               key.kind: source.lang.swift.ref.function.free,
               key.name: "print(_:separator:terminator:)",
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 141,
-              key.column: 13
+              key.line: 149,
+              key.column: 17
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.name: "mayThrowSpecific()",
               key.usr: "s:14ExampleProject14ViewControllerC16mayThrowSpecificyyKF",
-              key.line: 146,
+              key.line: 154,
               key.column: 22,
               key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
               key.is_dynamic: 1
@@ -3499,78 +3597,22 @@
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "specific(_:)",
               key.usr: "s:14ExampleProject9TestErrorO8specificyACSicACmF",
-              key.line: 147,
+              key.line: 155,
               key.column: 27
             },
             {
               key.kind: source.lang.swift.ref.enum,
               key.name: "TestError",
               key.usr: "s:14ExampleProject9TestErrorO",
-              key.line: 147,
+              key.line: 155,
               key.column: 17
             },
             {
               key.kind: source.lang.swift.ref.enum,
               key.name: "TestError",
               key.usr: "s:14ExampleProject9TestErrorO",
-              key.line: 147,
+              key.line: 155,
               key.column: 27
-            },
-            {
-              key.kind: source.lang.swift.ref.function.free,
-              key.name: "print(_:separator:terminator:)",
-              key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 148,
-              key.column: 13
-            },
-            {
-              key.kind: source.lang.swift.ref.function.free,
-              key.name: "print(_:separator:terminator:)",
-              key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
-              key.line: 150,
-              key.column: 13
-            },
-            {
-              key.kind: source.lang.swift.ref.struct,
-              key.name: "Int",
-              key.usr: "s:Si",
-              key.line: 154,
-              key.column: 25
-            },
-            {
-              key.kind: source.lang.swift.ref.struct,
-              key.name: "Int",
-              key.usr: "s:Si",
-              key.line: 154,
-              key.column: 30
-            },
-            {
-              key.kind: source.lang.swift.ref.function.constructor,
-              key.usr: "s:Sa12arrayLiteralSayxGxd_tcfc",
-              key.line: 154,
-              key.column: 39,
-              key.is_implicit: 1
-            },
-            {
-              key.kind: source.lang.swift.ref.enumelement,
-              key.name: "some(_:)",
-              key.usr: "s:Sq4someyxSgxcABmlF",
-              key.line: 155,
-              key.column: 19
-            },
-            {
-              key.kind: source.lang.swift.ref.function.method.instance,
-              key.usr: "s:Slss16IndexingIteratorVyxG0B0RtzrlE04makeB0ACyF",
-              key.line: 155,
-              key.column: 9,
-              key.is_implicit: 1
-            },
-            {
-              key.kind: source.lang.swift.ref.function.method.instance,
-              key.usr: "s:s16IndexingIteratorV4next7ElementQzSgyF",
-              key.line: 155,
-              key.column: 9,
-              key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.free,
@@ -3578,48 +3620,55 @@
               key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
               key.line: 156,
               key.column: 13
-            }
-          ],
-          key.attributes: [
-            {
-              key.attribute: source.decl.attribute.preconcurrency
             },
             {
-              key.attribute: source.decl.attribute._custom
-            }
-          ],
-          key.effective_access: source.decl.effective_access.internal
-        },
-        {
-          key.kind: source.lang.swift.decl.function.method.instance,
-          key.name: "testAsyncBindings()",
-          key.usr: "s:14ExampleProject14ViewControllerC17testAsyncBindingsyyF",
-          key.line: 160,
-          key.column: 10,
-          key.is_dynamic: 1,
-          key.entities: [
+              key.kind: source.lang.swift.ref.function.free,
+              key.name: "print(_:separator:terminator:)",
+              key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
+              key.line: 158,
+              key.column: 13
+            },
             {
               key.kind: source.lang.swift.ref.struct,
-              key.name: "Task",
-              key.usr: "s:ScT",
-              key.line: 161,
-              key.column: 9
+              key.name: "Int",
+              key.usr: "s:Si",
+              key.line: 162,
+              key.column: 25
+            },
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Int",
+              key.usr: "s:Si",
+              key.line: 162,
+              key.column: 30
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
-              key.name: "init(name:priority:operation:)",
-              key.usr: "s:ScT12_Concurrencys5NeverORs_rlE4name8priority9operationScTyxACGSSSg_ScPSgxyYaYAcntcfc",
-              key.line: 161,
-              key.column: 9
+              key.usr: "s:Sa12arrayLiteralSayxGxd_tcfc",
+              key.line: 162,
+              key.column: 39,
+              key.is_implicit: 1
+            },
+            {
+              key.kind: source.lang.swift.ref.enumelement,
+              key.name: "some(_:)",
+              key.usr: "s:Sq4someyxSgxcABmlF",
+              key.line: 163,
+              key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
-              key.name: "fetchValue()",
-              key.usr: "s:14ExampleProject14ViewControllerC10fetchValueSiyYaF",
-              key.line: 162,
-              key.column: 37,
-              key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
-              key.is_dynamic: 1
+              key.usr: "s:Slss16IndexingIteratorVyxG0B0RtzrlE04makeB0ACyF",
+              key.line: 163,
+              key.column: 9,
+              key.is_implicit: 1
+            },
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.usr: "s:s16IndexingIteratorV4next7ElementQzSgyF",
+              key.line: 163,
+              key.column: 9,
+              key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.free,
@@ -3641,9 +3690,58 @@
         },
         {
           key.kind: source.lang.swift.decl.function.method.instance,
+          key.name: "testAsyncBindings()",
+          key.usr: "s:14ExampleProject14ViewControllerC17testAsyncBindingsyyF",
+          key.line: 168,
+          key.column: 10,
+          key.is_dynamic: 1,
+          key.entities: [
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Task",
+              key.usr: "s:ScT",
+              key.line: 169,
+              key.column: 9
+            },
+            {
+              key.kind: source.lang.swift.ref.function.constructor,
+              key.name: "init(name:priority:operation:)",
+              key.usr: "s:ScT12_Concurrencys5NeverORs_rlE4name8priority9operationScTyxACGSSSg_ScPSgxyYaYAcntcfc",
+              key.line: 169,
+              key.column: 9
+            },
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.name: "fetchValue()",
+              key.usr: "s:14ExampleProject14ViewControllerC10fetchValueSiyYaF",
+              key.line: 170,
+              key.column: 37,
+              key.receiver_usr: "c:@M@ExampleProject@objc(cs)ViewController",
+              key.is_dynamic: 1
+            },
+            {
+              key.kind: source.lang.swift.ref.function.free,
+              key.name: "print(_:separator:terminator:)",
+              key.usr: "s:s5print_9separator10terminatoryypd_S2StF",
+              key.line: 172,
+              key.column: 13
+            }
+          ],
+          key.attributes: [
+            {
+              key.attribute: source.decl.attribute.preconcurrency
+            },
+            {
+              key.attribute: source.decl.attribute._custom
+            }
+          ],
+          key.effective_access: source.decl.effective_access.internal
+        },
+        {
+          key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "mayThrow()",
           key.usr: "s:14ExampleProject14ViewControllerC8mayThrowyyKF",
-          key.line: 168,
+          key.line: 176,
           key.column: 10,
           key.is_dynamic: 1,
           key.entities: [
@@ -3651,14 +3749,14 @@
               key.kind: source.lang.swift.ref.class,
               key.name: "NSError",
               key.usr: "c:objc(cs)NSError",
-              key.line: 169,
+              key.line: 177,
               key.column: 15
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.name: "init(domain:code:userInfo:)",
               key.usr: "c:objc(cs)NSError(im)initWithDomain:code:userInfo:",
-              key.line: 169,
+              key.line: 177,
               key.column: 15
             }
           ],
@@ -3676,7 +3774,7 @@
           key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "mayThrowSpecific()",
           key.usr: "s:14ExampleProject14ViewControllerC16mayThrowSpecificyyKF",
-          key.line: 172,
+          key.line: 180,
           key.column: 10,
           key.is_dynamic: 1,
           key.entities: [
@@ -3684,14 +3782,14 @@
               key.kind: source.lang.swift.ref.enum,
               key.name: "TestError",
               key.usr: "s:14ExampleProject9TestErrorO",
-              key.line: 173,
+              key.line: 181,
               key.column: 15
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "specific(_:)",
               key.usr: "s:14ExampleProject9TestErrorO8specificyACSicACmF",
-              key.line: 173,
+              key.line: 181,
               key.column: 25
             }
           ],
@@ -3709,7 +3807,7 @@
           key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "fetchValue()",
           key.usr: "s:14ExampleProject14ViewControllerC10fetchValueSiyYaF",
-          key.line: 176,
+          key.line: 184,
           key.column: 10,
           key.is_dynamic: 1,
           key.entities: [
@@ -3717,7 +3815,7 @@
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 176,
+              key.line: 184,
               key.column: 32
             }
           ],
@@ -3813,20 +3911,20 @@
       key.kind: source.lang.swift.decl.class,
       key.name: "TestA",
       key.usr: "s:14ExampleProject5TestAC",
-      key.line: 181,
+      key.line: 189,
       key.column: 7,
       key.entities: [
         {
           key.kind: source.lang.swift.decl.var.instance,
           key.name: "n",
           key.usr: "s:14ExampleProject5TestAC1nSivp",
-          key.line: 182,
+          key.line: 190,
           key.column: 9,
           key.entities: [
             {
               key.kind: source.lang.swift.decl.function.accessor.getter,
               key.usr: "s:14ExampleProject5TestAC1nSivg",
-              key.line: 182,
+              key.line: 190,
               key.column: 9,
               key.is_dynamic: 1,
               key.is_implicit: 1
@@ -3834,7 +3932,7 @@
             {
               key.kind: source.lang.swift.decl.function.accessor.setter,
               key.usr: "s:14ExampleProject5TestAC1nSivs",
-              key.line: 182,
+              key.line: 190,
               key.column: 9,
               key.is_dynamic: 1,
               key.is_implicit: 1
@@ -3846,28 +3944,28 @@
           key.kind: source.lang.swift.ref.struct,
           key.name: "Int",
           key.usr: "s:Si",
-          key.line: 182,
+          key.line: 190,
           key.column: 12
         },
         {
           key.kind: source.lang.swift.decl.function.constructor,
           key.name: "init(s:)",
           key.usr: "s:14ExampleProject5TestAC1sACSi_tcfc",
-          key.line: 184,
+          key.line: 192,
           key.column: 5,
           key.entities: [
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 184,
+              key.line: 192,
               key.column: 13
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "n",
               key.usr: "s:14ExampleProject5TestAC1nSivp",
-              key.line: 185,
+              key.line: 193,
               key.column: 14,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -3875,7 +3973,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.setter,
                   key.usr: "s:14ExampleProject5TestAC1nSivs",
-                  key.line: 185,
+                  key.line: 193,
                   key.column: 14,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -3890,21 +3988,21 @@
           key.kind: source.lang.swift.decl.function.constructor,
           key.name: "init(_:)",
           key.usr: "s:14ExampleProject5TestACyACSicfc",
-          key.line: 188,
+          key.line: 196,
           key.column: 5,
           key.entities: [
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 188,
+              key.line: 196,
               key.column: 15
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "n",
               key.usr: "s:14ExampleProject5TestAC1nSivp",
-              key.line: 189,
+              key.line: 197,
               key.column: 14,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
@@ -3912,7 +4010,7 @@
                 {
                   key.kind: source.lang.swift.ref.function.accessor.setter,
                   key.usr: "s:14ExampleProject5TestAC1nSivs",
-                  key.line: 189,
+                  key.line: 197,
                   key.column: 14,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
@@ -3927,14 +4025,14 @@
           key.kind: source.lang.swift.decl.var.instance,
           key.name: "c",
           key.usr: "s:14ExampleProject5TestAC1cSi1u_Si1vtvp",
-          key.line: 192,
+          key.line: 200,
           key.column: 9,
           key.entities: [
             {
               key.kind: source.lang.swift.decl.function.accessor.getter,
               key.name: "getter:c",
               key.usr: "s:14ExampleProject5TestAC1cSi1u_Si1vtvg",
-              key.line: 192,
+              key.line: 200,
               key.column: 29,
               key.is_dynamic: 1
             }
@@ -3945,21 +4043,21 @@
           key.kind: source.lang.swift.ref.struct,
           key.name: "Int",
           key.usr: "s:Si",
-          key.line: 192,
+          key.line: 200,
           key.column: 16
         },
         {
           key.kind: source.lang.swift.ref.struct,
           key.name: "Int",
           key.usr: "s:Si",
-          key.line: 192,
+          key.line: 200,
           key.column: 24
         },
         {
           key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "testFunc(num1:num2:)",
           key.usr: "s:14ExampleProject5TestAC8testFunc4num14num2S2i_SitF",
-          key.line: 196,
+          key.line: 204,
           key.column: 10,
           key.is_dynamic: 1,
           key.entities: [
@@ -3967,79 +4065,79 @@
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 196,
+              key.line: 204,
               key.column: 25
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 196,
+              key.line: 204,
               key.column: 36
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 196,
+              key.line: 204,
               key.column: 44
             },
             {
               key.kind: source.lang.swift.ref.enum,
               key.name: "TestEnum",
               key.usr: "s:14ExampleProject8TestEnumO",
-              key.line: 197,
+              key.line: 205,
               key.column: 16
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "first",
               key.usr: "s:14ExampleProject8TestEnumO5firstyA2CmF",
-              key.line: 197,
+              key.line: 205,
               key.column: 28
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "first",
               key.usr: "s:14ExampleProject8TestEnumO5firstyA2CmF",
-              key.line: 200,
-              key.column: 15
+              key.line: 208,
+              key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "forth",
               key.usr: "s:14ExampleProject8TestEnumO5forthyA2CmF",
-              key.line: 200,
-              key.column: 23
+              key.line: 208,
+              key.column: 27
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "fifth",
               key.usr: "s:14ExampleProject8TestEnumO5fifthyA2CmF",
-              key.line: 200,
-              key.column: 31
+              key.line: 208,
+              key.column: 35
             },
             {
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "second(_:)",
               key.usr: "s:14ExampleProject8TestEnumO6secondyAcA0C1ACcACmF",
-              key.line: 202,
-              key.column: 15
+              key.line: 210,
+              key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.var.instance,
               key.name: "c",
               key.usr: "s:14ExampleProject5TestAC1cSi1u_Si1vtvp",
-              key.line: 203,
-              key.column: 23,
+              key.line: 211,
+              key.column: 27,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1,
               key.entities: [
                 {
                   key.kind: source.lang.swift.ref.function.accessor.getter,
                   key.usr: "s:14ExampleProject5TestAC1cSi1u_Si1vtvg",
-                  key.line: 203,
-                  key.column: 23,
+                  key.line: 211,
+                  key.column: 27,
                   key.receiver_usr: "s:14ExampleProject5TestAC",
                   key.is_dynamic: 1,
                   key.is_implicit: 1
@@ -4050,14 +4148,14 @@
               key.kind: source.lang.swift.ref.enumelement,
               key.name: "third",
               key.usr: "s:14ExampleProject8TestEnumO5thirdyA2CmF",
-              key.line: 204,
-              key.column: 15
+              key.line: 212,
+              key.column: 19
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
-              key.name: "testFunc(_:num2:)",
-              key.usr: "s:14ExampleProject5TestAC8testFunc33_FAFC41EADF58AF25B99986FA49B2105DLL_4num2S2i_SitF",
-              key.line: 208,
+              key.name: "testFunc2(_:num2:)",
+              key.usr: "s:14ExampleProject5TestAC9testFunc233_FAFC41EADF58AF25B99986FA49B2105DLL_4num2S2i_SitF",
+              key.line: 216,
               key.column: 21,
               key.receiver_usr: "s:14ExampleProject5TestAC",
               key.is_dynamic: 1
@@ -4067,9 +4165,9 @@
         },
         {
           key.kind: source.lang.swift.decl.function.method.instance,
-          key.name: "testFunc(_:num2:)",
-          key.usr: "s:14ExampleProject5TestAC8testFunc33_FAFC41EADF58AF25B99986FA49B2105DLL_4num2S2i_SitF",
-          key.line: 211,
+          key.name: "testFunc2(_:num2:)",
+          key.usr: "s:14ExampleProject5TestAC9testFunc233_FAFC41EADF58AF25B99986FA49B2105DLL_4num2S2i_SitF",
+          key.line: 219,
           key.column: 18,
           key.is_dynamic: 1,
           key.entities: [
@@ -4077,28 +4175,56 @@
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 211,
-              key.column: 35
+              key.line: 219,
+              key.column: 36
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 211,
-              key.column: 46
+              key.line: 219,
+              key.column: 47
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 211,
-              key.column: 54
+              key.line: 219,
+              key.column: 55
+            },
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Int",
+              key.usr: "s:Si",
+              key.line: 220,
+              key.column: 26
+            },
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Int",
+              key.usr: "s:Si",
+              key.line: 220,
+              key.column: 39
+            },
+            {
+              key.kind: source.lang.swift.ref.struct,
+              key.name: "Int",
+              key.usr: "s:Si",
+              key.line: 220,
+              key.column: 47
+            },
+            {
+              key.kind: source.lang.swift.ref.function.method.instance,
+              key.name: "testFunc(num1:num2:)",
+              key.usr: "s:14ExampleProject5TestAC8testFunc4num14num2S2i_SitF",
+              key.line: 220,
+              key.column: 53
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "*(_:_:)",
               key.usr: "s:Si1moiyS2i_SitFZ",
-              key.line: 212,
+              key.line: 221,
               key.column: 21
             }
           ],
@@ -4116,14 +4242,14 @@
       key.kind: source.lang.swift.decl.class,
       key.name: "TestB",
       key.usr: "s:14ExampleProject5TestBC",
-      key.line: 216,
+      key.line: 225,
       key.column: 7,
       key.related: [
         {
           key.kind: source.lang.swift.ref.class,
           key.name: "TestA",
           key.usr: "s:14ExampleProject5TestAC",
-          key.line: 216,
+          key.line: 225,
           key.column: 14
         }
       ],
@@ -4132,14 +4258,14 @@
           key.kind: source.lang.swift.ref.class,
           key.name: "TestA",
           key.usr: "s:14ExampleProject5TestAC",
-          key.line: 216,
+          key.line: 225,
           key.column: 14
         },
         {
           key.kind: source.lang.swift.decl.var.instance,
           key.name: "c",
           key.usr: "s:14ExampleProject5TestBC1cSi1k_Si1ttvp",
-          key.line: 217,
+          key.line: 226,
           key.column: 18,
           key.related: [
             {
@@ -4153,7 +4279,7 @@
               key.kind: source.lang.swift.decl.function.accessor.getter,
               key.name: "getter:c",
               key.usr: "s:14ExampleProject5TestBC1cSi1k_Si1ttvg",
-              key.line: 217,
+              key.line: 226,
               key.column: 38,
               key.is_dynamic: 1,
               key.related: [
@@ -4176,20 +4302,20 @@
           key.kind: source.lang.swift.ref.struct,
           key.name: "Int",
           key.usr: "s:Si",
-          key.line: 217,
+          key.line: 226,
           key.column: 25
         },
         {
           key.kind: source.lang.swift.ref.struct,
           key.name: "Int",
           key.usr: "s:Si",
-          key.line: 217,
+          key.line: 226,
           key.column: 33
         },
         {
           key.kind: source.lang.swift.decl.function.constructor,
           key.usr: "s:14ExampleProject5TestBC1sACSi_tcfc",
-          key.line: 216,
+          key.line: 225,
           key.column: 20,
           key.is_implicit: 1,
           key.related: [
@@ -4209,7 +4335,7 @@
         {
           key.kind: source.lang.swift.decl.function.constructor,
           key.usr: "s:14ExampleProject5TestBCyACSicfc",
-          key.line: 216,
+          key.line: 225,
           key.column: 20,
           key.is_implicit: 1,
           key.related: [
@@ -4233,90 +4359,90 @@
       key.kind: source.lang.swift.decl.extension.struct,
       key.name: "Double",
       key.usr: "s:e:s:Sd14ExampleProjectE13roundDecimalsySdSiF",
-      key.line: 222,
+      key.line: 231,
       key.column: 11,
       key.entities: [
         {
           key.kind: source.lang.swift.ref.struct,
           key.name: "Double",
           key.usr: "s:Sd",
-          key.line: 222,
+          key.line: 231,
           key.column: 11
         },
         {
           key.kind: source.lang.swift.decl.function.method.instance,
           key.name: "roundDecimals(_:)",
           key.usr: "s:Sd14ExampleProjectE13roundDecimalsySdSiF",
-          key.line: 223,
+          key.line: 232,
           key.column: 10,
           key.entities: [
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Int",
               key.usr: "s:Si",
-              key.line: 223,
+              key.line: 232,
               key.column: 33
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Double",
               key.usr: "s:Sd",
-              key.line: 223,
+              key.line: 232,
               key.column: 45
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "Double",
               key.usr: "s:Sd",
-              key.line: 225,
+              key.line: 234,
               key.column: 35
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.name: "init(_:)",
               key.usr: "s:SdySdSgxcSyRzlufc",
-              key.line: 225,
+              key.line: 234,
               key.column: 35
             },
             {
               key.kind: source.lang.swift.ref.struct,
               key.name: "String",
               key.usr: "s:SS",
-              key.line: 225,
+              key.line: 234,
               key.column: 42
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.name: "init(format:_:)",
               key.usr: "s:SS10FoundationE6format_S2Sh_s7CVarArg_pdtcfc",
-              key.line: 225,
+              key.line: 234,
               key.column: 42
             },
             {
               key.kind: source.lang.swift.ref.function.constructor,
               key.usr: "s:SS19stringInterpolationSSs013DefaultStringB0V_tcfc",
-              key.line: 225,
+              key.line: 234,
               key.column: 57,
               key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s26DefaultStringInterpolationV13appendLiteralyySSF",
-              key.line: 225,
+              key.line: 234,
               key.column: 57,
               key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s26DefaultStringInterpolationV06appendC0yyxs06CustomB11ConvertibleRzlF",
-              key.line: 225,
+              key.line: 234,
               key.column: 61,
               key.is_implicit: 1
             },
             {
               key.kind: source.lang.swift.ref.function.method.instance,
               key.usr: "s:s26DefaultStringInterpolationV13appendLiteralyySSF",
-              key.line: 225,
+              key.line: 234,
               key.column: 68,
               key.is_implicit: 1
             },
@@ -4324,28 +4450,28 @@
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "??(_:_:)",
               key.usr: "s:s2qqoiyxxSgn_xyKXKtKRi_zlF",
-              key.line: 225,
+              key.line: 234,
               key.column: 79
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "==(_:_:)",
               key.usr: "s:SQ2eeoiySbx_xtFZ",
-              key.line: 227,
+              key.line: 236,
               key.column: 32
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: "&&(_:_:)",
               key.usr: "s:Sb2aaoiyS2b_SbyKXKtKFZ",
-              key.line: 227,
+              key.line: 236,
               key.column: 37
             },
             {
               key.kind: source.lang.swift.ref.function.operator.infix,
               key.name: ">(_:_:)",
               key.usr: "s:SL1goiySbx_xtFZ",
-              key.line: 227,
+              key.line: 236,
               key.column: 45
             }
           ],
