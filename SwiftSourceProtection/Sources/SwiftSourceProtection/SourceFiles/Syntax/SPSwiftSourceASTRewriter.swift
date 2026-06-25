@@ -9,22 +9,30 @@ import Foundation
 import SwiftSyntax
 
 class SPSwiftSourceASTRewriter: SyntaxRewriter {
+    private var sourceKit: SourceKit
     private var sourceTree: SourceFileSyntax
     private var sourceFile: File
     private var topScope: SPSwiftSourceScope
     private var currentScope: SPSwiftSourceScope
     
     private var currentFunction: DeclSyntaxProtocol?
-    private lazy var locationConverter = SourceLocationConverter(
-        fileName: self.sourceFile.path,
-        tree: self.sourceTree
-    )
+    private var locationConverter: SourceLocationConverter
     
-    init(sourceTree: SourceFileSyntax, sourceFile: File, scope: SPSwiftSourceScope) {
+    init(sourceKit: SourceKit,
+         sourceTree: SourceFileSyntax,
+         sourceFile: File,
+         scope: SPSwiftSourceScope
+    ) {
+        self.sourceKit = sourceKit
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
         self.topScope = scope
         self.currentScope = scope
+        
+        self.locationConverter = SourceLocationConverter(
+            fileName: self.sourceFile.path,
+            tree: self.sourceTree
+        )
         
         super.init(viewMode: .sourceAccurate)
     }
@@ -502,6 +510,14 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         var newNode = node
+        if let confusedDeclName: DeclReferenceExprSyntax = self.confuseExpression(node.declName)?.as(DeclReferenceExprSyntax.self) {
+            newNode = newNode.with(\.declName, confusedDeclName)
+        }
+        
+        if let base = node.base,
+           let confusedBase: ExprSyntax = self.confuseExpression(base) {
+            newNode = newNode.with(\.base, confusedBase)
+        }
         
         return super.visit(newNode)
     }
@@ -647,28 +663,27 @@ extension SPSwiftSourceASTRewriter {
                     .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
                 )
             )
-        } else if let memAccSyntax: MemberAccessExprSyntax = expr.as(MemberAccessExprSyntax.self) {
-            var confusedMemAccSyntax = memAccSyntax
-            if let confusedDeclName: DeclReferenceExprSyntax = self.confuseExpression(memAccSyntax.declName)?.as(DeclReferenceExprSyntax.self) {
-                confusedMemAccSyntax = confusedMemAccSyntax.with(\.declName, confusedDeclName)
+        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
+            var refSymbol: SPSwiftSourceSymbol?
+            
+            let srcLoc: SourceLocation = self.locationConverter.location(for: declRefSyntax.positionAfterSkippingLeadingTrivia)
+            if let resp: SKResponseDictionary = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: srcLoc.line, col: srcLoc.column),
+               let usr: String = resp[sourceKit.keys.usr] {
+                refSymbol = IndexStore.indexStore.getSymbol(usr: usr)
+            } else if let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolInCurrentScope(declRefSyntax.baseName.text) {
+                refSymbol = symbol
             }
             
-            if let base = memAccSyntax.base,
-               let confusedBase: ExprSyntax = self.confuseExpression(base) {
-                confusedMemAccSyntax = confusedMemAccSyntax.with(\.base, confusedBase)
-            }
-            
-            return ExprSyntax(confusedMemAccSyntax)
-        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self),
-                  let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(declRefSyntax.baseName.text),
-                  let confusedSymbolName = symbol.confusedSymbolName {
-            return ExprSyntax(declRefSyntax
-                .with(\.baseName, .identifier(
-                    confusedSymbolName,
-                    leadingTrivia: declRefSyntax.baseName.leadingTrivia,
-                    trailingTrivia: declRefSyntax.baseName.trailingTrivia)
+            if let refSymbol,
+               let confusedSymbolName = refSymbol.confusedSymbolName {
+                return ExprSyntax(declRefSyntax
+                    .with(\.baseName, .identifier(
+                        confusedSymbolName,
+                        leadingTrivia: declRefSyntax.baseName.leadingTrivia,
+                        trailingTrivia: declRefSyntax.baseName.trailingTrivia)
+                    )
                 )
-            )
+            }
         }
         
         return ExprSyntax(expr)

@@ -62,7 +62,12 @@ class SPSourceProtection {
                     return
                 }
                 
-                let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(sourceTree: sourceTree, sourceFile: $0, scope: scope)
+                let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(
+                    sourceKit: sourceKit,
+                    sourceTree: sourceTree,
+                    sourceFile: $0,
+                    scope: scope
+                )
                 let confusedContent = rewriter.rewrite()
                 
                 try? confusedContent.write(toFile: $0.path, atomically: true, encoding: .utf8)
