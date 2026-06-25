@@ -102,10 +102,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var newNode = node
         
         var newBindings: [PatternBindingSyntax] = []
-        node.bindings.forEach { binding in
-            if let confusedPattern: PatternSyntax = self.confuseNodePattern(binding.pattern) {
-                newBindings.append(binding.with(\.pattern, confusedPattern))
+        node.bindings.forEach {
+            var confusedBinding = $0
+            if let confusedPattern: PatternSyntax = self.confuseNodePattern($0.pattern) {
+                confusedBinding = confusedBinding.with(\.pattern, confusedPattern)
             }
+            
+            if let typeAnnon: TypeAnnotationSyntax = $0.typeAnnotation,
+               let confusedType: TypeSyntax = self.confuseTypeSyntax(typeAnnon.type) as? TypeSyntax {
+                confusedBinding = confusedBinding.with(\.typeAnnotation, typeAnnon.with(\.type, confusedType))
+            }
+            
+            newBindings.append(confusedBinding)
         }
         
         newNode = newNode.with(\.bindings, PatternBindingListSyntax(newBindings)
@@ -423,6 +431,16 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         var newNode = node
+        
+        let funcName: String = self.getFunctionName(fromCalledExpr: node.calledExpression)
+        let signature: String = ConfuseHelper.generateSignature(funcName: funcName, parameters: node.arguments)
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        var newNode = node
+        
         return super.visit(newNode)
     }
     
@@ -729,5 +747,15 @@ extension SPSwiftSourceASTRewriter {
         }
         
         return nil
+    }
+    
+    private func getFunctionName(fromCalledExpr calledExpr: ExprSyntax) -> String {
+        if let memExpr: MemberAccessExprSyntax = calledExpr.as(MemberAccessExprSyntax.self) {
+            return memExpr.declName.baseName.text
+        } else if let refExpr: DeclReferenceExprSyntax = calledExpr.as(DeclReferenceExprSyntax.self) {
+            return refExpr.baseName.text
+        }
+        
+        return ""
     }
 }

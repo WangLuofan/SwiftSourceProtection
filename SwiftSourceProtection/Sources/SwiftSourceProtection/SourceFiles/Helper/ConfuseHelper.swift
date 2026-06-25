@@ -113,8 +113,14 @@ class ConfuseHelper {
         return originalSymbolName
     }
     
-    static func generateSignature(funcName: String, parameters: FunctionParameterListSyntax) -> String {
-        let labels = parameters.map { $0.firstName.text + ":" }
+    static func generateSignature(funcName: String, parameters: any SyntaxCollection) -> String {
+        var labels: [String] = []
+        if let parameters: FunctionParameterListSyntax = parameters.as(FunctionParameterListSyntax.self) {
+            labels = parameters.map { $0.firstName.text + ":" }
+        } else if let parameters: LabeledExprListSyntax = parameters.as(LabeledExprListSyntax.self) {
+            labels = parameters.map { ($0.label?.text ?? "_") + ":"}
+        }
+            
         return funcName + "(" + labels.joined() + ")"
     }
 }

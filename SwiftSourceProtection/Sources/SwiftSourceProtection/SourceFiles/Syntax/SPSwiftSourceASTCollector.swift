@@ -130,17 +130,21 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         node.elements.forEach {
             let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
             
-            symbol.originalSymbolName = $0.name.text
+            var symbolName: String = $0.name.text
             symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.name.text)
 
             if let paramClause: EnumCaseParameterClauseSyntax = $0.parameterClause {
+                symbolName += "("
                 paramClause.parameters.forEach {
                     if let idTypeSyntax: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
                         symbol.relatedType.append(idTypeSyntax.name.text)
                     }
+                    symbolName += "_:"
                 }
+                symbolName += ")"
             }
             
+            symbol.originalSymbolName = symbolName
             self.currentScope.pushSymbol(symbol)
             
             self.parentStack.last?.children.append(symbol)
@@ -669,6 +673,18 @@ extension SPSwiftSourceASTCollector {
                         }
                     }
                         break
+                }
+            }
+            
+            resp.recurseEntities {
+                guard let entryKind: SKUID = $0[sourceKit.keys.kind],
+                      let _: SourceKit.DeclarationType = entryKind.referenceType() else {
+                    return
+                }
+                
+                if let line: Int = $0[sourceKit.keys.line],
+                   let col: Int = $0[sourceKit.keys.column] {
+                    IndexStore.indexStore.set(line: line, col: col, ref: $0, toFile: self.sourceFile)
                 }
             }
         } catch let error {
