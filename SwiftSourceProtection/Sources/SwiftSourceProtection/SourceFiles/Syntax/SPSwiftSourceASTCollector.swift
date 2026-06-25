@@ -289,6 +289,13 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
         }
         
+        if let curFunc: FunctionDeclSyntax = node.getParentNode() {
+            let signature: String = ConfuseHelper.generateSignature(funcName: curFunc.name.text, parameters: curFunc.signature.parameterClause.parameters)
+            if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol {
+                funcSymbol.arguments.append(paramSymbol)
+            }
+        }
+        
         self.currentScope.pushSymbol(paramSymbol)
         return super.visit(node)
     }
@@ -653,6 +660,12 @@ extension SPSwiftSourceASTCollector {
                         if !self.inheritedFromAnyExternal(sourceKit, dict) {
                             funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
                             funcSymbol.labels.forEach { funcSymbol.confusedLabels.append(ConfuseHelper.confusedSymbolName($0)) }
+                            
+                            for (index, argument) in funcSymbol.arguments.enumerated() {
+                                if argument.confusedSymbolName == nil {
+                                    funcSymbol.arguments[index].confusedSymbolName = funcSymbol.confusedLabels[index]
+                                }
+                            }
                         }
                     }
                         break
