@@ -58,6 +58,24 @@ class SPSwiftSourceScope {
         }
     }
     
+    func findSymbolWithUSR(_ usr: String) -> SPSwiftSourceSymbol? {
+        var curScope: SPSwiftSourceScope? = self
+        
+        while curScope != nil {
+            if let symbols = curScope?.symbols {
+                for (_, symbol) in symbols {
+                    if symbol.symbolUSR == usr {
+                        return symbol
+                    }
+                }
+            }
+            
+            curScope = curScope?.prevScope
+        }
+        
+        return nil
+    }
+    
     func findSymbolWithSymbolName(_ symbolName: String) -> SPSwiftSourceSymbol? {
         var curScope: SPSwiftSourceScope? = self
         

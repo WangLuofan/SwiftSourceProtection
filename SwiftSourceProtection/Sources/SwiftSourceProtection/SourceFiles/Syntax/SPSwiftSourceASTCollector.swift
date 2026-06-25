@@ -16,10 +16,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     private lazy var currentScope: SPSwiftSourceScope = self.topScope
     
     private var parentStack: [SPSwiftSourceClassSymbol] = []
-    private lazy var locationConverter = SourceLocationConverter(
-        fileName: self.sourceFile.path,
-        tree: self.sourceTree
-    )
     
     init(sourceTree: SourceFileSyntax, sourceFile: File, module: Module) {
         self.sourceTree = sourceTree
