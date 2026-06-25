@@ -350,7 +350,13 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(node)
+        
+        var newNode = node
+        if let confusedSubject: ExprSyntax = self.confuseExpression(node.subject) {
+            newNode = newNode.with(\.subject, confusedSubject)
+        }
+        
+        return super.visit(newNode)
     }
     
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
@@ -434,6 +440,42 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         
         let funcName: String = self.getFunctionName(fromCalledExpr: node.calledExpression)
         let signature: String = ConfuseHelper.generateSignature(funcName: funcName, parameters: node.arguments)
+        
+        if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol,
+           let _ = funcSymbol.confusedSymbolName {
+            
+            if let confusedCalledExpr: ExprSyntax = self.confuseExpression(node.calledExpression) {
+                newNode = newNode.with(\.calledExpression, confusedCalledExpr
+                    .with(\.leadingTrivia, newNode.calledExpression.leadingTrivia)
+                    .with(\.trailingTrivia, newNode.calledExpression.trailingTrivia)
+                )
+            }
+            
+            var index: Int = 0
+            var confusedArgs: [LabeledExprSyntax] = []
+            node.arguments.forEach {
+                var confusedLabel: TokenSyntax? = $0.label
+                
+                if let label = $0.label {
+                    confusedLabel = .identifier(funcSymbol.confusedLabels[index], leadingTrivia: label.leadingTrivia, trailingTrivia: label.trailingTrivia)
+                }
+                
+                let confusedExpr: ExprSyntax = self.confuseExpression($0.expression) ?? $0.expression
+                confusedArgs.append($0.with(\.label, confusedLabel)
+                    .with(\.expression, confusedExpr
+                        .with(\.leadingTrivia, $0.expression.leadingTrivia)
+                        .with(\.trailingTrivia, $0.expression.trailingTrivia)
+                    )
+                )
+                
+                index += 1
+            }
+            
+            newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
+                .with(\.leadingTrivia, newNode.arguments.leadingTrivia)
+                .with(\.trailingTrivia, newNode.arguments.trailingTrivia)
+            )
+        }
         
         return super.visit(newNode)
     }
@@ -523,17 +565,17 @@ extension SPSwiftSourceASTRewriter {
         return pattern
     }
     
-    private func confuseExpression(_ fromExpr: ExprSyntax) -> ExprSyntax? {
-        if let patternSyntax: PatternExprSyntax = fromExpr.as(PatternExprSyntax.self) {
+    private func confuseExpression(_ expr: ExprSyntax) -> ExprSyntax? {
+        if let patternSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
             guard let confusedPattern = self.confuseNodePattern(patternSyntax.pattern) else {
-                return fromExpr
+                return expr
             }
             
             return ExprSyntax(patternSyntax.with(\.pattern, confusedPattern
                 .with(\.leadingTrivia, patternSyntax.pattern.leadingTrivia)
                 .with(\.trailingTrivia, patternSyntax.pattern.trailingTrivia)
             ))
-        } else if let exprSyntax: FunctionCallExprSyntax = fromExpr.as(FunctionCallExprSyntax.self) {
+        } else if let exprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
             guard let confusedArguments: [LabeledExprSyntax] = exprSyntax.arguments.flatMap({
                 guard let confusedPattern = self.confuseExpression($0.expression) else {
                     return $0
@@ -544,7 +586,7 @@ extension SPSwiftSourceASTRewriter {
                     .with(\.trailingTrivia, $0.expression.trailingTrivia)
                 )
             }) as? [LabeledExprSyntax] else {
-                return fromExpr
+                return expr
             }
             
             return ExprSyntax(exprSyntax
@@ -553,7 +595,7 @@ extension SPSwiftSourceASTRewriter {
                     .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
                 )
             )
-        } else if let seqExprSyntax: SequenceExprSyntax = fromExpr.as(SequenceExprSyntax.self) {
+        } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
             let confusedExprList = seqExprSyntax.elements.flatMap {
                 guard let confusedExpr = self.confuseExpression($0) else {
                     return $0
@@ -567,7 +609,7 @@ extension SPSwiftSourceASTRewriter {
                 .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
                 .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
             )
-        } else if let tupExprSyntax: TupleExprSyntax = fromExpr.as(TupleExprSyntax.self) {
+        } else if let tupExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
             let confusedExprList = tupExprSyntax.elements.flatMap {
                 guard let confusedExpr = self.confuseExpression($0.expression) else {
                     return $0
@@ -585,9 +627,21 @@ extension SPSwiftSourceASTRewriter {
                     .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
                 )
             )
+        } else if let memAccSyntax: MemberAccessExprSyntax = expr.as(MemberAccessExprSyntax.self) {
+            
+        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self),
+                  let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(declRefSyntax.baseName.text),
+                  let confusedSymbolName = symbol.confusedSymbolName {
+            return ExprSyntax(declRefSyntax
+                .with(\.baseName, .identifier(
+                    confusedSymbolName,
+                    leadingTrivia: declRefSyntax.baseName.leadingTrivia,
+                    trailingTrivia: declRefSyntax.baseName.trailingTrivia)
+                )
+            )
         }
         
-        return fromExpr
+        return expr
     }
     
     private func confuseTypeSyntax(_ typeSyntax: TypeSyntaxProtocol) -> TypeSyntaxProtocol? {
