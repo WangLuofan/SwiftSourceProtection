@@ -463,6 +463,19 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: AsExprSyntax) -> ExprSyntax {
+        var newNode = node
+        if let confusedExpr: ExprSyntax = self.confuseExpression(node.expression) {
+            newNode = newNode.with(\.expression, confusedExpr)
+        }
+        
+        if let confusedType: TypeSyntax = self.confuseTypeSyntax(node.type) as? TypeSyntax {
+            newNode = newNode.with(\.type, confusedType)
+        }
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         var newNode = node
         
