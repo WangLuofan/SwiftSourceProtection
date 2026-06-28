@@ -45,8 +45,8 @@ class ViewController: UIViewController {
             print(i)
         }
         
-        let a: (_ x: Int, _ y: Int) -> Int = { (x: Int, y: Int) in
-            return x + y
+        let a: (_ x: TestA, _ y: Int) -> Int = { (x: TestA, y: Int) in
+            return x.n + y
         }
         
         let b: ((_ x: Int, _ y: Int) -> Int) = { x, y in

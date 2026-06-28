@@ -108,7 +108,6 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
            let ref = self.matchRef(refs, to: node) {
             if let usr: String = ref[sourceKit.keys.usr],
                let symbol: SPSwiftSourceSymbol = IndexStore.indexStore.getSymbol(usr: usr),
-               symbol.originalSymbolName.hasPrefix(node.text),
                let confusedSymbolName = symbol.confusedSymbolName {
                 return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
             }

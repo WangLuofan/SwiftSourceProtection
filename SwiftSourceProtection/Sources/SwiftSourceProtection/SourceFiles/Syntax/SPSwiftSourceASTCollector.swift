@@ -655,14 +655,17 @@ extension SPSwiftSourceASTCollector {
                     return
                 }
                 
-                IndexStore.indexStore.set(usr: usr, toFile: self.sourceFile)
+                IndexStore.indexStore.set(resp: dict, toUSR: usr)
                 
                 let receiver: String? = dict[sourceKit.keys.receiver]
                 guard receiver == nil else {
                     return
                 }
                 
-                IndexStore.indexStore.set(resp: dict, toUSR: usr)
+                if let entryKind: SKUID = dict[sourceKit.keys.kind],
+                   entryKind.declType() != nil {
+                    IndexStore.indexStore.set(usr: usr, toFile: self.sourceFile)
+                }
             }
             
             resp.recurseEntities { (dict: SKResponseDictionary) in
@@ -675,7 +678,7 @@ extension SPSwiftSourceASTCollector {
                    let col: Int = dict[sourceKit.keys.column] {
                     IndexStore.indexStore.set(line: line, col: col, ref: dict, toFile: self.sourceFile)
                 }
-                
+
                 if let kind: SourceKit.DeclarationType = entryKind.declType() {
                     switch kind {
                     case .object, .protocol, .enum: do {
@@ -788,7 +791,8 @@ extension SPSwiftSourceASTCollector {
                 return
             }
             
-            guard IndexStore.indexStore.getFile(usr: usr) == nil,
+            guard let file: File = IndexStore.indexStore.getFile(usr: usr),
+                  self?.module.sourceFiles.contains(file) == true,
                   let relatedDict: SKResponseDictionary = IndexStore.indexStore.getResponse(usr: usr) else {
                 isReference = true
                 return
