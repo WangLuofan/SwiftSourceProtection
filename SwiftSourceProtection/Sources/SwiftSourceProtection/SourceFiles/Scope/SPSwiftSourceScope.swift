@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftSyntax
 
 class SPSwiftSourceScope {
     private var symbols: [String: SPSwiftSourceSymbol] = [:]
@@ -17,16 +18,7 @@ class SPSwiftSourceScope {
         
     }
     
-    func pushScope(_ create: Bool) -> SPSwiftSourceScope {
-        if !create {
-            guard !self.nextScope.isEmpty,
-                  let nextScope: SPSwiftSourceScope = self.nextScope.first else {
-                return self
-            }
-            
-            return nextScope
-        }
-        
+    func pushScope() -> SPSwiftSourceScope {
         let scope: SPSwiftSourceScope = SPSwiftSourceScope()
         scope.prevScope = self
         self.nextScope.append(scope)
@@ -34,13 +26,9 @@ class SPSwiftSourceScope {
         return scope
     }
     
-    func popScope(_ delete: Bool) -> SPSwiftSourceScope {
+    func popScope() -> SPSwiftSourceScope {
         guard let prevScope = self.prevScope else {
             return self
-        }
-        
-        if delete {
-            prevScope.nextScope.removeFirst()
         }
         
         return prevScope

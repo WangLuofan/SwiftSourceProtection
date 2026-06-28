@@ -37,516 +37,88 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         super.init(viewMode: .sourceAccurate)
     }
     
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        if let classSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
-              let confusedSymbolName: String = classSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia)
-            )
+    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        let funcSymbol = self.calledNameToken(node.calledExpression).flatMap { self.functionSymbol(at: $0) }
+        
+        let visited = super.visit(node)
+        
+        guard let call = visited.as(FunctionCallExprSyntax.self),
+              let funcSymbol else {
+            return visited
         }
         
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        if let classSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
-              let confusedSymbolName: String = classSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia)
-            )
-        }
-        
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        if let classSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
-              let confusedSymbolName: String = classSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia)
-            )
-        }
-        
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(node)
-    }
-    
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        if let clsSymbol: SPSwiftSourceClassSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceClassSymbol,
-           let confusedSymbolName = clsSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: node.name.leadingTrivia, trailingTrivia: node.name.trailingTrivia))
-        }
-        
-        self.currentScope = self.currentScope.pushScope(false)
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        
-        var confusedElems: [EnumCaseElementSyntax] = []
-        node.elements.forEach {
-            if let symbol: SPSwiftSourceEnumCaseSymbol = self.currentScope.findSymbolWithSymbolName($0.name.text) as? SPSwiftSourceEnumCaseSymbol,
-               let confusedSymbolName: String = symbol.confusedSymbolName {
-                confusedElems.append($0.with(\.name, .identifier(confusedSymbolName, leadingTrivia: $0.name.leadingTrivia, trailingTrivia: $0.name.trailingTrivia)))
-            } else {
-                confusedElems.append($0)
-            }
-        }
-        
-        newNode = newNode.with(\.elements, EnumCaseElementListSyntax(confusedElems)
-            .with(\.leadingTrivia, newNode.elements.leadingTrivia)
-            .with(\.trailingTrivia, newNode.elements.trailingTrivia)
-        )
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        
-        var newBindings: [PatternBindingSyntax] = []
-        node.bindings.forEach {
-            var confusedBinding = $0
-            if let confusedPattern: PatternSyntax = self.confuseNodePattern($0.pattern) {
-                confusedBinding = confusedBinding.with(\.pattern, confusedPattern)
+        let newArgs = call.arguments.map { arg -> LabeledExprSyntax in
+            guard let label = arg.label,
+                  let idx = funcSymbol.labels.firstIndex(of: label.text),
+                  idx < funcSymbol.confusedLabels.count else {
+                return arg
             }
             
-            if let typeAnnon: TypeAnnotationSyntax = $0.typeAnnotation,
-               let confusedType: TypeSyntax = self.confuseTypeSyntax(typeAnnon.type) as? TypeSyntax {
-                confusedBinding = confusedBinding.with(\.typeAnnotation, typeAnnon.with(\.type, confusedType))
-            }
-            
-            newBindings.append(confusedBinding)
+            return arg.with(\.label, .identifier(
+                funcSymbol.confusedLabels[idx],
+                leadingTrivia: label.leadingTrivia,
+                trailingTrivia: label.trailingTrivia))
         }
         
-        newNode = newNode.with(\.bindings, PatternBindingListSyntax(newBindings)
-            .with(\.leadingTrivia, node.bindings.leadingTrivia)
-            .with(\.trailingTrivia, node.bindings.trailingTrivia)
-        )
-        
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: TupleTypeElementSyntax) -> TupleTypeElementSyntax {
-        var newNode = node
-        
-        if let firstName = newNode.firstName {
-            let confusedFirstName: String = ConfuseHelper.confusedSymbolName(firstName.text)
-            newNode = newNode.with(\.firstName, .identifier(confusedFirstName, leadingTrivia: firstName.leadingTrivia, trailingTrivia: firstName.trailingTrivia))
-        }
-        
-        if let secondName = newNode.secondName {
-            let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
-            newNode = newNode.with(\.secondName, .identifier(confusedSecondName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
-        }
-        
-        return super.visit(newNode)
+        return ExprSyntax(call.with(\.arguments, LabeledExprListSyntax(newArgs)))
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> FunctionParameterSyntax {
-        var newNode = node
         
-        var parameters: FunctionParameterListSyntax?
-        if let funcDecl: FunctionDeclSyntax = self.nodeParent(node) {
-            parameters = funcDecl.signature.parameterClause.parameters
-        } else if let initDecl: InitializerDeclSyntax = self.nodeParent(node) {
-            parameters = initDecl.signature.parameterClause.parameters
+        guard let funcSymbol = self.enclosingFunctionSymbol(of: node),
+              let index = self.parameterIndex(of: node),
+              index < funcSymbol.confusedLabels.count else {
+            return super.visit(node)
         }
         
-        guard let parameters, !parameters.isEmpty else {
-            return super.visit(newNode)
-        }
+        let confusedLabel = funcSymbol.confusedLabels[index]
+        var newNode = node.with(\.firstName, .identifier(
+            confusedLabel,
+            leadingTrivia: node.firstName.leadingTrivia,
+            trailingTrivia: node.firstName.trailingTrivia)
+        )
         
-        for (_, parameter) in parameters.enumerated() {
-            if parameter != node {
-                continue
-            }
-            
-            if let secondName = node.secondName,
-               let paramSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(secondName.text) as? SPSwiftSourceVariableSymbol,
-               let confusedSymbolName = paramSymbol.confusedSymbolName {
-                newNode = newNode.with(\.secondName, .identifier(confusedSymbolName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
-            }
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(node)
-    }
-    
-    override func visit(_ node: ClosureShorthandParameterSyntax) -> ClosureShorthandParameterSyntax {
-        var newNode = node
-        
-        if let paramSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceVariableSymbol,
-           let confusedSymbolName = paramSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        self.currentFunction = node
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(node)
-    }
-    
-    override func visit(_ node: ClosureParameterSyntax) -> ClosureParameterSyntax {
-        var newNode = node
-        
-        if let paramSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(newNode.firstName.text) as? SPSwiftSourceVariableSymbol,
-           let confusedSymbolName = paramSymbol.confusedSymbolName {
-            newNode = newNode.with(\.firstName, .identifier(confusedSymbolName, leadingTrivia: newNode.firstName.leadingTrivia, trailingTrivia: newNode.firstName.trailingTrivia))
-        }
-
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: ClosureCaptureSyntax) -> ClosureCaptureSyntax {
-        var newNode = node
-        
-        if let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(node.name.text) as? SPSwiftSourceVariableSymbol,
-           let confusedSymbolName = varSymbol.confusedSymbolName {
-            newNode = newNode.with(\.name, .identifier(confusedSymbolName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia))
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        var newNode = node
-        let sig: String = ConfuseHelper.generateSignature(funcName: node.name.text, parameters: node.signature.parameterClause.parameters)
-        
-        if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(sig) as? SPSwiftSourceFunctionSymbol,
-           let confusedFunctionName: String = funcSymbol.confusedSymbolName {
-            
-            var paramIndex: Int = 0
-            var confusedParameters: [FunctionParameterSyntax] = []
-            node.signature.parameterClause.parameters.forEach {
-                let confusedParam: FunctionParameterSyntax = $0.with(\.firstName, .identifier(funcSymbol.confusedLabels[paramIndex], leadingTrivia: $0.firstName.leadingTrivia).with(\.trailingTrivia, $0.firstName.trailingTrivia))
-                confusedParameters.append(confusedParam)
-                
-                paramIndex += 1
-            }
-            
-            newNode = newNode.with(\.name, .identifier(confusedFunctionName, leadingTrivia: newNode.name.leadingTrivia, trailingTrivia: newNode.name.trailingTrivia)
-            ).with(\.signature, newNode.signature
-                .with(\.parameterClause, newNode.signature.parameterClause
-                    .with(\.parameters, FunctionParameterListSyntax(confusedParameters)
-                        .with(\.leadingTrivia, newNode.signature.parameterClause.parameters.leadingTrivia)
-                        .with(\.trailingTrivia, newNode.signature.parameterClause.parameters.trailingTrivia)
-                    )
-                )
+        if let secondName = node.secondName {
+            newNode = newNode.with(\.secondName, .identifier(
+                ConfuseHelper.confusedSymbolName(secondName.text),
+                leadingTrivia: secondName.leadingTrivia,
+                trailingTrivia: secondName.trailingTrivia)
             )
         }
         
-        self.currentFunction = node
-        self.currentScope = self.currentScope.pushScope(false)
         return super.visit(newNode)
     }
     
-    override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
+    override func visit(_ node: TokenSyntax) -> TokenSyntax {
+        guard case .identifier = node.tokenKind,
+              !node.text.isSwiftKeyWord else {
+            return super.visit(node)
+        }
         
-        var newNode = node
-        var confusedConds: [ConditionElementSyntax] = []
+        if let labeled = node.parent?.as(LabeledExprSyntax.self), labeled.label?.id == node.id {
+            return super.visit(node)
+        }
         
-        node.conditions.forEach {
-            if let optBindCondSyntax: OptionalBindingConditionSyntax = $0.condition.as(OptionalBindingConditionSyntax.self),
-               let confusedPattern = self.confuseNodePattern(optBindCondSyntax.pattern) {
-                confusedConds.append($0.with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
-                    .with(\.pattern, confusedPattern))
-                ))
-            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = $0.condition.as(MatchingPatternConditionSyntax.self),
-                      let confusedPattern = self.confuseNodePattern(matchPatternCondSyntax.pattern) {
-                confusedConds.append($0
-                    .with(\.condition, ConditionElementSyntax.Condition(matchPatternCondSyntax
-                        .with(\.pattern, confusedPattern)
-                    ))
-                )
+        if let _ = node.parent?.as(FunctionParameterSyntax.self) {
+            return super.visit(node)
+        }
+        
+        let refLoc = self.locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
+        if let ref = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: refLoc.line, col: refLoc.column) {
+            if let usr: String = ref[sourceKit.keys.usr],
+               let symbol: SPSwiftSourceSymbol = IndexStore.indexStore.getSymbol(usr: usr),
+               let confusedSymbolName = symbol.confusedSymbolName {
+                return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
             } else {
-                confusedConds.append($0)
+                return super.visit(node)
             }
+        } else if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
+                  let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text),
+                  let confusedSymbolName = symbol.confusedSymbolName {
+            return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
         }
         
-        newNode = newNode.with(\.conditions, ConditionElementListSyntax(confusedConds)
-            .with(\.leadingTrivia, newNode.conditions.leadingTrivia)
-            .with(\.trailingTrivia, newNode.conditions.trailingTrivia)
-        )
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        var newNode = node
-        
-        self.currentScope = self.currentScope.pushScope(false)
-        if let confusedPattern = self.confuseNodePattern(node.pattern) {
-            newNode = newNode.with(\.pattern, confusedPattern)
-        }
-        
-        return super.visit(newNode)
-    }
-    
-//    override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-//        var newNode = node
-//        
-//        if let baseSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(node.baseName.text),
-//           baseSymbol.symbolScope == .local,
-//           let confusedSymbolName = baseSymbol.confusedSymbolName {
-//            newNode = newNode.with(\.baseName,
-//                .identifier(confusedSymbolName, leadingTrivia: newNode.baseName.leadingTrivia, trailingTrivia: newNode.baseName.trailingTrivia)
-//            )
-//        }
-//        
-//        return super.visit(newNode)
-//    }
-    
-    override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
-        let newNode = self.confuseTypeSyntax(node) as? IdentifierTypeSyntax ?? node
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: OptionalTypeSyntax) -> TypeSyntax {
-        let newNode = self.confuseTypeSyntax(node) as? OptionalTypeSyntax ?? node
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
-        
-        var confusedConditions: [ConditionElementSyntax] = []
-        node.conditions.forEach { condition in
-            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
-               let confusedPattern = self.confuseNodePattern(optBindCondSyntax.pattern) {
-                confusedConditions.append(condition
-                    .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
-                        .with(\.pattern, confusedPattern)
-                        .with(\.leadingTrivia, optBindCondSyntax.pattern.leadingTrivia)
-                        .with(\.trailingTrivia, optBindCondSyntax.pattern.trailingTrivia)
-                    ))
-                )
-            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self),
-                      let confusedPattern = self.confuseNodePattern(matchPatternCondSyntax.pattern) {
-                confusedConditions.append(condition
-                    .with(\.condition, ConditionElementSyntax.Condition(matchPatternCondSyntax
-                        .with(\.pattern, confusedPattern)
-                        .with(\.leadingTrivia, matchPatternCondSyntax.pattern.leadingTrivia)
-                        .with(\.trailingTrivia, matchPatternCondSyntax.pattern.trailingTrivia)
-                    ))
-                )
-            } else {
-                confusedConditions.append(condition)
-            }
-        }
-        
-        let newNode = node.with(\.conditions, ConditionElementListSyntax(confusedConditions)
-            .with(\.leadingTrivia, node.conditions.leadingTrivia)
-            .with(\.trailingTrivia, node.conditions.trailingTrivia)
-        )
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
-        
-        var newNode = node
-        if let confusedSubject: ExprSyntax = self.confuseExpression(node.subject)?.as(ExprSyntax.self) {
-            newNode = newNode.with(\.subject, confusedSubject)
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
-        
-        var newNode = node
-        
-        var confusedCaseItem: [SwitchCaseItemSyntax] = []
-        if let label: SwitchCaseLabelSyntax = node.label.as(SwitchCaseLabelSyntax.self) {
-            label.caseItems.forEach {
-                if let confusedPattern: PatternSyntax = self.confuseNodePattern($0.pattern) {
-                    confusedCaseItem.append($0.with(\.pattern, confusedPattern))
-                } else {
-                    confusedCaseItem.append($0)
-                }
-            }
-            
-            newNode = newNode.with(\.label, SwitchCaseSyntax.Label(label.with(\.caseItems, SwitchCaseItemListSyntax(confusedCaseItem))))
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: SwitchDefaultLabelSyntax) -> SwitchDefaultLabelSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
         return super.visit(node)
-    }
-    
-    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-        var newNode = node
-        if let confusedPattern = self.confuseNodePattern(node.pattern) {
-            newNode = newNode.with(\.pattern, confusedPattern
-                .with(\.leadingTrivia, node.pattern.leadingTrivia)
-                .with(\.trailingTrivia, node.pattern.trailingTrivia)
-            )
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
-        var newNode = node
-        var confusedConditions: [ConditionElementSyntax] = []
-        
-        node.conditions.forEach { condition in
-            if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
-               let confusedPattern = self.confuseNodePattern(optBindCondSyntax.pattern) {
-                confusedConditions.append(condition
-                    .with(\.condition, ConditionElementSyntax.Condition(optBindCondSyntax
-                        .with(\.pattern, confusedPattern))
-                    )
-                )
-            } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self),
-                       let confusedPattern = self.confuseNodePattern(matchPatternCondSyntax.pattern) {
-                 confusedConditions.append(condition
-                     .with(\.condition, ConditionElementSyntax.Condition(matchPatternCondSyntax
-                         .with(\.pattern, confusedPattern)
-                         .with(\.leadingTrivia, matchPatternCondSyntax.pattern.leadingTrivia)
-                         .with(\.trailingTrivia, matchPatternCondSyntax.pattern.trailingTrivia)
-                     ))
-                 )
-             }
-            else {
-                confusedConditions.append(condition)
-            }
-        }
-        
-        newNode = newNode.with(\.conditions, ConditionElementListSyntax(confusedConditions)
-            .with(\.leadingTrivia, newNode.conditions.leadingTrivia)
-            .with(\.trailingTrivia, newNode.conditions.trailingTrivia)
-        )
-        self.currentScope = self.currentScope.pushScope(false)
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: CatchClauseSyntax) -> CatchClauseSyntax {
-        self.currentScope = self.currentScope.pushScope(false)
-        return super.visit(node)
-    }
-    
-    override func visit(_ node: CatchItemSyntax) -> CatchItemSyntax {
-        var newNode = node
-        
-        if let pattern: PatternSyntax = node.pattern {
-            newNode = newNode.with(\.pattern, self.confuseNodePattern(pattern)?
-                .with(\.leadingTrivia, pattern.leadingTrivia)
-                .with(\.trailingTrivia, pattern.trailingTrivia)
-            )
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: AsExprSyntax) -> ExprSyntax {
-        var newNode = node
-        if let confusedExpr: ExprSyntax = self.confuseExpression(node.expression) {
-            newNode = newNode.with(\.expression, confusedExpr)
-        }
-        
-        if let confusedType: TypeSyntax = self.confuseTypeSyntax(node.type) as? TypeSyntax {
-            newNode = newNode.with(\.type, confusedType)
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        var newNode = node
-        
-        let funcName: String = self.getFunctionName(fromCalledExpr: node.calledExpression)
-        let signature: String = ConfuseHelper.generateSignature(funcName: funcName, parameters: node.arguments)
-        
-        if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol,
-           let _ = funcSymbol.confusedSymbolName {
-            
-            if let confusedCalledExpr: ExprSyntax = self.confuseExpression(node.calledExpression)?.as(ExprSyntax.self) {
-                newNode = newNode.with(\.calledExpression, confusedCalledExpr
-                    .with(\.leadingTrivia, newNode.calledExpression.leadingTrivia)
-                    .with(\.trailingTrivia, newNode.calledExpression.trailingTrivia)
-                )
-            }
-            
-            var index: Int = 0
-            var confusedArgs: [LabeledExprSyntax] = []
-            node.arguments.forEach {
-                var confusedLabel: TokenSyntax? = $0.label
-                
-                if let label = $0.label {
-                    confusedLabel = .identifier(funcSymbol.confusedLabels[index], leadingTrivia: label.leadingTrivia, trailingTrivia: label.trailingTrivia)
-                }
-                
-                let confusedExpr: ExprSyntax = self.confuseExpression($0.expression)?.as(ExprSyntax.self) ?? $0.expression
-                confusedArgs.append($0.with(\.label, confusedLabel)
-                    .with(\.expression, confusedExpr
-                        .with(\.leadingTrivia, $0.expression.leadingTrivia)
-                        .with(\.trailingTrivia, $0.expression.trailingTrivia)
-                    )
-                )
-                
-                index += 1
-            }
-            
-            newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
-                .with(\.leadingTrivia, newNode.arguments.leadingTrivia)
-                .with(\.trailingTrivia, newNode.arguments.trailingTrivia)
-            )
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-        var newNode = node
-        if let confusedDeclName: DeclReferenceExprSyntax = self.confuseExpression(node.declName)?.as(DeclReferenceExprSyntax.self) {
-            newNode = newNode.with(\.declName, confusedDeclName)
-        }
-        
-        if let base = node.base,
-           let confusedBase: ExprSyntax = self.confuseExpression(base) {
-            newNode = newNode.with(\.base, confusedBase)
-        }
-        
-        return super.visit(newNode)
-    }
-    
-    override func visitPost(_ node: Syntax) {
-        switch node.kind {
-        case .functionDecl:
-            self.currentFunction = nil
-            fallthrough
-        case .classDecl, .variableDecl, .whileStmt, .forStmt, .enumDecl,
-                .closureExpr, .extensionDecl, .ifExpr, .switchExpr, .switchCase, .catchClause,
-                .switchDefaultLabel, .guardStmt, .initializerDecl, .structDecl, .protocolDecl:
-            self.currentScope = self.currentScope.popScope(true)
-        default:
-            break
-        }
     }
 }
 
@@ -556,297 +128,297 @@ extension SPSwiftSourceASTRewriter {
         return rewritten.description
     }
     
-    private func confuseNodePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
-        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
-            guard let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPatternSyntax.identifier.text) as? SPSwiftSourceVariableSymbol,
-                  let confusedSymbolName = varSymbol.confusedSymbolName else {
-                return PatternSyntax(idPatternSyntax)
-            }
-            
-            let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
-                .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
-                .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
-            )
-            
-            return PatternSyntax(newPattern)
-        } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
-            let confusedTupPatternSyntaxElems: [TuplePatternElementSyntax] = tupPatternSyntax.elements.compactMap {
-                guard let pattern: PatternSyntax = self.confuseNodePattern($0.pattern) else {
-                    return $0
-                }
-                
-                return $0.with(\.pattern, PatternSyntax(pattern)
-                    .with(\.leadingTrivia, $0.pattern.leadingTrivia)
-                    .with(\.trailingTrivia, $0.pattern.trailingTrivia)
-                )
-            }
-            
-            return PatternSyntax(tupPatternSyntax
-                .with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)
-                    .with(\.leadingTrivia, tupPatternSyntax.elements.leadingTrivia)
-                    .with(\.trailingTrivia, tupPatternSyntax.elements.trailingTrivia)
-                )
-            )
-        } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
-            guard let confusedExprPattern: ExprSyntax = self.confuseExpression(exprPatternSyntax.expression)?.as(ExprSyntax.self) else {
-                return pattern
-            }
-            
-            return PatternSyntax(exprPatternSyntax
-                .with(\.expression, confusedExprPattern
-                    .with(\.leadingTrivia, exprPatternSyntax.leadingTrivia)
-                    .with(\.trailingTrivia, exprPatternSyntax.trailingTrivia)
-                )
-            )
-        } else if let valBindPatternSyntax: ValueBindingPatternSyntax = pattern.as(ValueBindingPatternSyntax.self) {
-            guard let confusedPattern = self.confuseNodePattern(valBindPatternSyntax.pattern) else {
-                return pattern
-            }
-            
-            return PatternSyntax(valBindPatternSyntax
-                .with(\.pattern, confusedPattern
-                    .with(\.leadingTrivia, valBindPatternSyntax.pattern.leadingTrivia)
-                    .with(\.trailingTrivia, valBindPatternSyntax.pattern.trailingTrivia)
-                )
-            )
-        }
-        
-        return pattern
-    }
-    
-    private func confuseExpression(_ expr: some ExprSyntaxProtocol) -> ExprSyntax? {
-        if let patternSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
-            guard let confusedPattern = self.confuseNodePattern(patternSyntax.pattern) else {
-                return ExprSyntax(expr)
-            }
-            
-            return ExprSyntax(patternSyntax.with(\.pattern, confusedPattern
-                .with(\.leadingTrivia, patternSyntax.pattern.leadingTrivia)
-                .with(\.trailingTrivia, patternSyntax.pattern.trailingTrivia)
-            ))
-        } else if let exprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
-            guard let confusedArguments: [LabeledExprSyntax] = exprSyntax.arguments.flatMap({
-                guard let confusedExpr = self.confuseExpression($0.expression) else {
-                    return $0
-                }
-                
-                return $0.with(\.expression, confusedExpr
-                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
-                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
-                )
-            }) as? [LabeledExprSyntax] else {
-                return ExprSyntax(expr)
-            }
-            
-            return ExprSyntax(exprSyntax
-                .with(\.arguments, LabeledExprListSyntax(confusedArguments)
-                    .with(\.leadingTrivia, exprSyntax.arguments.leadingTrivia)
-                    .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
-                )
-            )
-        } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
-            let confusedExprList = seqExprSyntax.elements.flatMap {
-                guard let confusedExpr = self.confuseExpression($0) else {
-                    return $0
-                }
-                
-                return confusedExpr.with(\.leadingTrivia, $0.leadingTrivia).with(\.trailingTrivia, $0.trailingTrivia)
-            }
-            
-            return ExprSyntax(seqExprSyntax
-                .with(\.elements, ExprListSyntax(confusedExprList))
-                .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
-                .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
-            )
-        } else if let tupExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
-            let confusedExprList = tupExprSyntax.elements.flatMap {
-                guard let confusedExpr = self.confuseExpression($0.expression) else {
-                    return $0
-                }
-                
-                return $0.with(\.expression, confusedExpr
-                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
-                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
-                )
-            }
-            
-            return ExprSyntax(tupExprSyntax
-                .with(\.elements, LabeledExprListSyntax(confusedExprList)
-                    .with(\.leadingTrivia, tupExprSyntax.elements.leadingTrivia)
-                    .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
-                )
-            )
-        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
-            var refSymbol: SPSwiftSourceSymbol?
-            
-            let srcLoc: SourceLocation = self.locationConverter.location(for: declRefSyntax.positionAfterSkippingLeadingTrivia)
-            if let resp: SKResponseDictionary = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: srcLoc.line, col: srcLoc.column),
-               let usr: String = resp[sourceKit.keys.usr] {
-                refSymbol = IndexStore.indexStore.getSymbol(usr: usr)
-            } else if let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolInCurrentScope(declRefSyntax.baseName.text) {
-                refSymbol = symbol
-            }
-            
-            if let refSymbol,
-               let confusedSymbolName = refSymbol.confusedSymbolName {
-                return ExprSyntax(declRefSyntax
-                    .with(\.baseName, .identifier(
-                        confusedSymbolName,
-                        leadingTrivia: declRefSyntax.baseName.leadingTrivia,
-                        trailingTrivia: declRefSyntax.baseName.trailingTrivia)
-                    )
-                )
-            }
-        }
-        
-        return ExprSyntax(expr)
-    }
-    
-    private func confuseTypeSyntax(_ typeSyntax: TypeSyntaxProtocol) -> TypeSyntaxProtocol? {
-        if let idTypeSyntax: IdentifierTypeSyntax = typeSyntax.as(IdentifierTypeSyntax.self) {
-            if let typeSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(idTypeSyntax.name.text),
-               let confusedSymbolName = typeSymbol.confusedSymbolName {
-                return idTypeSyntax.with(\.name, .identifier(
-                    confusedSymbolName,
-                    leadingTrivia: idTypeSyntax.name.leadingTrivia,
-                    trailingTrivia: idTypeSyntax.name.trailingTrivia)
-                )
-            }
-        } else if let optTypeSyntax: OptionalTypeSyntax = typeSyntax.as(OptionalTypeSyntax.self),
-                  let confusedWrappedTypeSyntax: TypeSyntax = self.confuseTypeSyntax(optTypeSyntax.wrappedType) as? TypeSyntax {
-            
-            return optTypeSyntax.with(\.wrappedType, confusedWrappedTypeSyntax
-                .with(\.leadingTrivia, optTypeSyntax.wrappedType.leadingTrivia)
-                .with(\.trailingTrivia, optTypeSyntax.wrappedType.trailingTrivia)
-            )
-        } else if let arrTypeSyntax: ArrayTypeSyntax = typeSyntax.as(ArrayTypeSyntax.self),
-                  let confusedElement: TypeSyntax = self.confuseTypeSyntax(arrTypeSyntax.element) as? TypeSyntax {
-            return arrTypeSyntax.with(\.element, confusedElement
-                .with(\.leadingTrivia, arrTypeSyntax.element.leadingTrivia)
-                .with(\.trailingTrivia, arrTypeSyntax.element.trailingTrivia)
-            )
-        } else if let dicTypeSyntax: DictionaryTypeSyntax = typeSyntax.as(DictionaryTypeSyntax.self),
-                  let confusedKeyType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.key) as? TypeSyntax,
-                  let confusedValueType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.value) as? TypeSyntax {
-            return dicTypeSyntax.with(\.key, confusedKeyType
-                .with(\.leadingTrivia, dicTypeSyntax.key.leadingTrivia)
-                .with(\.trailingTrivia, dicTypeSyntax.key.trailingTrivia))
-            .with(\.value, confusedValueType
-                .with(\.leadingTrivia, dicTypeSyntax.value.leadingTrivia)
-                .with(\.trailingTrivia, dicTypeSyntax.value.trailingTrivia)
-            )
-        } else if let tupTypeSyntax: TupleTypeSyntax = typeSyntax.as(TupleTypeSyntax.self) {
-            var confusedTupleElemType: [TupleTypeElementSyntax] = []
-            tupTypeSyntax.elements.forEach {
-                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
-                    confusedTupleElemType.append($0.with(\.type, confusedType
-                        .with(\.leadingTrivia, $0.type.leadingTrivia)
-                        .with(\.trailingTrivia, $0.type.trailingTrivia)
-                    ))
-                } else {
-                    confusedTupleElemType.append($0)
-                }
-            }
-            
-            return tupTypeSyntax.with(\.elements, TupleTypeElementListSyntax(confusedTupleElemType)
-                .with(\.leadingTrivia, tupTypeSyntax.elements.leadingTrivia)
-                .with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)
-            )
-        } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
-            var confusedFuncType = funcTypeSyntax
-            if let confusedRetType: TypeSyntax = self.confuseTypeSyntax(funcTypeSyntax.returnClause.type) as? TypeSyntax {
-                confusedFuncType = confusedFuncType.with(\.returnClause, confusedFuncType.returnClause
-                    .with(\.type, confusedRetType
-                        .with(\.leadingTrivia, confusedFuncType.returnClause.type.leadingTrivia)
-                        .with(\.trailingTrivia, confusedFuncType.returnClause.type.trailingTrivia)
-                    )
-                )
-            }
-            
-            var confusedParams: [TupleTypeElementSyntax] = []
-            confusedFuncType.parameters.forEach {
-                if let secondName = $0.secondName {
-                    let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
-                    confusedParams.append($0
-                        .with(\.secondName, .identifier(
-                            confusedSecondName,
-                            leadingTrivia: secondName.leadingTrivia,
-                            trailingTrivia: secondName.trailingTrivia)
-                        )
-                    )
-                } else {
-                    confusedParams.append($0)
-                }
-            }
-            
-            return confusedFuncType.with(\.parameters, TupleTypeElementListSyntax(confusedParams)
-                .with(\.leadingTrivia, confusedFuncType.parameters.leadingTrivia)
-                .with(\.trailingTrivia, confusedFuncType.parameters.trailingTrivia)
-            )
-        } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
-                  let confusedBaseTypeSyntax: TypeSyntax = self.confuseTypeSyntax(metaTypeSyntax.baseType) as? TypeSyntax {
-            return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
-                .with(\.leadingTrivia, metaTypeSyntax.baseType.leadingTrivia)
-                .with(\.trailingTrivia, metaTypeSyntax.baseType.trailingTrivia)
-            )
-        } else if let someAnyTypeSyntax: SomeOrAnyTypeSyntax = typeSyntax.as(SomeOrAnyTypeSyntax.self),
-                  let confusedConstraintTypeSyntax: TypeSyntax = self.confuseTypeSyntax(someAnyTypeSyntax.constraint) as? TypeSyntax {
-            return someAnyTypeSyntax.with(\.constraint, confusedConstraintTypeSyntax
-                .with(\.leadingTrivia, someAnyTypeSyntax.constraint.leadingTrivia)
-                .with(\.trailingTrivia, someAnyTypeSyntax.constraint.trailingTrivia)
-            )
-        } else if let impUnwrappedOptTypeSyntax: ImplicitlyUnwrappedOptionalTypeSyntax = typeSyntax.as(ImplicitlyUnwrappedOptionalTypeSyntax.self),
-                  let confusedWrappedType: TypeSyntax = self.confuseTypeSyntax(impUnwrappedOptTypeSyntax.wrappedType) as? TypeSyntax {
-            return impUnwrappedOptTypeSyntax.with(\.wrappedType, confusedWrappedType
-                .with(\.leadingTrivia, impUnwrappedOptTypeSyntax.wrappedType.leadingTrivia)
-                .with(\.trailingTrivia, impUnwrappedOptTypeSyntax.wrappedType.trailingTrivia)
-            )
-        } else if let memTypeSyntax: MemberTypeSyntax = typeSyntax.as(MemberTypeSyntax.self) {
-            var confusedMemTypeSyntax = memTypeSyntax
-            if let confusedType: TypeSyntax = self.confuseTypeSyntax(memTypeSyntax.baseType) as? TypeSyntax {
-                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.baseType, confusedType
-                    .with(\.leadingTrivia, confusedMemTypeSyntax.baseType.leadingTrivia)
-                    .with(\.trailingTrivia, confusedMemTypeSyntax.baseType.trailingTrivia)
-                )
-            }
-            
-            if let varSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(memTypeSyntax.name.text),
-               let confusedSymbolName = varSymbol.confusedSymbolName {
-                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.name, .identifier(
-                    confusedSymbolName,
-                    leadingTrivia: confusedMemTypeSyntax.name.leadingTrivia,
-                    trailingTrivia: confusedMemTypeSyntax.name.trailingTrivia
-                ))
-            }
-            
-            return confusedMemTypeSyntax
-        } else if let compTypeSyntax: CompositionTypeSyntax = typeSyntax.as(CompositionTypeSyntax.self) {
-            var confusedCompElemType: [CompositionTypeElementSyntax] = []
-            compTypeSyntax.elements.forEach {
-                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
-                    confusedCompElemType.append($0.with(\.type, confusedType
-                        .with(\.leadingTrivia, $0.type.leadingTrivia)
-                        .with(\.trailingTrivia, $0.type.trailingTrivia)
-                    ))
-                } else {
-                    confusedCompElemType.append($0)
-                }
-            }
-            
-            return compTypeSyntax.with(\.elements, CompositionTypeElementListSyntax(confusedCompElemType)
-                .with(\.leadingTrivia, compTypeSyntax.elements.leadingTrivia)
-                .with(\.trailingTrivia, compTypeSyntax.elements.trailingTrivia)
-            )
-        } else if let attrTypeSyntax: AttributedTypeSyntax = typeSyntax.as(AttributedTypeSyntax.self),
-                  let confusedBaseType: TypeSyntax = self.confuseTypeSyntax(attrTypeSyntax.baseType) as? TypeSyntax {
-            return attrTypeSyntax.with(\.baseType, confusedBaseType
-                .with(\.leadingTrivia, attrTypeSyntax.baseType.leadingTrivia)
-                .with(\.trailingTrivia, attrTypeSyntax.baseType.trailingTrivia)
-            )
-        }
-        
-        return typeSyntax
-    }
+//    private func confuseNodePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
+//        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
+//            guard let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPatternSyntax.identifier.text) as? SPSwiftSourceVariableSymbol,
+//                  let confusedSymbolName = varSymbol.confusedSymbolName else {
+//                return PatternSyntax(idPatternSyntax)
+//            }
+//            
+//            let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
+//                .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
+//                .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
+//            )
+//            
+//            return PatternSyntax(newPattern)
+//        } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
+//            let confusedTupPatternSyntaxElems: [TuplePatternElementSyntax] = tupPatternSyntax.elements.compactMap {
+//                guard let pattern: PatternSyntax = self.confuseNodePattern($0.pattern) else {
+//                    return $0
+//                }
+//                
+//                return $0.with(\.pattern, PatternSyntax(pattern)
+//                    .with(\.leadingTrivia, $0.pattern.leadingTrivia)
+//                    .with(\.trailingTrivia, $0.pattern.trailingTrivia)
+//                )
+//            }
+//            
+//            return PatternSyntax(tupPatternSyntax
+//                .with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)
+//                    .with(\.leadingTrivia, tupPatternSyntax.elements.leadingTrivia)
+//                    .with(\.trailingTrivia, tupPatternSyntax.elements.trailingTrivia)
+//                )
+//            )
+//        } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
+//            guard let confusedExprPattern: ExprSyntax = self.confuseExpression(exprPatternSyntax.expression)?.as(ExprSyntax.self) else {
+//                return pattern
+//            }
+//            
+//            return PatternSyntax(exprPatternSyntax
+//                .with(\.expression, confusedExprPattern
+//                    .with(\.leadingTrivia, exprPatternSyntax.leadingTrivia)
+//                    .with(\.trailingTrivia, exprPatternSyntax.trailingTrivia)
+//                )
+//            )
+//        } else if let valBindPatternSyntax: ValueBindingPatternSyntax = pattern.as(ValueBindingPatternSyntax.self) {
+//            guard let confusedPattern = self.confuseNodePattern(valBindPatternSyntax.pattern) else {
+//                return pattern
+//            }
+//            
+//            return PatternSyntax(valBindPatternSyntax
+//                .with(\.pattern, confusedPattern
+//                    .with(\.leadingTrivia, valBindPatternSyntax.pattern.leadingTrivia)
+//                    .with(\.trailingTrivia, valBindPatternSyntax.pattern.trailingTrivia)
+//                )
+//            )
+//        }
+//        
+//        return pattern
+//    }
+//    
+//    private func confuseExpression(_ expr: some ExprSyntaxProtocol) -> ExprSyntax? {
+//        if let patternSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
+//            guard let confusedPattern = self.confuseNodePattern(patternSyntax.pattern) else {
+//                return ExprSyntax(expr)
+//            }
+//            
+//            return ExprSyntax(patternSyntax.with(\.pattern, confusedPattern
+//                .with(\.leadingTrivia, patternSyntax.pattern.leadingTrivia)
+//                .with(\.trailingTrivia, patternSyntax.pattern.trailingTrivia)
+//            ))
+//        } else if let exprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
+//            guard let confusedArguments: [LabeledExprSyntax] = exprSyntax.arguments.flatMap({
+//                guard let confusedExpr = self.confuseExpression($0.expression) else {
+//                    return $0
+//                }
+//                
+//                return $0.with(\.expression, confusedExpr
+//                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
+//                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
+//                )
+//            }) as? [LabeledExprSyntax] else {
+//                return ExprSyntax(expr)
+//            }
+//            
+//            return ExprSyntax(exprSyntax
+//                .with(\.arguments, LabeledExprListSyntax(confusedArguments)
+//                    .with(\.leadingTrivia, exprSyntax.arguments.leadingTrivia)
+//                    .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
+//                )
+//            )
+//        } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
+//            let confusedExprList = seqExprSyntax.elements.flatMap {
+//                guard let confusedExpr = self.confuseExpression($0) else {
+//                    return $0
+//                }
+//                
+//                return confusedExpr.with(\.leadingTrivia, $0.leadingTrivia).with(\.trailingTrivia, $0.trailingTrivia)
+//            }
+//            
+//            return ExprSyntax(seqExprSyntax
+//                .with(\.elements, ExprListSyntax(confusedExprList))
+//                .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
+//                .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
+//            )
+//        } else if let tupExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
+//            let confusedExprList = tupExprSyntax.elements.flatMap {
+//                guard let confusedExpr = self.confuseExpression($0.expression) else {
+//                    return $0
+//                }
+//                
+//                return $0.with(\.expression, confusedExpr
+//                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
+//                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
+//                )
+//            }
+//            
+//            return ExprSyntax(tupExprSyntax
+//                .with(\.elements, LabeledExprListSyntax(confusedExprList)
+//                    .with(\.leadingTrivia, tupExprSyntax.elements.leadingTrivia)
+//                    .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
+//                )
+//            )
+//        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
+//            var refSymbol: SPSwiftSourceSymbol?
+//            
+//            let srcLoc: SourceLocation = self.locationConverter.location(for: declRefSyntax.positionAfterSkippingLeadingTrivia)
+//            if let resp: SKResponseDictionary = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: srcLoc.line, col: srcLoc.column),
+//               let usr: String = resp[sourceKit.keys.usr] {
+//                refSymbol = IndexStore.indexStore.getSymbol(usr: usr)
+//            } else if let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolInCurrentScope(declRefSyntax.baseName.text) {
+//                refSymbol = symbol
+//            }
+//            
+//            if let refSymbol,
+//               let confusedSymbolName = refSymbol.confusedSymbolName {
+//                return ExprSyntax(declRefSyntax
+//                    .with(\.baseName, .identifier(
+//                        confusedSymbolName,
+//                        leadingTrivia: declRefSyntax.baseName.leadingTrivia,
+//                        trailingTrivia: declRefSyntax.baseName.trailingTrivia)
+//                    )
+//                )
+//            }
+//        }
+//        
+//        return ExprSyntax(expr)
+//    }
+//    
+//    private func confuseTypeSyntax(_ typeSyntax: TypeSyntaxProtocol) -> TypeSyntaxProtocol? {
+//        if let idTypeSyntax: IdentifierTypeSyntax = typeSyntax.as(IdentifierTypeSyntax.self) {
+//            if let typeSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(idTypeSyntax.name.text),
+//               let confusedSymbolName = typeSymbol.confusedSymbolName {
+//                return idTypeSyntax.with(\.name, .identifier(
+//                    confusedSymbolName,
+//                    leadingTrivia: idTypeSyntax.name.leadingTrivia,
+//                    trailingTrivia: idTypeSyntax.name.trailingTrivia)
+//                )
+//            }
+//        } else if let optTypeSyntax: OptionalTypeSyntax = typeSyntax.as(OptionalTypeSyntax.self),
+//                  let confusedWrappedTypeSyntax: TypeSyntax = self.confuseTypeSyntax(optTypeSyntax.wrappedType) as? TypeSyntax {
+//            
+//            return optTypeSyntax.with(\.wrappedType, confusedWrappedTypeSyntax
+//                .with(\.leadingTrivia, optTypeSyntax.wrappedType.leadingTrivia)
+//                .with(\.trailingTrivia, optTypeSyntax.wrappedType.trailingTrivia)
+//            )
+//        } else if let arrTypeSyntax: ArrayTypeSyntax = typeSyntax.as(ArrayTypeSyntax.self),
+//                  let confusedElement: TypeSyntax = self.confuseTypeSyntax(arrTypeSyntax.element) as? TypeSyntax {
+//            return arrTypeSyntax.with(\.element, confusedElement
+//                .with(\.leadingTrivia, arrTypeSyntax.element.leadingTrivia)
+//                .with(\.trailingTrivia, arrTypeSyntax.element.trailingTrivia)
+//            )
+//        } else if let dicTypeSyntax: DictionaryTypeSyntax = typeSyntax.as(DictionaryTypeSyntax.self),
+//                  let confusedKeyType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.key) as? TypeSyntax,
+//                  let confusedValueType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.value) as? TypeSyntax {
+//            return dicTypeSyntax.with(\.key, confusedKeyType
+//                .with(\.leadingTrivia, dicTypeSyntax.key.leadingTrivia)
+//                .with(\.trailingTrivia, dicTypeSyntax.key.trailingTrivia))
+//            .with(\.value, confusedValueType
+//                .with(\.leadingTrivia, dicTypeSyntax.value.leadingTrivia)
+//                .with(\.trailingTrivia, dicTypeSyntax.value.trailingTrivia)
+//            )
+//        } else if let tupTypeSyntax: TupleTypeSyntax = typeSyntax.as(TupleTypeSyntax.self) {
+//            var confusedTupleElemType: [TupleTypeElementSyntax] = []
+//            tupTypeSyntax.elements.forEach {
+//                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
+//                    confusedTupleElemType.append($0.with(\.type, confusedType
+//                        .with(\.leadingTrivia, $0.type.leadingTrivia)
+//                        .with(\.trailingTrivia, $0.type.trailingTrivia)
+//                    ))
+//                } else {
+//                    confusedTupleElemType.append($0)
+//                }
+//            }
+//            
+//            return tupTypeSyntax.with(\.elements, TupleTypeElementListSyntax(confusedTupleElemType)
+//                .with(\.leadingTrivia, tupTypeSyntax.elements.leadingTrivia)
+//                .with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)
+//            )
+//        } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
+//            var confusedFuncType = funcTypeSyntax
+//            if let confusedRetType: TypeSyntax = self.confuseTypeSyntax(funcTypeSyntax.returnClause.type) as? TypeSyntax {
+//                confusedFuncType = confusedFuncType.with(\.returnClause, confusedFuncType.returnClause
+//                    .with(\.type, confusedRetType
+//                        .with(\.leadingTrivia, confusedFuncType.returnClause.type.leadingTrivia)
+//                        .with(\.trailingTrivia, confusedFuncType.returnClause.type.trailingTrivia)
+//                    )
+//                )
+//            }
+//            
+//            var confusedParams: [TupleTypeElementSyntax] = []
+//            confusedFuncType.parameters.forEach {
+//                if let secondName = $0.secondName {
+//                    let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
+//                    confusedParams.append($0
+//                        .with(\.secondName, .identifier(
+//                            confusedSecondName,
+//                            leadingTrivia: secondName.leadingTrivia,
+//                            trailingTrivia: secondName.trailingTrivia)
+//                        )
+//                    )
+//                } else {
+//                    confusedParams.append($0)
+//                }
+//            }
+//            
+//            return confusedFuncType.with(\.parameters, TupleTypeElementListSyntax(confusedParams)
+//                .with(\.leadingTrivia, confusedFuncType.parameters.leadingTrivia)
+//                .with(\.trailingTrivia, confusedFuncType.parameters.trailingTrivia)
+//            )
+//        } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
+//                  let confusedBaseTypeSyntax: TypeSyntax = self.confuseTypeSyntax(metaTypeSyntax.baseType) as? TypeSyntax {
+//            return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
+//                .with(\.leadingTrivia, metaTypeSyntax.baseType.leadingTrivia)
+//                .with(\.trailingTrivia, metaTypeSyntax.baseType.trailingTrivia)
+//            )
+//        } else if let someAnyTypeSyntax: SomeOrAnyTypeSyntax = typeSyntax.as(SomeOrAnyTypeSyntax.self),
+//                  let confusedConstraintTypeSyntax: TypeSyntax = self.confuseTypeSyntax(someAnyTypeSyntax.constraint) as? TypeSyntax {
+//            return someAnyTypeSyntax.with(\.constraint, confusedConstraintTypeSyntax
+//                .with(\.leadingTrivia, someAnyTypeSyntax.constraint.leadingTrivia)
+//                .with(\.trailingTrivia, someAnyTypeSyntax.constraint.trailingTrivia)
+//            )
+//        } else if let impUnwrappedOptTypeSyntax: ImplicitlyUnwrappedOptionalTypeSyntax = typeSyntax.as(ImplicitlyUnwrappedOptionalTypeSyntax.self),
+//                  let confusedWrappedType: TypeSyntax = self.confuseTypeSyntax(impUnwrappedOptTypeSyntax.wrappedType) as? TypeSyntax {
+//            return impUnwrappedOptTypeSyntax.with(\.wrappedType, confusedWrappedType
+//                .with(\.leadingTrivia, impUnwrappedOptTypeSyntax.wrappedType.leadingTrivia)
+//                .with(\.trailingTrivia, impUnwrappedOptTypeSyntax.wrappedType.trailingTrivia)
+//            )
+//        } else if let memTypeSyntax: MemberTypeSyntax = typeSyntax.as(MemberTypeSyntax.self) {
+//            var confusedMemTypeSyntax = memTypeSyntax
+//            if let confusedType: TypeSyntax = self.confuseTypeSyntax(memTypeSyntax.baseType) as? TypeSyntax {
+//                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.baseType, confusedType
+//                    .with(\.leadingTrivia, confusedMemTypeSyntax.baseType.leadingTrivia)
+//                    .with(\.trailingTrivia, confusedMemTypeSyntax.baseType.trailingTrivia)
+//                )
+//            }
+//            
+//            if let varSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(memTypeSyntax.name.text),
+//               let confusedSymbolName = varSymbol.confusedSymbolName {
+//                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.name, .identifier(
+//                    confusedSymbolName,
+//                    leadingTrivia: confusedMemTypeSyntax.name.leadingTrivia,
+//                    trailingTrivia: confusedMemTypeSyntax.name.trailingTrivia
+//                ))
+//            }
+//            
+//            return confusedMemTypeSyntax
+//        } else if let compTypeSyntax: CompositionTypeSyntax = typeSyntax.as(CompositionTypeSyntax.self) {
+//            var confusedCompElemType: [CompositionTypeElementSyntax] = []
+//            compTypeSyntax.elements.forEach {
+//                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
+//                    confusedCompElemType.append($0.with(\.type, confusedType
+//                        .with(\.leadingTrivia, $0.type.leadingTrivia)
+//                        .with(\.trailingTrivia, $0.type.trailingTrivia)
+//                    ))
+//                } else {
+//                    confusedCompElemType.append($0)
+//                }
+//            }
+//            
+//            return compTypeSyntax.with(\.elements, CompositionTypeElementListSyntax(confusedCompElemType)
+//                .with(\.leadingTrivia, compTypeSyntax.elements.leadingTrivia)
+//                .with(\.trailingTrivia, compTypeSyntax.elements.trailingTrivia)
+//            )
+//        } else if let attrTypeSyntax: AttributedTypeSyntax = typeSyntax.as(AttributedTypeSyntax.self),
+//                  let confusedBaseType: TypeSyntax = self.confuseTypeSyntax(attrTypeSyntax.baseType) as? TypeSyntax {
+//            return attrTypeSyntax.with(\.baseType, confusedBaseType
+//                .with(\.leadingTrivia, attrTypeSyntax.baseType.leadingTrivia)
+//                .with(\.trailingTrivia, attrTypeSyntax.baseType.trailingTrivia)
+//            )
+//        }
+//        
+//        return typeSyntax
+//    }
     
     private func nodeParent<T: SyntaxProtocol>(_ node: SyntaxProtocol) -> T? {
         var parent = node.parent
@@ -869,5 +441,58 @@ extension SPSwiftSourceASTRewriter {
         }
         
         return ""
+    }
+    
+    private func parameterIndex(of node: FunctionParameterSyntax) -> Int? {
+        guard let list = node.parent?.as(FunctionParameterListSyntax.self) else { return nil }
+        for (i, param) in list.enumerated() where param.id == node.id {
+            return i
+        }
+        return nil
+    }
+    
+    private func enclosingFunctionSymbol(of node: FunctionParameterSyntax) -> SPSwiftSourceFunctionSymbol? {
+        var parent: Syntax? = node.parent
+        while let cur = parent {
+            var signature: String?
+            if let f = cur.as(FunctionDeclSyntax.self) {
+                signature = ConfuseHelper.generateSignature(
+                    funcName: f.name.text,
+                    parameters: f.signature.parameterClause.parameters
+                )
+            } else if let i = cur.as(InitializerDeclSyntax.self) {
+                signature = ConfuseHelper.generateSignature(
+                    funcName: i.initKeyword.text,
+                    parameters: i.signature.parameterClause.parameters
+                )
+            }
+            
+            if let signature {
+                let scope = IndexStore.indexStore.scope(
+                    token: node.firstName,
+                    inFile:self.sourceFile
+                )
+                return scope?.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol
+            }
+            
+            parent = cur.parent
+        }
+        
+        return nil
+    }
+    
+    private func calledNameToken(_ expr: ExprSyntax) -> TokenSyntax? {
+        if let m = expr.as(MemberAccessExprSyntax.self) { return m.declName.baseName }
+        if let d = expr.as(DeclReferenceExprSyntax.self) { return d.baseName }
+        return nil
+    }
+    
+    private func functionSymbol(at token: TokenSyntax) -> SPSwiftSourceFunctionSymbol? {
+        let loc = self.locationConverter.location(for: token.positionAfterSkippingLeadingTrivia)
+        guard let ref = IndexStore.indexStore.getRef(fromFile: self.sourceFile,
+                                                     line: loc.line,
+                                                     col: loc.column),
+              let usr: String = ref[self.sourceKit.keys.usr] else { return nil }
+        return IndexStore.indexStore.getSymbol(usr: usr) as? SPSwiftSourceFunctionSymbol
     }
 }

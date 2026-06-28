@@ -35,7 +35,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         ConfuseHelper.confuseSymbol(symbol)
         
         self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         return super.visit(node)
     }
@@ -45,7 +46,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             self.parentStack.removeLast()
         }
         
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -58,7 +59,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         ConfuseHelper.confuseSymbol(symbol)
         
         self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         return super.visit(node)
     }
@@ -68,7 +70,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             self.parentStack.removeLast()
         }
         
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -81,7 +83,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         ConfuseHelper.confuseSymbol(symbol)
         
         self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         return super.visit(node)
     }
@@ -91,7 +94,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             self.parentStack.removeLast()
         }
         
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -104,7 +107,9 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         ConfuseHelper.confuseSymbol(symbol)
         
         self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
@@ -113,7 +118,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             self.parentStack.removeLast()
         }
         
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
 //    override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
@@ -164,21 +169,24 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         self.parentStack.last?.children.append(symbol)
         
         self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: InitializerDeclSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ExtensionDeclSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -228,21 +236,25 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             self.currentScope.pushSymbol($0)
         }
         
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: VariableDeclSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: ClosureExprSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
@@ -306,9 +318,10 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             symbolScope: node.symbolScope
         )
         symbol.originalSymbolName = node.name.text
-
+        
         node.signature.parameterClause.parameters.forEach { parameter in
             symbol.labels.append(parameter.firstName.text)
+            symbol.confusedLabels.append(parameter.firstName.text)
         }
         
         node.modifiers.forEach { modifier in
@@ -346,17 +359,20 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         }
         
         self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         return super.visit(node)
     }
     
     override func visitPost(_ node: FunctionDeclSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         let symbols: [String] = self.extractPatternNames(node.pattern)
         symbols.forEach {
@@ -371,11 +387,12 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: ForStmtSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         node.conditions.forEach {
             if let optBindCondSyntax: OptionalBindingConditionSyntax = $0.condition.as(OptionalBindingConditionSyntax.self),
@@ -404,11 +421,12 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: WhileStmtSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
         node.conditions.forEach { condition in
             if let optBindCondSyntax: OptionalBindingConditionSyntax = condition.condition.as(OptionalBindingConditionSyntax.self),
@@ -437,45 +455,53 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visitPost(_ node: IfExprSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: SwitchExprSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: SwitchCaseSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: SwitchCaseItemSyntax) -> SyntaxVisitorContinueKind {
         let symbols: [String] = self.extractPatternNames(node.pattern)
+        
         symbols.forEach {
             let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
             varSymbol.originalSymbolName = $0
             varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
             self.currentScope.pushSymbol(varSymbol)
         }
+        
         return super.visit(node)
     }
     
     override func visit(_ node: SwitchDefaultLabelSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: SwitchDefaultLabelSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
@@ -503,21 +529,25 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: GuardStmtSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
-        self.currentScope = self.currentScope.pushScope(true)
+        self.currentScope = self.currentScope.pushScope()
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
         return super.visit(node)
     }
     
     override func visitPost(_ node: CatchClauseSyntax) {
-        self.currentScope = self.currentScope.popScope(false)
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: CatchItemSyntax) -> SyntaxVisitorContinueKind {
@@ -539,6 +569,9 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
 extension SPSwiftSourceASTCollector {
     func walk() -> SPSwiftSourceScope {
         self.walk(self.sourceTree)
+        
+        IndexStore.indexStore.set(nodeID: self.sourceTree.id.indexInTree.toOpaque(), self.topScope, inFile:
+          self.sourceFile)
         return self.topScope
     }
     
@@ -596,11 +629,17 @@ extension SPSwiftSourceASTCollector {
             
             resp.recurseEntities { (dict: SKResponseDictionary) in
                 guard let entryKind: SKUID = dict[sourceKit.keys.kind],
-                      let kind: SourceKit.DeclarationType = entryKind.declarationType() else {
+                      (entryKind.referenceType() != nil) || (entryKind.declarationType() != nil) else {
                     return
                 }
                 
-                switch kind {
+                if let line: Int = dict[sourceKit.keys.line],
+                   let col: Int = dict[sourceKit.keys.column] {
+                    IndexStore.indexStore.set(line: line, col: col, ref: dict, toFile: self.sourceFile)
+                }
+                
+                if let kind: SourceKit.DeclarationType = entryKind.declarationType() {
+                    switch kind {
                     case .object, .protocol, .enum: do {
                         if let name: String = dict[sourceKit.keys.name],
                            let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(name) as? SPSwiftSourceClassSymbol {
@@ -655,7 +694,10 @@ extension SPSwiftSourceASTCollector {
                         
                         if !self.inheritedFromAnyExternal(sourceKit, dict) {
                             funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
-                            funcSymbol.labels.forEach { funcSymbol.confusedLabels.append(ConfuseHelper.confusedSymbolName($0)) }
+                            for (index, label) in funcSymbol.labels.enumerated() {
+                                let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
+                                funcSymbol.confusedLabels[index] = confusedLabel
+                            }
                             
                             for (index, argument) in funcSymbol.arguments.enumerated() {
                                 if argument.confusedSymbolName == nil {
@@ -673,27 +715,15 @@ extension SPSwiftSourceASTCollector {
                             break
                         }
                         
-                        let baseName = fullName.components(separatedBy: "(").first ?? fullName
                         for child in parentSymbol.children {
-                            if child.originalSymbolName == baseName, child.nodeKind == .enumCase {
+                            if child.originalSymbolName == fullName, child.nodeKind == .enumCase {
                                 child.symbolUSR = dict[sourceKit.keys.usr]
                                 break
                             }
                         }
                     }
                         break
-                }
-            }
-            
-            resp.recurseEntities {
-                guard let entryKind: SKUID = $0[sourceKit.keys.kind],
-                      let _: SourceKit.DeclarationType = entryKind.referenceType() else {
-                    return
-                }
-                
-                if let line: Int = $0[sourceKit.keys.line],
-                   let col: Int = $0[sourceKit.keys.column] {
-                    IndexStore.indexStore.set(line: line, col: col, ref: $0, toFile: self.sourceFile)
+                    }
                 }
             }
         } catch let error {
