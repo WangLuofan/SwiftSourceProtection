@@ -114,6 +114,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: TokenSyntax) -> TokenSyntax {
+        
         guard case .identifier = node.tokenKind,
               !node.text.isSwiftKeyWord else {
             return super.visit(node)
@@ -137,7 +138,13 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             }
             
             return super.visit(node)
-        } else if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
+        }
+        
+        guard !self.skipScopeResolution(node) else {
+            return super.visit(node)
+        }
+        
+        if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
                   let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text),
                   let confusedSymbolName = symbol.confusedSymbolName {
             return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
@@ -539,4 +546,23 @@ extension SPSwiftSourceASTRewriter {
         
         return nil
     }
+    
+    private func skipScopeResolution(_ node: TokenSyntax) -> Bool {
+          guard let parent = node.parent else { return false }
+
+          if let d = parent.as(DeclReferenceExprSyntax.self),
+             let ma = d.parent?.as(MemberAccessExprSyntax.self), ma.declName.id == d.id {
+              return true
+          }
+        
+          if let le = parent.as(LabeledExprSyntax.self), le.label?.id == node.id {
+              return true
+          }
+        
+          if let te = parent.as(TupleTypeElementSyntax.self),
+             te.firstName?.id == node.id || te.secondName?.id == node.id {
+              return true
+          }
+          return false
+      }
 }

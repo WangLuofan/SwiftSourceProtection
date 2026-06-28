@@ -13,6 +13,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     private var sourceFile: File
     private var module: Module
     private var topScope: SPSwiftSourceScope = SPSwiftSourceScope()
+    private var extensions: [SPSwiftSourceClassSymbol] = []
     private lazy var currentScope: SPSwiftSourceScope = self.topScope
     
     private var parentStack: [SPSwiftSourceClassSymbol] = []
@@ -23,6 +24,21 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         self.module = module
         
         super.init(viewMode: .sourceAccurate)
+    }
+    
+    override func visitPost(_ node: SourceFileSyntax) {
+        guard !self.extensions.isEmpty else {
+            return
+        }
+        
+        self.extensions.forEach {
+            if let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolWithSymbolName($0.originalSymbolName) as? SPSwiftSourceClassSymbol {
+                clsSymbol.children.append(contentsOf: $0.children)
+            } else {
+                self.topScope.pushSymbol($0)
+            }
+        }
+        self.extensions.removeAll()
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -149,12 +165,23 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        let clsSymbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        if let extendedType: IdentifierTypeSyntax = node.extendedType.as(IdentifierTypeSyntax.self) {
+            clsSymbol.originalSymbolName = extendedType.name.text
+        }
+        self.extensions.append(clsSymbol)
+        self.parentStack.append(clsSymbol)
+        
         self.currentScope = self.currentScope.pushScope()
         IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         return super.visit(node)
     }
     
     override func visitPost(_ node: ExtensionDeclSyntax) {
+        if !self.parentStack.isEmpty {
+            self.parentStack.removeLast()
+        }
+        
         self.currentScope = self.currentScope.popScope()
     }
     
@@ -632,7 +659,6 @@ extension SPSwiftSourceASTCollector {
             return seqExprSyntax.elements.flatMap { self.extractPatternNames(fromExpr: $0) }
         }
 
-        // MemberAccessExpr（`.second`）、字面量等没有绑定，忽略
         return []
     }
     
@@ -663,6 +689,7 @@ extension SPSwiftSourceASTCollector {
             }
             
             resp.recurseEntities { (dict: SKResponseDictionary) in
+                
                 guard let entryKind: SKUID = dict[sourceKit.keys.kind],
                       entryKind.declType() != nil || entryKind.refType() != nil else {
                     return
