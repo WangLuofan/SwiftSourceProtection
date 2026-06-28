@@ -104,14 +104,16 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         }
         
         let refLoc = self.locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
-        if let ref = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: refLoc.line, col: refLoc.column) {
+        if let refs = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: refLoc.line, col: refLoc.column),
+           let ref = self.matchRef(refs, to: node) {
             if let usr: String = ref[sourceKit.keys.usr],
                let symbol: SPSwiftSourceSymbol = IndexStore.indexStore.getSymbol(usr: usr),
+               symbol.originalSymbolName.hasPrefix(node.text),
                let confusedSymbolName = symbol.confusedSymbolName {
                 return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
-            } else {
-                return super.visit(node)
             }
+            
+            return super.visit(node)
         } else if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
                   let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text),
                   let confusedSymbolName = symbol.confusedSymbolName {
@@ -127,6 +129,15 @@ extension SPSwiftSourceASTRewriter {
         let rewritten = self.visit(self.sourceTree)
         return rewritten.description
     }
+    
+    private func matchRef(_ refs: [SKResponseDictionary], to token: TokenSyntax) ->
+      SKResponseDictionary? {
+          refs.first { ref in
+              let name = (ref[sourceKit.keys.name] as String?) ?? ""
+              let base = name.components(separatedBy: "(").first ?? name
+              return base == token.text
+          } ?? refs.first
+      }
     
 //    private func confuseNodePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
 //        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
@@ -489,10 +500,20 @@ extension SPSwiftSourceASTRewriter {
     
     private func functionSymbol(at token: TokenSyntax) -> SPSwiftSourceFunctionSymbol? {
         let loc = self.locationConverter.location(for: token.positionAfterSkippingLeadingTrivia)
-        guard let ref = IndexStore.indexStore.getRef(fromFile: self.sourceFile,
-                                                     line: loc.line,
-                                                     col: loc.column),
-              let usr: String = ref[self.sourceKit.keys.usr] else { return nil }
-        return IndexStore.indexStore.getSymbol(usr: usr) as? SPSwiftSourceFunctionSymbol
+        guard let refs = IndexStore
+            .indexStore.getRef(
+                fromFile: self.sourceFile,
+                line: loc.line,
+                col: loc.column
+            ) else { return nil }
+        
+        for ref in refs {
+            if let usr: String = ref[self.sourceKit.keys.usr],
+               let symbol: SPSwiftSourceFunctionSymbol = IndexStore.indexStore.getSymbol(usr: usr) as? SPSwiftSourceFunctionSymbol {
+                return symbol
+            }
+        }
+        
+        return nil
     }
 }

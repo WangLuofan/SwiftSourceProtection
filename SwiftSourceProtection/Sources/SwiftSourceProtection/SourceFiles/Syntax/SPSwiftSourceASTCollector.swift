@@ -154,31 +154,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         return super.visit(node)
     }
     
-    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(
-            sourceFile: self.sourceFile,
-            signature: ConfuseHelper.generateSignature(
-                funcName: node.initKeyword.text,
-                parameters: node.signature.parameterClause.parameters
-            ),
-            symbolScope: node.symbolScope
-        )
-        
-        symbol.originalSymbolName = node.initKeyword.text
-        
-        self.parentStack.last?.children.append(symbol)
-        
-        self.currentScope.pushSymbol(symbol)
-        self.currentScope = self.currentScope.pushScope()
-        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
-        
-        return super.visit(node)
-    }
-    
-    override func visitPost(_ node: InitializerDeclSyntax) {
-        self.currentScope = self.currentScope.popScope()
-    }
-    
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         self.currentScope = self.currentScope.pushScope()
         IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
@@ -301,11 +276,79 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             let signature: String = ConfuseHelper.generateSignature(funcName: curFunc.name.text, parameters: curFunc.signature.parameterClause.parameters)
             if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol {
                 funcSymbol.arguments.append(paramSymbol)
+                
+                funcSymbol.labels.append(node.firstName.text)
+                funcSymbol.confusedLabels.append(node.firstName.text)
+            }
+        } else if let curFunc: InitializerDeclSyntax = node.getParentNode() {
+            let signature: String = ConfuseHelper.generateSignature(funcName: curFunc.initKeyword.text, parameters: curFunc.signature.parameterClause.parameters)
+            if let funcSymbol: SPSwiftSourceFunctionSymbol = self.currentScope.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol {
+                funcSymbol.arguments.append(paramSymbol)
+                
+                funcSymbol.labels.append(node.firstName.text)
+                funcSymbol.confusedLabels.append(node.firstName.text)
             }
         }
         
         self.currentScope.pushSymbol(paramSymbol)
         return super.visit(node)
+    }
+    
+    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        let symbol: SPSwiftSourceFunctionSymbol = SPSwiftSourceFunctionSymbol(
+            sourceFile: self.sourceFile,
+            signature: ConfuseHelper.generateSignature(
+                funcName: node.initKeyword.text,
+                parameters: node.signature.parameterClause.parameters
+            ),
+            symbolScope: node.symbolScope
+        )
+        symbol.originalSymbolName = node.initKeyword.text
+        
+        node.modifiers.forEach { modifier in
+            if let declModifierSyntax: DeclModifierSyntax = modifier.as(DeclModifierSyntax.self) {
+                switch declModifierSyntax.name.tokenKind {
+                case .keyword(let keyword):
+                    switch keyword {
+                    case .static:
+                        symbol.isStaticSymbol = true
+                    case .open:
+                        symbol.accessLevel = .open
+                    case .public:
+                        symbol.accessLevel = .public
+                    case .package:
+                        symbol.accessLevel = .package
+                    case .internal:
+                        symbol.accessLevel = .internal
+                    case .fileprivate:
+                        symbol.accessLevel = .fileprivate
+                    case .private:
+                        symbol.accessLevel = .private
+                    default:
+                        break
+                    }
+                default:
+                    break
+                }
+            }
+        }
+        
+        if symbol.symbolScope == .local {
+            ConfuseHelper.confuseSymbol(symbol)
+        } else if symbol.symbolScope == .member {
+            self.parentStack.last?.children.append(symbol)
+        }
+        
+        self.currentScope.pushSymbol(symbol)
+        self.currentScope = self.currentScope.pushScope()
+        
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+        
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: InitializerDeclSyntax) {
+        self.currentScope = self.currentScope.popScope()
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -318,11 +361,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             symbolScope: node.symbolScope
         )
         symbol.originalSymbolName = node.name.text
-        
-        node.signature.parameterClause.parameters.forEach { parameter in
-            symbol.labels.append(parameter.firstName.text)
-            symbol.confusedLabels.append(parameter.firstName.text)
-        }
         
         node.modifiers.forEach { modifier in
             if let declModifierSyntax: DeclModifierSyntax = modifier.as(DeclModifierSyntax.self) {
@@ -629,7 +667,7 @@ extension SPSwiftSourceASTCollector {
             
             resp.recurseEntities { (dict: SKResponseDictionary) in
                 guard let entryKind: SKUID = dict[sourceKit.keys.kind],
-                      (entryKind.referenceType() != nil) || (entryKind.declarationType() != nil) else {
+                      entryKind.declType() != nil || entryKind.refType() != nil else {
                     return
                 }
                 
@@ -638,7 +676,7 @@ extension SPSwiftSourceASTCollector {
                     IndexStore.indexStore.set(line: line, col: col, ref: dict, toFile: self.sourceFile)
                 }
                 
-                if let kind: SourceKit.DeclarationType = entryKind.declarationType() {
+                if let kind: SourceKit.DeclarationType = entryKind.declType() {
                     switch kind {
                     case .object, .protocol, .enum: do {
                         if let name: String = dict[sourceKit.keys.name],

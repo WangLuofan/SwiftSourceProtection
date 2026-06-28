@@ -65,7 +65,7 @@ class ViewController: UIViewController {
         guard let d else {
             return
         }
-        d.c
+        d.overC
         
         self.testLocalBindings()
         self.testExtraLocalBindings()
@@ -197,7 +197,7 @@ class TestA {
         self.n = s
     }
     
-    var c: (u: Int, v: Int) {
+    var overC: (u: Int, v: Int) {
         return (3, 4)
     }
     
@@ -208,7 +208,7 @@ class TestA {
             case .first, .forth, .fifth:
                 let b = 0
             case .second(let u):
-                let c = u.c
+                let c = u.overC
             case .third:
                 let t = 0
         }
@@ -223,7 +223,7 @@ class TestA {
 }
 
 class TestB: TestA {
-    override var c: (k: Int, t: Int) {
+    override var overC: (k: Int, t: Int) {
         return (4, 5)
     }
 }

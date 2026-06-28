@@ -159,6 +159,30 @@ extension String {
     }
 }
 
+extension SKUID {
+    func declType() -> SourceKit.DeclarationType? {
+        if let t = declarationType() { return t }
+        let s = asString
+        
+        if s.contains("function.constructor") {
+            return .method
+        }
+        
+        return nil
+    }
+    
+    func refType() -> SourceKit.DeclarationType? {
+        if let t = referenceType() { return t }
+        let s = asString
+        
+        if s.contains("function.constructor") {
+            return .method
+        }
+        
+        return nil
+    }
+}
+
 extension SyntaxProtocol {
     func getParentNode<T: SyntaxProtocol>() -> T? {
         var current = self.parent

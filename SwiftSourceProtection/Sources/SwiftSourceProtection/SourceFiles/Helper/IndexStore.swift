@@ -14,7 +14,7 @@ class IndexStore {
     private var fileForUSR: [String: File] = [:]
     private var symbolForUSR: [String: SPSwiftSourceSymbol] = [:]
     private var response: [String: SKResponseDictionary] = [:]
-    private var refForFile: [File: [String: SKResponseDictionary]] = [:]
+    private var refForFile: [File: [String: [SKResponseDictionary]]] = [:]
     private var scopeForNode: [File: [UInt64: SPSwiftSourceScope]] = [:]
 }
 
@@ -45,10 +45,10 @@ extension IndexStore {
     
     func set(line: Int, col: Int, ref: SKResponseDictionary, toFile: File) {
         let uniqueID: String = "\(line):\(col)"
-        self.refForFile[toFile, default:[:]][uniqueID] = ref
+        self.refForFile[toFile, default:[:]][uniqueID, default: []].append(ref)
     }
     
-    func getRef(fromFile file: File, line: Int, col: Int) -> SKResponseDictionary? {
+    func getRef(fromFile file: File, line: Int, col: Int) -> [SKResponseDictionary]? {
         let uniqueID: String = "\(line):\(col)"
         return self.refForFile[file]?[uniqueID]
     }
