@@ -95,11 +95,14 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var confusedParams: [TupleTypeElementSyntax] = []
         node.parameters.forEach {
             if let secondName = $0.secondName {
-                confusedParams.append($0.with(\.secondName, .identifier(
+                var confusedParam = $0.with(\.secondName, .identifier(
                     ConfuseHelper.confusedSymbolName(secondName.text),
                     leadingTrivia: secondName.leadingTrivia,
                     trailingTrivia: secondName.trailingTrivia)
-                ))
+                )
+                
+                confusedParam = confusedParam.with(\.type, self.confuseType($0.type))
+                confusedParams.append(confusedParam)
             } else {
                 confusedParams.append($0)
             }
@@ -161,305 +164,330 @@ extension SPSwiftSourceASTRewriter {
     }
     
     private func matchRef(_ refs: [SKResponseDictionary], to token: TokenSyntax) ->
-      SKResponseDictionary? {
-          refs.first { ref in
-              let name = (ref[sourceKit.keys.name] as String?) ?? ""
-              let base = name.components(separatedBy: "(").first ?? name
-              return base == token.text
-          } ?? refs.first
-      }
+    SKResponseDictionary? {
+        refs.first { ref in
+            let name = (ref[sourceKit.keys.name] as String?) ?? ""
+            let base = name.components(separatedBy: "(").first ?? name
+            return base == token.text
+        } ?? refs.first
+    }
     
-//    private func confuseNodePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
-//        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
-//            guard let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPatternSyntax.identifier.text) as? SPSwiftSourceVariableSymbol,
-//                  let confusedSymbolName = varSymbol.confusedSymbolName else {
-//                return PatternSyntax(idPatternSyntax)
-//            }
-//            
-//            let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
-//                .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
-//                .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
-//            )
-//            
-//            return PatternSyntax(newPattern)
-//        } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
-//            let confusedTupPatternSyntaxElems: [TuplePatternElementSyntax] = tupPatternSyntax.elements.compactMap {
-//                guard let pattern: PatternSyntax = self.confuseNodePattern($0.pattern) else {
-//                    return $0
-//                }
-//                
-//                return $0.with(\.pattern, PatternSyntax(pattern)
-//                    .with(\.leadingTrivia, $0.pattern.leadingTrivia)
-//                    .with(\.trailingTrivia, $0.pattern.trailingTrivia)
-//                )
-//            }
-//            
-//            return PatternSyntax(tupPatternSyntax
-//                .with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)
-//                    .with(\.leadingTrivia, tupPatternSyntax.elements.leadingTrivia)
-//                    .with(\.trailingTrivia, tupPatternSyntax.elements.trailingTrivia)
-//                )
-//            )
-//        } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
-//            guard let confusedExprPattern: ExprSyntax = self.confuseExpression(exprPatternSyntax.expression)?.as(ExprSyntax.self) else {
-//                return pattern
-//            }
-//            
-//            return PatternSyntax(exprPatternSyntax
-//                .with(\.expression, confusedExprPattern
-//                    .with(\.leadingTrivia, exprPatternSyntax.leadingTrivia)
-//                    .with(\.trailingTrivia, exprPatternSyntax.trailingTrivia)
-//                )
-//            )
-//        } else if let valBindPatternSyntax: ValueBindingPatternSyntax = pattern.as(ValueBindingPatternSyntax.self) {
-//            guard let confusedPattern = self.confuseNodePattern(valBindPatternSyntax.pattern) else {
-//                return pattern
-//            }
-//            
-//            return PatternSyntax(valBindPatternSyntax
-//                .with(\.pattern, confusedPattern
-//                    .with(\.leadingTrivia, valBindPatternSyntax.pattern.leadingTrivia)
-//                    .with(\.trailingTrivia, valBindPatternSyntax.pattern.trailingTrivia)
-//                )
-//            )
-//        }
-//        
-//        return pattern
-//    }
-//    
-//    private func confuseExpression(_ expr: some ExprSyntaxProtocol) -> ExprSyntax? {
-//        if let patternSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
-//            guard let confusedPattern = self.confuseNodePattern(patternSyntax.pattern) else {
-//                return ExprSyntax(expr)
-//            }
-//            
-//            return ExprSyntax(patternSyntax.with(\.pattern, confusedPattern
-//                .with(\.leadingTrivia, patternSyntax.pattern.leadingTrivia)
-//                .with(\.trailingTrivia, patternSyntax.pattern.trailingTrivia)
-//            ))
-//        } else if let exprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
-//            guard let confusedArguments: [LabeledExprSyntax] = exprSyntax.arguments.flatMap({
-//                guard let confusedExpr = self.confuseExpression($0.expression) else {
-//                    return $0
-//                }
-//                
-//                return $0.with(\.expression, confusedExpr
-//                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
-//                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
-//                )
-//            }) as? [LabeledExprSyntax] else {
-//                return ExprSyntax(expr)
-//            }
-//            
-//            return ExprSyntax(exprSyntax
-//                .with(\.arguments, LabeledExprListSyntax(confusedArguments)
-//                    .with(\.leadingTrivia, exprSyntax.arguments.leadingTrivia)
-//                    .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
-//                )
-//            )
-//        } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
-//            let confusedExprList = seqExprSyntax.elements.flatMap {
-//                guard let confusedExpr = self.confuseExpression($0) else {
-//                    return $0
-//                }
-//                
-//                return confusedExpr.with(\.leadingTrivia, $0.leadingTrivia).with(\.trailingTrivia, $0.trailingTrivia)
-//            }
-//            
-//            return ExprSyntax(seqExprSyntax
-//                .with(\.elements, ExprListSyntax(confusedExprList))
-//                .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
-//                .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
-//            )
-//        } else if let tupExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
-//            let confusedExprList = tupExprSyntax.elements.flatMap {
-//                guard let confusedExpr = self.confuseExpression($0.expression) else {
-//                    return $0
-//                }
-//                
-//                return $0.with(\.expression, confusedExpr
-//                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
-//                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
-//                )
-//            }
-//            
-//            return ExprSyntax(tupExprSyntax
-//                .with(\.elements, LabeledExprListSyntax(confusedExprList)
-//                    .with(\.leadingTrivia, tupExprSyntax.elements.leadingTrivia)
-//                    .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
-//                )
-//            )
-//        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
-//            var refSymbol: SPSwiftSourceSymbol?
-//            
-//            let srcLoc: SourceLocation = self.locationConverter.location(for: declRefSyntax.positionAfterSkippingLeadingTrivia)
-//            if let resp: SKResponseDictionary = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: srcLoc.line, col: srcLoc.column),
-//               let usr: String = resp[sourceKit.keys.usr] {
-//                refSymbol = IndexStore.indexStore.getSymbol(usr: usr)
-//            } else if let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolInCurrentScope(declRefSyntax.baseName.text) {
-//                refSymbol = symbol
-//            }
-//            
-//            if let refSymbol,
-//               let confusedSymbolName = refSymbol.confusedSymbolName {
-//                return ExprSyntax(declRefSyntax
-//                    .with(\.baseName, .identifier(
-//                        confusedSymbolName,
-//                        leadingTrivia: declRefSyntax.baseName.leadingTrivia,
-//                        trailingTrivia: declRefSyntax.baseName.trailingTrivia)
-//                    )
-//                )
-//            }
-//        }
-//        
-//        return ExprSyntax(expr)
-//    }
-//    
-//    private func confuseTypeSyntax(_ typeSyntax: TypeSyntaxProtocol) -> TypeSyntaxProtocol? {
-//        if let idTypeSyntax: IdentifierTypeSyntax = typeSyntax.as(IdentifierTypeSyntax.self) {
-//            if let typeSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(idTypeSyntax.name.text),
-//               let confusedSymbolName = typeSymbol.confusedSymbolName {
-//                return idTypeSyntax.with(\.name, .identifier(
-//                    confusedSymbolName,
-//                    leadingTrivia: idTypeSyntax.name.leadingTrivia,
-//                    trailingTrivia: idTypeSyntax.name.trailingTrivia)
-//                )
-//            }
-//        } else if let optTypeSyntax: OptionalTypeSyntax = typeSyntax.as(OptionalTypeSyntax.self),
-//                  let confusedWrappedTypeSyntax: TypeSyntax = self.confuseTypeSyntax(optTypeSyntax.wrappedType) as? TypeSyntax {
-//            
-//            return optTypeSyntax.with(\.wrappedType, confusedWrappedTypeSyntax
-//                .with(\.leadingTrivia, optTypeSyntax.wrappedType.leadingTrivia)
-//                .with(\.trailingTrivia, optTypeSyntax.wrappedType.trailingTrivia)
-//            )
-//        } else if let arrTypeSyntax: ArrayTypeSyntax = typeSyntax.as(ArrayTypeSyntax.self),
-//                  let confusedElement: TypeSyntax = self.confuseTypeSyntax(arrTypeSyntax.element) as? TypeSyntax {
-//            return arrTypeSyntax.with(\.element, confusedElement
-//                .with(\.leadingTrivia, arrTypeSyntax.element.leadingTrivia)
-//                .with(\.trailingTrivia, arrTypeSyntax.element.trailingTrivia)
-//            )
-//        } else if let dicTypeSyntax: DictionaryTypeSyntax = typeSyntax.as(DictionaryTypeSyntax.self),
-//                  let confusedKeyType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.key) as? TypeSyntax,
-//                  let confusedValueType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.value) as? TypeSyntax {
-//            return dicTypeSyntax.with(\.key, confusedKeyType
-//                .with(\.leadingTrivia, dicTypeSyntax.key.leadingTrivia)
-//                .with(\.trailingTrivia, dicTypeSyntax.key.trailingTrivia))
-//            .with(\.value, confusedValueType
-//                .with(\.leadingTrivia, dicTypeSyntax.value.leadingTrivia)
-//                .with(\.trailingTrivia, dicTypeSyntax.value.trailingTrivia)
-//            )
-//        } else if let tupTypeSyntax: TupleTypeSyntax = typeSyntax.as(TupleTypeSyntax.self) {
-//            var confusedTupleElemType: [TupleTypeElementSyntax] = []
-//            tupTypeSyntax.elements.forEach {
-//                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
-//                    confusedTupleElemType.append($0.with(\.type, confusedType
-//                        .with(\.leadingTrivia, $0.type.leadingTrivia)
-//                        .with(\.trailingTrivia, $0.type.trailingTrivia)
-//                    ))
-//                } else {
-//                    confusedTupleElemType.append($0)
-//                }
-//            }
-//            
-//            return tupTypeSyntax.with(\.elements, TupleTypeElementListSyntax(confusedTupleElemType)
-//                .with(\.leadingTrivia, tupTypeSyntax.elements.leadingTrivia)
-//                .with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)
-//            )
-//        } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
-//            var confusedFuncType = funcTypeSyntax
-//            if let confusedRetType: TypeSyntax = self.confuseTypeSyntax(funcTypeSyntax.returnClause.type) as? TypeSyntax {
-//                confusedFuncType = confusedFuncType.with(\.returnClause, confusedFuncType.returnClause
-//                    .with(\.type, confusedRetType
-//                        .with(\.leadingTrivia, confusedFuncType.returnClause.type.leadingTrivia)
-//                        .with(\.trailingTrivia, confusedFuncType.returnClause.type.trailingTrivia)
-//                    )
-//                )
-//            }
-//            
-//            var confusedParams: [TupleTypeElementSyntax] = []
-//            confusedFuncType.parameters.forEach {
-//                if let secondName = $0.secondName {
-//                    let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
-//                    confusedParams.append($0
-//                        .with(\.secondName, .identifier(
-//                            confusedSecondName,
-//                            leadingTrivia: secondName.leadingTrivia,
-//                            trailingTrivia: secondName.trailingTrivia)
-//                        )
-//                    )
-//                } else {
-//                    confusedParams.append($0)
-//                }
-//            }
-//            
-//            return confusedFuncType.with(\.parameters, TupleTypeElementListSyntax(confusedParams)
-//                .with(\.leadingTrivia, confusedFuncType.parameters.leadingTrivia)
-//                .with(\.trailingTrivia, confusedFuncType.parameters.trailingTrivia)
-//            )
-//        } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
-//                  let confusedBaseTypeSyntax: TypeSyntax = self.confuseTypeSyntax(metaTypeSyntax.baseType) as? TypeSyntax {
-//            return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
-//                .with(\.leadingTrivia, metaTypeSyntax.baseType.leadingTrivia)
-//                .with(\.trailingTrivia, metaTypeSyntax.baseType.trailingTrivia)
-//            )
-//        } else if let someAnyTypeSyntax: SomeOrAnyTypeSyntax = typeSyntax.as(SomeOrAnyTypeSyntax.self),
-//                  let confusedConstraintTypeSyntax: TypeSyntax = self.confuseTypeSyntax(someAnyTypeSyntax.constraint) as? TypeSyntax {
-//            return someAnyTypeSyntax.with(\.constraint, confusedConstraintTypeSyntax
-//                .with(\.leadingTrivia, someAnyTypeSyntax.constraint.leadingTrivia)
-//                .with(\.trailingTrivia, someAnyTypeSyntax.constraint.trailingTrivia)
-//            )
-//        } else if let impUnwrappedOptTypeSyntax: ImplicitlyUnwrappedOptionalTypeSyntax = typeSyntax.as(ImplicitlyUnwrappedOptionalTypeSyntax.self),
-//                  let confusedWrappedType: TypeSyntax = self.confuseTypeSyntax(impUnwrappedOptTypeSyntax.wrappedType) as? TypeSyntax {
-//            return impUnwrappedOptTypeSyntax.with(\.wrappedType, confusedWrappedType
-//                .with(\.leadingTrivia, impUnwrappedOptTypeSyntax.wrappedType.leadingTrivia)
-//                .with(\.trailingTrivia, impUnwrappedOptTypeSyntax.wrappedType.trailingTrivia)
-//            )
-//        } else if let memTypeSyntax: MemberTypeSyntax = typeSyntax.as(MemberTypeSyntax.self) {
-//            var confusedMemTypeSyntax = memTypeSyntax
-//            if let confusedType: TypeSyntax = self.confuseTypeSyntax(memTypeSyntax.baseType) as? TypeSyntax {
-//                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.baseType, confusedType
-//                    .with(\.leadingTrivia, confusedMemTypeSyntax.baseType.leadingTrivia)
-//                    .with(\.trailingTrivia, confusedMemTypeSyntax.baseType.trailingTrivia)
-//                )
-//            }
-//            
-//            if let varSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(memTypeSyntax.name.text),
-//               let confusedSymbolName = varSymbol.confusedSymbolName {
-//                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.name, .identifier(
-//                    confusedSymbolName,
-//                    leadingTrivia: confusedMemTypeSyntax.name.leadingTrivia,
-//                    trailingTrivia: confusedMemTypeSyntax.name.trailingTrivia
-//                ))
-//            }
-//            
-//            return confusedMemTypeSyntax
-//        } else if let compTypeSyntax: CompositionTypeSyntax = typeSyntax.as(CompositionTypeSyntax.self) {
-//            var confusedCompElemType: [CompositionTypeElementSyntax] = []
-//            compTypeSyntax.elements.forEach {
-//                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
-//                    confusedCompElemType.append($0.with(\.type, confusedType
-//                        .with(\.leadingTrivia, $0.type.leadingTrivia)
-//                        .with(\.trailingTrivia, $0.type.trailingTrivia)
-//                    ))
-//                } else {
-//                    confusedCompElemType.append($0)
-//                }
-//            }
-//            
-//            return compTypeSyntax.with(\.elements, CompositionTypeElementListSyntax(confusedCompElemType)
-//                .with(\.leadingTrivia, compTypeSyntax.elements.leadingTrivia)
-//                .with(\.trailingTrivia, compTypeSyntax.elements.trailingTrivia)
-//            )
-//        } else if let attrTypeSyntax: AttributedTypeSyntax = typeSyntax.as(AttributedTypeSyntax.self),
-//                  let confusedBaseType: TypeSyntax = self.confuseTypeSyntax(attrTypeSyntax.baseType) as? TypeSyntax {
-//            return attrTypeSyntax.with(\.baseType, confusedBaseType
-//                .with(\.leadingTrivia, attrTypeSyntax.baseType.leadingTrivia)
-//                .with(\.trailingTrivia, attrTypeSyntax.baseType.trailingTrivia)
-//            )
-//        }
-//        
-//        return typeSyntax
-//    }
+    //    private func confuseNodePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
+    //        if let idPatternSyntax: IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
+    //            guard let varSymbol: SPSwiftSourceVariableSymbol = self.currentScope.findSymbolWithSymbolName(idPatternSyntax.identifier.text) as? SPSwiftSourceVariableSymbol,
+    //                  let confusedSymbolName = varSymbol.confusedSymbolName else {
+    //                return PatternSyntax(idPatternSyntax)
+    //            }
+    //
+    //            let newPattern: IdentifierPatternSyntax = idPatternSyntax.with(\.identifier, .identifier(confusedSymbolName)
+    //                .with(\.leadingTrivia, idPatternSyntax.identifier.leadingTrivia)
+    //                .with(\.trailingTrivia, idPatternSyntax.identifier.trailingTrivia)
+    //            )
+    //
+    //            return PatternSyntax(newPattern)
+    //        } else if let tupPatternSyntax: TuplePatternSyntax = pattern.as(TuplePatternSyntax.self) {
+    //            let confusedTupPatternSyntaxElems: [TuplePatternElementSyntax] = tupPatternSyntax.elements.compactMap {
+    //                guard let pattern: PatternSyntax = self.confuseNodePattern($0.pattern) else {
+    //                    return $0
+    //                }
+    //
+    //                return $0.with(\.pattern, PatternSyntax(pattern)
+    //                    .with(\.leadingTrivia, $0.pattern.leadingTrivia)
+    //                    .with(\.trailingTrivia, $0.pattern.trailingTrivia)
+    //                )
+    //            }
+    //
+    //            return PatternSyntax(tupPatternSyntax
+    //                .with(\.elements, TuplePatternElementListSyntax(confusedTupPatternSyntaxElems)
+    //                    .with(\.leadingTrivia, tupPatternSyntax.elements.leadingTrivia)
+    //                    .with(\.trailingTrivia, tupPatternSyntax.elements.trailingTrivia)
+    //                )
+    //            )
+    //        } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
+    //            guard let confusedExprPattern: ExprSyntax = self.confuseExpression(exprPatternSyntax.expression)?.as(ExprSyntax.self) else {
+    //                return pattern
+    //            }
+    //
+    //            return PatternSyntax(exprPatternSyntax
+    //                .with(\.expression, confusedExprPattern
+    //                    .with(\.leadingTrivia, exprPatternSyntax.leadingTrivia)
+    //                    .with(\.trailingTrivia, exprPatternSyntax.trailingTrivia)
+    //                )
+    //            )
+    //        } else if let valBindPatternSyntax: ValueBindingPatternSyntax = pattern.as(ValueBindingPatternSyntax.self) {
+    //            guard let confusedPattern = self.confuseNodePattern(valBindPatternSyntax.pattern) else {
+    //                return pattern
+    //            }
+    //
+    //            return PatternSyntax(valBindPatternSyntax
+    //                .with(\.pattern, confusedPattern
+    //                    .with(\.leadingTrivia, valBindPatternSyntax.pattern.leadingTrivia)
+    //                    .with(\.trailingTrivia, valBindPatternSyntax.pattern.trailingTrivia)
+    //                )
+    //            )
+    //        }
+    //
+    //        return pattern
+    //    }
+    //
+    //    private func confuseExpression(_ expr: some ExprSyntaxProtocol) -> ExprSyntax? {
+    //        if let patternSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
+    //            guard let confusedPattern = self.confuseNodePattern(patternSyntax.pattern) else {
+    //                return ExprSyntax(expr)
+    //            }
+    //
+    //            return ExprSyntax(patternSyntax.with(\.pattern, confusedPattern
+    //                .with(\.leadingTrivia, patternSyntax.pattern.leadingTrivia)
+    //                .with(\.trailingTrivia, patternSyntax.pattern.trailingTrivia)
+    //            ))
+    //        } else if let exprSyntax: FunctionCallExprSyntax = expr.as(FunctionCallExprSyntax.self) {
+    //            guard let confusedArguments: [LabeledExprSyntax] = exprSyntax.arguments.flatMap({
+    //                guard let confusedExpr = self.confuseExpression($0.expression) else {
+    //                    return $0
+    //                }
+    //
+    //                return $0.with(\.expression, confusedExpr
+    //                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
+    //                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
+    //                )
+    //            }) as? [LabeledExprSyntax] else {
+    //                return ExprSyntax(expr)
+    //            }
+    //
+    //            return ExprSyntax(exprSyntax
+    //                .with(\.arguments, LabeledExprListSyntax(confusedArguments)
+    //                    .with(\.leadingTrivia, exprSyntax.arguments.leadingTrivia)
+    //                    .with(\.trailingTrivia, exprSyntax.arguments.trailingTrivia)
+    //                )
+    //            )
+    //        } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
+    //            let confusedExprList = seqExprSyntax.elements.flatMap {
+    //                guard let confusedExpr = self.confuseExpression($0) else {
+    //                    return $0
+    //                }
+    //
+    //                return confusedExpr.with(\.leadingTrivia, $0.leadingTrivia).with(\.trailingTrivia, $0.trailingTrivia)
+    //            }
+    //
+    //            return ExprSyntax(seqExprSyntax
+    //                .with(\.elements, ExprListSyntax(confusedExprList))
+    //                .with(\.leadingTrivia, seqExprSyntax.elements.leadingTrivia)
+    //                .with(\.trailingTrivia, seqExprSyntax.elements.trailingTrivia)
+    //            )
+    //        } else if let tupExprSyntax: TupleExprSyntax = expr.as(TupleExprSyntax.self) {
+    //            let confusedExprList = tupExprSyntax.elements.flatMap {
+    //                guard let confusedExpr = self.confuseExpression($0.expression) else {
+    //                    return $0
+    //                }
+    //
+    //                return $0.with(\.expression, confusedExpr
+    //                    .with(\.leadingTrivia, $0.expression.leadingTrivia)
+    //                    .with(\.trailingTrivia, $0.expression.trailingTrivia)
+    //                )
+    //            }
+    //
+    //            return ExprSyntax(tupExprSyntax
+    //                .with(\.elements, LabeledExprListSyntax(confusedExprList)
+    //                    .with(\.leadingTrivia, tupExprSyntax.elements.leadingTrivia)
+    //                    .with(\.trailingTrivia, tupExprSyntax.elements.trailingTrivia)
+    //                )
+    //            )
+    //        } else if let declRefSyntax: DeclReferenceExprSyntax = expr.as(DeclReferenceExprSyntax.self) {
+    //            var refSymbol: SPSwiftSourceSymbol?
+    //
+    //            let srcLoc: SourceLocation = self.locationConverter.location(for: declRefSyntax.positionAfterSkippingLeadingTrivia)
+    //            if let resp: SKResponseDictionary = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: srcLoc.line, col: srcLoc.column),
+    //               let usr: String = resp[sourceKit.keys.usr] {
+    //                refSymbol = IndexStore.indexStore.getSymbol(usr: usr)
+    //            } else if let symbol: SPSwiftSourceSymbol = self.currentScope.findSymbolInCurrentScope(declRefSyntax.baseName.text) {
+    //                refSymbol = symbol
+    //            }
+    //
+    //            if let refSymbol,
+    //               let confusedSymbolName = refSymbol.confusedSymbolName {
+    //                return ExprSyntax(declRefSyntax
+    //                    .with(\.baseName, .identifier(
+    //                        confusedSymbolName,
+    //                        leadingTrivia: declRefSyntax.baseName.leadingTrivia,
+    //                        trailingTrivia: declRefSyntax.baseName.trailingTrivia)
+    //                    )
+    //                )
+    //            }
+    //        }
+    //
+    //        return ExprSyntax(expr)
+    //    }
+    //
+    //    private func confuseTypeSyntax(_ typeSyntax: TypeSyntaxProtocol) -> TypeSyntaxProtocol? {
+    //        if let idTypeSyntax: IdentifierTypeSyntax = typeSyntax.as(IdentifierTypeSyntax.self) {
+    //            if let typeSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(idTypeSyntax.name.text),
+    //               let confusedSymbolName = typeSymbol.confusedSymbolName {
+    //                return idTypeSyntax.with(\.name, .identifier(
+    //                    confusedSymbolName,
+    //                    leadingTrivia: idTypeSyntax.name.leadingTrivia,
+    //                    trailingTrivia: idTypeSyntax.name.trailingTrivia)
+    //                )
+    //            }
+    //        } else if let optTypeSyntax: OptionalTypeSyntax = typeSyntax.as(OptionalTypeSyntax.self),
+    //                  let confusedWrappedTypeSyntax: TypeSyntax = self.confuseTypeSyntax(optTypeSyntax.wrappedType) as? TypeSyntax {
+    //
+    //            return optTypeSyntax.with(\.wrappedType, confusedWrappedTypeSyntax
+    //                .with(\.leadingTrivia, optTypeSyntax.wrappedType.leadingTrivia)
+    //                .with(\.trailingTrivia, optTypeSyntax.wrappedType.trailingTrivia)
+    //            )
+    //        } else if let arrTypeSyntax: ArrayTypeSyntax = typeSyntax.as(ArrayTypeSyntax.self),
+    //                  let confusedElement: TypeSyntax = self.confuseTypeSyntax(arrTypeSyntax.element) as? TypeSyntax {
+    //            return arrTypeSyntax.with(\.element, confusedElement
+    //                .with(\.leadingTrivia, arrTypeSyntax.element.leadingTrivia)
+    //                .with(\.trailingTrivia, arrTypeSyntax.element.trailingTrivia)
+    //            )
+    //        } else if let dicTypeSyntax: DictionaryTypeSyntax = typeSyntax.as(DictionaryTypeSyntax.self),
+    //                  let confusedKeyType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.key) as? TypeSyntax,
+    //                  let confusedValueType: TypeSyntax = self.confuseTypeSyntax(dicTypeSyntax.value) as? TypeSyntax {
+    //            return dicTypeSyntax.with(\.key, confusedKeyType
+    //                .with(\.leadingTrivia, dicTypeSyntax.key.leadingTrivia)
+    //                .with(\.trailingTrivia, dicTypeSyntax.key.trailingTrivia))
+    //            .with(\.value, confusedValueType
+    //                .with(\.leadingTrivia, dicTypeSyntax.value.leadingTrivia)
+    //                .with(\.trailingTrivia, dicTypeSyntax.value.trailingTrivia)
+    //            )
+    //        } else if let tupTypeSyntax: TupleTypeSyntax = typeSyntax.as(TupleTypeSyntax.self) {
+    //            var confusedTupleElemType: [TupleTypeElementSyntax] = []
+    //            tupTypeSyntax.elements.forEach {
+    //                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
+    //                    confusedTupleElemType.append($0.with(\.type, confusedType
+    //                        .with(\.leadingTrivia, $0.type.leadingTrivia)
+    //                        .with(\.trailingTrivia, $0.type.trailingTrivia)
+    //                    ))
+    //                } else {
+    //                    confusedTupleElemType.append($0)
+    //                }
+    //            }
+    //
+    //            return tupTypeSyntax.with(\.elements, TupleTypeElementListSyntax(confusedTupleElemType)
+    //                .with(\.leadingTrivia, tupTypeSyntax.elements.leadingTrivia)
+    //                .with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)
+    //            )
+    //        } else if let funcTypeSyntax: FunctionTypeSyntax = typeSyntax.as(FunctionTypeSyntax.self) {
+    //            var confusedFuncType = funcTypeSyntax
+    //            if let confusedRetType: TypeSyntax = self.confuseTypeSyntax(funcTypeSyntax.returnClause.type) as? TypeSyntax {
+    //                confusedFuncType = confusedFuncType.with(\.returnClause, confusedFuncType.returnClause
+    //                    .with(\.type, confusedRetType
+    //                        .with(\.leadingTrivia, confusedFuncType.returnClause.type.leadingTrivia)
+    //                        .with(\.trailingTrivia, confusedFuncType.returnClause.type.trailingTrivia)
+    //                    )
+    //                )
+    //            }
+    //
+    //            var confusedParams: [TupleTypeElementSyntax] = []
+    //            confusedFuncType.parameters.forEach {
+    //                if let secondName = $0.secondName {
+    //                    let confusedSecondName: String = ConfuseHelper.confusedSymbolName(secondName.text)
+    //                    confusedParams.append($0
+    //                        .with(\.secondName, .identifier(
+    //                            confusedSecondName,
+    //                            leadingTrivia: secondName.leadingTrivia,
+    //                            trailingTrivia: secondName.trailingTrivia)
+    //                        )
+    //                    )
+    //                } else {
+    //                    confusedParams.append($0)
+    //                }
+    //            }
+    //
+    //            return confusedFuncType.with(\.parameters, TupleTypeElementListSyntax(confusedParams)
+    //                .with(\.leadingTrivia, confusedFuncType.parameters.leadingTrivia)
+    //                .with(\.trailingTrivia, confusedFuncType.parameters.trailingTrivia)
+    //            )
+    //        } else if let metaTypeSyntax: MetatypeTypeSyntax = typeSyntax.as(MetatypeTypeSyntax.self),
+    //                  let confusedBaseTypeSyntax: TypeSyntax = self.confuseTypeSyntax(metaTypeSyntax.baseType) as? TypeSyntax {
+    //            return metaTypeSyntax.with(\.baseType, confusedBaseTypeSyntax
+    //                .with(\.leadingTrivia, metaTypeSyntax.baseType.leadingTrivia)
+    //                .with(\.trailingTrivia, metaTypeSyntax.baseType.trailingTrivia)
+    //            )
+    //        } else if let someAnyTypeSyntax: SomeOrAnyTypeSyntax = typeSyntax.as(SomeOrAnyTypeSyntax.self),
+    //                  let confusedConstraintTypeSyntax: TypeSyntax = self.confuseTypeSyntax(someAnyTypeSyntax.constraint) as? TypeSyntax {
+    //            return someAnyTypeSyntax.with(\.constraint, confusedConstraintTypeSyntax
+    //                .with(\.leadingTrivia, someAnyTypeSyntax.constraint.leadingTrivia)
+    //                .with(\.trailingTrivia, someAnyTypeSyntax.constraint.trailingTrivia)
+    //            )
+    //        } else if let impUnwrappedOptTypeSyntax: ImplicitlyUnwrappedOptionalTypeSyntax = typeSyntax.as(ImplicitlyUnwrappedOptionalTypeSyntax.self),
+    //                  let confusedWrappedType: TypeSyntax = self.confuseTypeSyntax(impUnwrappedOptTypeSyntax.wrappedType) as? TypeSyntax {
+    //            return impUnwrappedOptTypeSyntax.with(\.wrappedType, confusedWrappedType
+    //                .with(\.leadingTrivia, impUnwrappedOptTypeSyntax.wrappedType.leadingTrivia)
+    //                .with(\.trailingTrivia, impUnwrappedOptTypeSyntax.wrappedType.trailingTrivia)
+    //            )
+    //        } else if let memTypeSyntax: MemberTypeSyntax = typeSyntax.as(MemberTypeSyntax.self) {
+    //            var confusedMemTypeSyntax = memTypeSyntax
+    //            if let confusedType: TypeSyntax = self.confuseTypeSyntax(memTypeSyntax.baseType) as? TypeSyntax {
+    //                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.baseType, confusedType
+    //                    .with(\.leadingTrivia, confusedMemTypeSyntax.baseType.leadingTrivia)
+    //                    .with(\.trailingTrivia, confusedMemTypeSyntax.baseType.trailingTrivia)
+    //                )
+    //            }
+    //
+    //            if let varSymbol: SPSwiftSourceSymbol = self.currentScope.findSymbolWithSymbolName(memTypeSyntax.name.text),
+    //               let confusedSymbolName = varSymbol.confusedSymbolName {
+    //                confusedMemTypeSyntax = confusedMemTypeSyntax.with(\.name, .identifier(
+    //                    confusedSymbolName,
+    //                    leadingTrivia: confusedMemTypeSyntax.name.leadingTrivia,
+    //                    trailingTrivia: confusedMemTypeSyntax.name.trailingTrivia
+    //                ))
+    //            }
+    //
+    //            return confusedMemTypeSyntax
+    //        } else if let compTypeSyntax: CompositionTypeSyntax = typeSyntax.as(CompositionTypeSyntax.self) {
+    //            var confusedCompElemType: [CompositionTypeElementSyntax] = []
+    //            compTypeSyntax.elements.forEach {
+    //                if let confusedType: TypeSyntax = self.confuseTypeSyntax($0.type) as? TypeSyntax {
+    //                    confusedCompElemType.append($0.with(\.type, confusedType
+    //                        .with(\.leadingTrivia, $0.type.leadingTrivia)
+    //                        .with(\.trailingTrivia, $0.type.trailingTrivia)
+    //                    ))
+    //                } else {
+    //                    confusedCompElemType.append($0)
+    //                }
+    //            }
+    //
+    //            return compTypeSyntax.with(\.elements, CompositionTypeElementListSyntax(confusedCompElemType)
+    //                .with(\.leadingTrivia, compTypeSyntax.elements.leadingTrivia)
+    //                .with(\.trailingTrivia, compTypeSyntax.elements.trailingTrivia)
+    //            )
+    //        } else if let attrTypeSyntax: AttributedTypeSyntax = typeSyntax.as(AttributedTypeSyntax.self),
+    //                  let confusedBaseType: TypeSyntax = self.confuseTypeSyntax(attrTypeSyntax.baseType) as? TypeSyntax {
+    //            return attrTypeSyntax.with(\.baseType, confusedBaseType
+    //                .with(\.leadingTrivia, attrTypeSyntax.baseType.leadingTrivia)
+    //                .with(\.trailingTrivia, attrTypeSyntax.baseType.trailingTrivia)
+    //            )
+    //        }
+    //
+    //        return typeSyntax
+    //    }
+    
+    private func confuseType(_ type: TypeSyntax) -> TypeSyntax {
+        if let idTypeSyntax: IdentifierTypeSyntax = type.as(IdentifierTypeSyntax.self) {
+            let location = self.locationConverter.location(for: idTypeSyntax.name.positionAfterSkippingLeadingTrivia)
+            if let refs = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: location.line, col: location.column),
+               let matchedRef = self.matchRef(refs, to: idTypeSyntax.name) {
+                if let usr: String = matchedRef[sourceKit.keys.usr],
+                   let symbol: SPSwiftSourceSymbol = IndexStore.indexStore.getSymbol(usr: usr),
+                   let confusedSymbolName = symbol.confusedSymbolName {
+                    return TypeSyntax(idTypeSyntax.with(\.name, .identifier(
+                        confusedSymbolName,
+                        leadingTrivia: idTypeSyntax.leadingTrivia,
+                        trailingTrivia: idTypeSyntax.trailingTrivia)
+                    ))
+                }
+                
+                return type
+            }
+        } else if let tupTypeSyntax: TupleTypeSyntax = type.as(TupleTypeSyntax.self) {
+            let confusedType: [TupleTypeElementSyntax] = tupTypeSyntax.elements.map { $0.with(\.type, self.confuseType($0.type)).with(\.leadingTrivia, $0.type.leadingTrivia).with(\.trailingTrivia, $0.type.trailingTrivia) }
+            return TypeSyntax(tupTypeSyntax.with(\.elements, TupleTypeElementListSyntax(confusedType).with(\.leadingTrivia, tupTypeSyntax.elements.leadingTrivia).with(\.trailingTrivia, tupTypeSyntax.elements.trailingTrivia)))
+        }
+        
+        return type
+    }
     
     private func nodeParent<T: SyntaxProtocol>(_ node: SyntaxProtocol) -> T? {
         var parent = node.parent
