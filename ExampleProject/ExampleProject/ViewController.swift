@@ -218,6 +218,10 @@ class TestA {
     
     private func testFunc2(_ num1: Int, num2: Int) -> Int {
         let fun: (_ num: Int, _ num2: Int) -> Int = testFunc
+        
+        let testCls: TestClass = TestClass()
+        let roundNum = testCls.testFunc().testFunc2().testFunc().testFunc2().testFunc().dVal.roundDecimals(5)
+        
         return num1 * num2
     }
 }

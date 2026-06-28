@@ -89,6 +89,30 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
+        var newNode = node
+        
+        var confusedParams: [TupleTypeElementSyntax] = []
+        node.parameters.forEach {
+            if let secondName = $0.secondName {
+                confusedParams.append($0.with(\.secondName, .identifier(
+                    ConfuseHelper.confusedSymbolName(secondName.text),
+                    leadingTrivia: secondName.leadingTrivia,
+                    trailingTrivia: secondName.trailingTrivia)
+                ))
+            } else {
+                confusedParams.append($0)
+            }
+        }
+        
+        newNode = newNode.with(\.parameters, TupleTypeElementListSyntax(confusedParams)
+            .with(\.leadingTrivia, newNode.parameters.leadingTrivia)
+            .with(\.trailingTrivia, newNode.parameters.trailingTrivia)
+        )
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: TokenSyntax) -> TokenSyntax {
         guard case .identifier = node.tokenKind,
               !node.text.isSwiftKeyWord else {

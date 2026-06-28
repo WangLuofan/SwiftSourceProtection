@@ -121,12 +121,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         self.currentScope = self.currentScope.popScope()
     }
     
-//    override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
-//        let location = self.locationConverter.location(for: node.baseName.positionAfterSkippingLeadingTrivia)
-//        print("++++name: \(node.baseName.text), line: \(location.line), column: \(location.column)")
-//        return super.visit(node)
-//    }
-    
     override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
         node.elements.forEach {
             let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
