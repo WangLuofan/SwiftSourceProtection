@@ -25,6 +25,7 @@ class SPSourceProtection {
         
         var sourceTrees: [String: SourceFileSyntax] = [:]
         var fileScopes: [String: SPSwiftSourceScope] = [:]
+        var astCollectors: [String: SPSwiftSourceASTCollector] = [:]
         
         let logger: Logger = Logger()
         let sourceKit = SourceKit(logger: Logger())
@@ -50,6 +51,16 @@ class SPSourceProtection {
                 
                 logger.log("--- Indexing: \($0.name)")
                 astCollector.index(sourceKit, compilerArguments)
+                
+                astCollectors[$0.path] = astCollector
+            }
+            
+            module.sourceFiles.sorted { $0.path < $1.path }.forEach {
+                guard let astCollector: SPSwiftSourceASTCollector = astCollectors[$0.path] else {
+                    return
+                }
+                
+                astCollector.relate(sourceKit)
             }
         }
         

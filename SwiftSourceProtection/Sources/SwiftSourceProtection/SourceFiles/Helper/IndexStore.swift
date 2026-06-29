@@ -16,6 +16,7 @@ class IndexStore {
     private var response: [String: SKResponseDictionary] = [:]
     private var refForFile: [File: [String: [SKResponseDictionary]]] = [:]
     private var scopeForNode: [File: [UInt64: SPSwiftSourceScope]] = [:]
+    private var fileForIndexStore: [File: SKResponseDictionary] = [:]
 }
 
 extension IndexStore {
@@ -55,6 +56,14 @@ extension IndexStore {
     
     func set(nodeID: UInt64, _ scope: SPSwiftSourceScope, inFile file: File) {
         self.scopeForNode[file, default:[:]][nodeID] = scope
+    }
+    
+    func set(resp: SKResponseDictionary, toFile file: File) {
+        self.fileForIndexStore[file] = resp
+    }
+    
+    func getResponse(forFile file: File) -> SKResponseDictionary? {
+        return self.fileForIndexStore[file]
     }
     
     func scope(token: TokenSyntax, inFile file: File) -> SPSwiftSourceScope? {

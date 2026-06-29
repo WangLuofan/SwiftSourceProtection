@@ -670,6 +670,8 @@ extension SPSwiftSourceASTCollector {
         
         do {
             let resp = try sourceKit.sendSync(req)
+            IndexStore.indexStore.set(resp: resp, toFile: self.sourceFile)
+            
             resp.recurseEntities { (dict: SKResponseDictionary) in
                 guard let usr: String = dict[sourceKit.keys.usr] else {
                     return
@@ -699,97 +701,111 @@ extension SPSwiftSourceASTCollector {
                    let col: Int = dict[sourceKit.keys.column] {
                     IndexStore.indexStore.set(line: line, col: col, ref: dict, toFile: self.sourceFile)
                 }
-
-                if let kind: SourceKit.DeclarationType = entryKind.declType() {
-                    switch kind {
-                    case .object, .protocol, .enum: do {
-                        if let name: String = dict[sourceKit.keys.name],
-                           let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(name) as? SPSwiftSourceClassSymbol {
-                            clsSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                        }
-                    }
-                        break
-                    case .property: do {
-                        guard let name: String = dict[sourceKit.keys.name] else { break }
-                        
-                        var varSymbol: SPSwiftSourceVariableSymbol?
-                        if let parentName: String = dict.parent[sourceKit.keys.name],
-                           let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
-                            for child in parentSymbol.children {
-                                if child.originalSymbolName == name && child.nodeKind == .variable {
-                                    varSymbol = child as? SPSwiftSourceVariableSymbol
-                                    break
-                                }
-                            }
-                        }
-                        
-                        guard let varSymbol else { break }
-                        varSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                        
-                        if !self.inheritedFromAnyExternal(sourceKit, dict) {
-                            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(varSymbol.originalSymbolName)
-                        }
-                    }
-                        break
-                    case .method: do {
-                        guard let fullName: String = dict[sourceKit.keys.name],
-                              let parentName: String = dict.parent[sourceKit.keys.name],
-                              let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                                SPSwiftSourceClassSymbol else {
-                            break
-                        }
-                        
-                        var funcSymbol: SPSwiftSourceFunctionSymbol?
-                        for child in parentSymbol.children {
-                            guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
-                                continue
-                            }
-                            
-                            if fSymbol.signature == fullName, child.nodeKind == .function {
-                                funcSymbol = fSymbol
-                                break
-                            }
-                        }
-                        
-                        guard let funcSymbol else { break }
-                        funcSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                        
-                        if !self.inheritedFromAnyExternal(sourceKit, dict) {
-                            funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
-                            for (index, label) in funcSymbol.labels.enumerated() {
-                                let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
-                                funcSymbol.confusedLabels[index] = confusedLabel
-                            }
-                            
-                            for (index, argument) in funcSymbol.arguments.enumerated() {
-                                if argument.confusedSymbolName == nil {
-                                    funcSymbol.arguments[index].confusedSymbolName = funcSymbol.confusedLabels[index]
-                                }
-                            }
-                        }
-                    }
-                        break
-                    case .enumelement: do {
-                        guard let fullName: String = dict[sourceKit.keys.name],
-                              let parentName: String = dict.parent[sourceKit.keys.name],
-                              let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                                SPSwiftSourceClassSymbol else {
-                            break
-                        }
-                        
-                        for child in parentSymbol.children {
-                            if child.originalSymbolName == fullName, child.nodeKind == .enumCase {
-                                child.symbolUSR = dict[sourceKit.keys.usr]
-                                break
-                            }
-                        }
-                    }
-                        break
-                    }
-                }
             }
         } catch let error {
             print(error)
+        }
+    }
+    
+    func relate(_ sourceKit: SourceKit) {
+        guard let resp: SKResponseDictionary = IndexStore.indexStore.getResponse(forFile: self.sourceFile) else {
+            return
+        }
+        
+        resp.recurseEntities { (dict: SKResponseDictionary) in
+            
+            guard let entryKind: SKUID = dict[sourceKit.keys.kind],
+                  entryKind.declType() != nil || entryKind.refType() != nil else {
+                return
+            }
+            
+            if let kind: SourceKit.DeclarationType = entryKind.declType() {
+                switch kind {
+                case .object, .protocol, .enum: do {
+                    if let name: String = dict[sourceKit.keys.name],
+                       let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(name) as? SPSwiftSourceClassSymbol {
+                        clsSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                    }
+                }
+                    break
+                case .property: do {
+                    guard let name: String = dict[sourceKit.keys.name] else { break }
+                    
+                    var varSymbol: SPSwiftSourceVariableSymbol?
+                    if let parentName: String = dict.parent[sourceKit.keys.name],
+                       let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
+                        for child in parentSymbol.children {
+                            if child.originalSymbolName == name && child.nodeKind == .variable {
+                                varSymbol = child as? SPSwiftSourceVariableSymbol
+                                break
+                            }
+                        }
+                    }
+                    
+                    guard let varSymbol else { break }
+                    varSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                    
+                    if !self.inheritedFromAnyExternal(sourceKit, dict) {
+                        varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(varSymbol.originalSymbolName)
+                    }
+                }
+                    break
+                case .method: do {
+                    guard let fullName: String = dict[sourceKit.keys.name],
+                          let parentName: String = dict.parent[sourceKit.keys.name],
+                          let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
+                            SPSwiftSourceClassSymbol else {
+                        break
+                    }
+                    
+                    var funcSymbol: SPSwiftSourceFunctionSymbol?
+                    for child in parentSymbol.children {
+                        guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
+                            continue
+                        }
+                        
+                        if fSymbol.signature == fullName, child.nodeKind == .function {
+                            funcSymbol = fSymbol
+                            break
+                        }
+                    }
+                    
+                    guard let funcSymbol else { break }
+                    funcSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                    
+                    if !self.inheritedFromAnyExternal(sourceKit, dict) {
+                        funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
+                        for (index, label) in funcSymbol.labels.enumerated() {
+                            let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
+                            funcSymbol.confusedLabels[index] = confusedLabel
+                        }
+                        
+                        for (index, argument) in funcSymbol.arguments.enumerated() {
+                            if argument.confusedSymbolName == nil {
+                                funcSymbol.arguments[index].confusedSymbolName = funcSymbol.confusedLabels[index]
+                            }
+                        }
+                    }
+                }
+                    break
+                case .enumelement: do {
+                    guard let fullName: String = dict[sourceKit.keys.name],
+                          let parentName: String = dict.parent[sourceKit.keys.name],
+                          let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
+                            SPSwiftSourceClassSymbol else {
+                        break
+                    }
+                    
+                    for child in parentSymbol.children {
+                        if child.originalSymbolName == fullName, child.nodeKind == .enumCase {
+                            child.symbolUSR = dict[sourceKit.keys.usr]
+                            break
+                        }
+                    }
+                }
+                    break
+                }
+            }
         }
     }
     
@@ -813,13 +829,14 @@ extension SPSwiftSourceASTCollector {
             }
             
             guard let file: File = IndexStore.indexStore.getFile(usr: usr),
-                  self?.module.sourceFiles.contains(file) == true,
-                  let relatedDict: SKResponseDictionary = IndexStore.indexStore.getResponse(usr: usr) else {
+                  self?.module.sourceFiles.contains(file) == true else {
                 isReference = true
                 return
             }
             
-            isReference = (self?.inheritedFromAnyExternal(sourceKit, relatedDict) ?? false)
+            if let relatedDict: SKResponseDictionary = IndexStore.indexStore.getResponse(usr: usr) {
+                isReference = (self?.inheritedFromAnyExternal(sourceKit, relatedDict) ?? false)
+            }
         }
         
         return isReference
