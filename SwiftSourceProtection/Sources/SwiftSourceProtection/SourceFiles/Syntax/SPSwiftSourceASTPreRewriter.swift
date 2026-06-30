@@ -49,7 +49,12 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
             }
         } else if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
            let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text) {
-            SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
+            if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
+               memAccExpr.declName.baseName == node {
+                
+            } else {
+                SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
+            }
         }
         
         return super.visit(node)
