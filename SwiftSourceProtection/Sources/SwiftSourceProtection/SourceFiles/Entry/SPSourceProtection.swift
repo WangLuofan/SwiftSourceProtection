@@ -66,18 +66,28 @@ class SPSourceProtection {
         
         for module in modules {
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
+                logger.log("--- Processing: \($0.name)")
+                
+                if let sourceTree = sourceTrees[$0.path], let fileScope = fileScopes[$0.path] {
+                    let preRewriter: SPSwiftSourceASTPreRewriter = SPSwiftSourceASTPreRewriter(fileScope: fileScope, sourceFile: $0, sourceKit: sourceKit, sourceTree: sourceTree)
+                    preRewriter.process()
+                }
+            }
+        }
+        
+        for module in modules {
+            module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 logger.log("--- Rewriting: \($0.name)")
                 
                 guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path],
-                      let scope: SPSwiftSourceScope = fileScopes[$0.path] else {
+                      let relatedDict: [UInt64: SPSwiftSourceSymbol] = SymbolIndexRelator.shared.get(forFile: $0) else {
                     return
                 }
                 
                 let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(
-                    sourceKit: sourceKit,
                     sourceTree: sourceTree,
                     sourceFile: $0,
-                    scope: scope
+                    relatedDict: relatedDict
                 )
                 let confusedContent = rewriter.rewrite()
                 

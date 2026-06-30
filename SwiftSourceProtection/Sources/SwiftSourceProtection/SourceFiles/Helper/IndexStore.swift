@@ -66,6 +66,15 @@ extension IndexStore {
         return self.fileForIndexStore[file]
     }
     
+    func scope(nodeID: UInt64, inFile file: File) -> SPSwiftSourceScope? {
+        guard let scopes = self.scopeForNode[file],
+              let scope = scopes[nodeID] else {
+            return nil
+        }
+        
+        return scope
+    }
+    
     func scope(token: TokenSyntax, inFile file: File) -> SPSwiftSourceScope? {
         guard let scopes = self.scopeForNode[file] else { return nil }
         
@@ -77,6 +86,7 @@ extension IndexStore {
             
             node = current.parent
         }
+        
         return nil
     }
 }
