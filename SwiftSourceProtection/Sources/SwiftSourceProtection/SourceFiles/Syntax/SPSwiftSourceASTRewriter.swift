@@ -148,8 +148,8 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         }
         
         if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
-                  let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text),
-                  let confusedSymbolName = symbol.confusedSymbolName {
+           let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text),
+           let confusedSymbolName = symbol.confusedSymbolName {
             return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
         }
         

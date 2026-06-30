@@ -75,6 +75,7 @@ class SPSwiftSourceScope {
                     }
                 }
             }
+            
             curScope = curScope?.prevScope
         }
         
