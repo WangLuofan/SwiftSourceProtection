@@ -74,10 +74,16 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                     continue
                 }
                 
+                var validInitializer: Bool = true
                 for label in labels {
                     if funcSymbol.labels.contains(label) == false {
-                        continue
+                        validInitializer = false
+                        break
                     }
+                }
+                
+                if !validInitializer {
+                    continue
                 }
                 
                 var confusedArgs: [LabeledExprSyntax] = []
