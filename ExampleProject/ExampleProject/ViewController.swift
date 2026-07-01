@@ -54,7 +54,7 @@ class ViewController: UIViewController {
         }
         
         let c: (u: Int, v: Int)
-        let d: TestA? = TestA(s: 3)
+        let d: TestA? = TestA(3)
         
         let (k, t) = (3, 4.5)
         
