@@ -15,6 +15,8 @@ class SPSwiftSourceSymbol {
     
     var symbolScope: SymbolScope
     
+    var sourceLocation: SourceLocation
+    
     var originalSymbolName: String = ""
     
     var confusedSymbolName: String?
@@ -27,9 +29,10 @@ class SPSwiftSourceSymbol {
         }
     }
     
-    init(sourceFile: File, symbolScope: SymbolScope, nodeKind: NodeKind) {
+    init(sourceFile: File, symbolScope: SymbolScope, nodeKind: NodeKind, sourceLocation: SourceLocation) {
         self.sourceFile = sourceFile
         self.nodeKind = nodeKind
         self.symbolScope = symbolScope
+        self.sourceLocation = sourceLocation
     }
 }

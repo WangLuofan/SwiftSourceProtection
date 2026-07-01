@@ -16,12 +16,18 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     private var extensions: [SPSwiftSourceClassSymbol] = []
     private lazy var currentScope: SPSwiftSourceScope = self.topScope
     
+    private var locationConverter: SourceLocationConverter
     private var parentStack: [SPSwiftSourceClassSymbol] = []
     
     init(sourceTree: SourceFileSyntax, sourceFile: File, module: Module) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
         self.module = module
+        
+        self.locationConverter = SourceLocationConverter(
+            fileName: self.sourceFile.path,
+            tree: self.sourceTree
+        )
         
         super.init(viewMode: .sourceAccurate)
     }
@@ -42,7 +48,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
+        
         symbol.originalSymbolName = node.name.text
         
         self.parentStack.last?.children.append(symbol)
@@ -66,7 +73,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .struct)
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .struct, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         
         self.parentStack.last?.children.append(symbol)
@@ -90,7 +97,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .protocol)
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .protocol, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         
         self.parentStack.last?.children.append(symbol)
@@ -114,7 +121,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .enum)
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .enum, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         
         self.parentStack.last?.children.append(symbol)
@@ -139,7 +146,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
         node.elements.forEach {
-            let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+            let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: $0.name.positionAfterSkippingLeadingTrivia))
             
             var symbolName: String = $0.name.text
             symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.name.text)
@@ -165,7 +172,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        let clsSymbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        let clsSymbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: node.positionAfterSkippingLeadingTrivia))
         if let extendedType: IdentifierTypeSyntax = node.extendedType.as(IdentifierTypeSyntax.self) {
             clsSymbol.originalSymbolName = extendedType.name.text
         }
@@ -186,9 +193,9 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbols: [SPSwiftSourceVariableSymbol] = node.bindings.flatMap {
-            self.extractPatternNames($0.pattern).map {
-                let symbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+        let symbols: [SPSwiftSourceVariableSymbol] = node.bindings.flatMap { binding in
+            self.extractPatternNames(binding.pattern).map {
+                let symbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: binding.pattern.positionAfterSkippingLeadingTrivia))
                 symbol.originalSymbolName = $0
                 return symbol
             }
@@ -255,7 +262,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
         
-        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         paramSymbol.originalSymbolName = node.name.text
         paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.name.text)
         self.currentScope.pushSymbol(paramSymbol)
@@ -265,7 +272,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
         
-        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local, sourceLocation: self.locationConverter.location(for: node.firstName.positionAfterSkippingLeadingTrivia))
         paramSymbol.originalSymbolName = node.firstName.text
         paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.firstName.text)
         self.currentScope.pushSymbol(paramSymbol)
@@ -275,7 +282,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: ClosureCaptureSyntax) -> SyntaxVisitorContinueKind {
         if !node.name.text.isSwiftKeyWord {
-            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
             varSymbol.originalSymbolName = node.name.text
             varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(node.name.text)
             
@@ -286,11 +293,12 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local, sourceLocation: self.locationConverter.location(for: node.firstName.positionAfterSkippingLeadingTrivia))
         paramSymbol.originalSymbolName = node.firstName.text
         if let secondName: TokenSyntax = node.secondName {
             paramSymbol.originalSymbolName = secondName.text
             paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(secondName.text)
+            paramSymbol.sourceLocation = self.locationConverter.location(for: secondName.positionAfterSkippingLeadingTrivia)
         }
         
         if let curFunc: FunctionDeclSyntax = node.getParentNode() {
@@ -322,7 +330,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 funcName: node.initKeyword.text,
                 parameters: node.signature.parameterClause.parameters
             ),
-            symbolScope: node.symbolScope
+            symbolScope: node.symbolScope,
+            sourceLocation: self.locationConverter.location(for: node.initKeyword.positionAfterSkippingLeadingTrivia)
         )
         symbol.originalSymbolName = node.initKeyword.text
         
@@ -379,7 +388,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 funcName: node.name.text,
                 parameters: node.signature.parameterClause.parameters
             ),
-            symbolScope: node.symbolScope
+            symbolScope: node.symbolScope,
+            sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia)
         )
         symbol.originalSymbolName = node.name.text
         
@@ -435,7 +445,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         
         let symbols: [String] = self.extractPatternNames(node.pattern)
         symbols.forEach {
-            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local, sourceLocation: self.locationConverter.location(for: node.pattern.positionAfterSkippingLeadingTrivia))
             varSymbol.originalSymbolName = $0
             varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
             
@@ -458,7 +468,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                let _ = optBindCondSyntax.initializer {
                 let symbols: [String] = self.extractPatternNames(optBindCondSyntax.pattern)
                 symbols.forEach {
-                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: optBindCondSyntax.pattern.positionAfterSkippingLeadingTrivia))
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
@@ -467,7 +477,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = $0.condition.as(MatchingPatternConditionSyntax.self) {
                 let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
                 symbols.forEach {
-                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: matchPatternCondSyntax.positionAfterSkippingLeadingTrivia))
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
@@ -492,7 +502,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                let _ = optBindCondSyntax.initializer {
                 let symbols: [String] = self.extractPatternNames(optBindCondSyntax.pattern)
                 symbols.forEach {
-                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local, sourceLocation: self.locationConverter.location(for: optBindCondSyntax.pattern.positionAfterSkippingLeadingTrivia))
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
@@ -501,7 +511,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }  else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self) {
                 let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
                 symbols.forEach {
-                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: matchPatternCondSyntax.pattern.positionAfterSkippingLeadingTrivia))
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
@@ -543,7 +553,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbols: [String] = self.extractPatternNames(node.pattern)
         
         symbols.forEach {
-            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+            let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: node.pattern.positionAfterSkippingLeadingTrivia))
             varSymbol.originalSymbolName = $0
             varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
             self.currentScope.pushSymbol(varSymbol)
@@ -569,7 +579,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 if let _ = condition.initializer {
                     let symbols: [String] = self.extractPatternNames(condition.pattern)
                     symbols.forEach {
-                        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local)
+                        let paramSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: .local, sourceLocation: self.locationConverter.location(for: condition.pattern.positionAfterSkippingLeadingTrivia))
                         paramSymbol.originalSymbolName = $0
                         paramSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                         
@@ -579,7 +589,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = condition.condition.as(MatchingPatternConditionSyntax.self) {
                 let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
                 symbols.forEach {
-                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: matchPatternCondSyntax.pattern.positionAfterSkippingLeadingTrivia))
                     varSymbol.originalSymbolName = $0
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
@@ -613,7 +623,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         if let pattern: PatternSyntax = node.pattern {
             let symbols: [String] = self.extractPatternNames(pattern)
             symbols.forEach {
-                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope)
+                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: pattern.positionAfterSkippingLeadingTrivia))
                 varSymbol.originalSymbolName = $0
                 varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                 
@@ -754,17 +764,23 @@ extension SPSwiftSourceASTCollector {
                     guard let fullName: String = dict[sourceKit.keys.name],
                           let parentName: String = dict.parent[sourceKit.keys.name],
                           let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                            SPSwiftSourceClassSymbol else {
+                            SPSwiftSourceClassSymbol,
+                          let line: Int = dict[sourceKit.keys.line],
+                          let column: Int = dict[sourceKit.keys.column] else {
                         break
                     }
-                    
+
                     var funcSymbol: SPSwiftSourceFunctionSymbol?
                     for child in parentSymbol.children {
                         guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
                             continue
                         }
                         
-                        if fSymbol.signature == fullName, child.nodeKind == .function {
+                        if fSymbol.signature == fullName,
+                            child.nodeKind == .function,
+                            fSymbol.sourceLocation.line == line,
+                            fSymbol.sourceLocation.column == column
+                        {
                             funcSymbol = fSymbol
                             break
                         }
