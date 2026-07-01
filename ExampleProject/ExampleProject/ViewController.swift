@@ -73,7 +73,7 @@ class ViewController: UIViewController {
     }
     
     func testLocalBindings() {
-        let array: [TestEnum] = [.first, .second(TestA(s: 1))]
+        let array: [TestEnum] = [.first, .second(TestA(n: 1, z: "ABC"))]
         
         // while let / while case let
         var iterator = array.makeIterator()
@@ -188,13 +188,17 @@ class ViewController: UIViewController {
 
 class TestA {
     var n: Int
-    
-    init(s: Int) {
-        self.n = s
-    }
+    var k: Double = 1.0
+    var z: String = ""
     
     init(_ s: Int) {
         self.n = s
+    }
+    
+    init(n: Int, k: Double = 3.14, z: String = "abc") {
+        self.n = n
+        self.k = k
+        self.z = z
     }
     
     var overC: (u: Int, v: Int) {

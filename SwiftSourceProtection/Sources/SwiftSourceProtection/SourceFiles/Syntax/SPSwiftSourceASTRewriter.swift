@@ -66,11 +66,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         var newNode = node
         
         if let clsSymbol: SPSwiftSourceClassSymbol = symbol as? SPSwiftSourceClassSymbol {
-            let signature: String = ConfuseHelper.generateSignature(funcName: "init", parameters: node.arguments)
+            let labels: [String] = node.arguments.map { $0.label?.text ?? "_" }
+            
             for funcSymbol in clsSymbol.children {
                 guard let funcSymbol: SPSwiftSourceFunctionSymbol = funcSymbol as? SPSwiftSourceFunctionSymbol,
-                      funcSymbol.signature == signature else {
+                      funcSymbol.originalSymbolName == "init" else {
                     continue
+                }
+                
+                for label in labels {
+                    if funcSymbol.labels.contains(label) == false {
+                        continue
+                    }
                 }
                 
                 var confusedArgs: [LabeledExprSyntax] = []
