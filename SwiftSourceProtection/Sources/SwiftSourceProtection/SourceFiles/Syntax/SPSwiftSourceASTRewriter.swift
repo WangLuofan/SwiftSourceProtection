@@ -64,6 +64,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         }
         
         var newNode = node
+        var finalFuncSymbol: SPSwiftSourceFunctionSymbol?
         
         if let clsSymbol: SPSwiftSourceClassSymbol = symbol as? SPSwiftSourceClassSymbol {
             let labels: [String] = node.arguments.map { $0.label?.text ?? "_" }
@@ -86,35 +87,20 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                     continue
                 }
                 
-                var confusedArgs: [LabeledExprSyntax] = []
-                node.arguments.forEach {
-                    if let label = $0.label {
-                        for (index, text) in funcSymbol.labels.enumerated() {
-                            if text == label.text {
-                                confusedArgs.append($0.with(\.label, .identifier(funcSymbol.confusedLabels[index], leadingTrivia: label.leadingTrivia, trailingTrivia: label.trailingTrivia)))
-                                break
-                            }
-                        }
-                    } else {
-                        confusedArgs.append($0)
-                    }
-                }
-                
-                newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
-                    .with(\.leadingTrivia, node.arguments.leadingTrivia)
-                    .with(\.trailingTrivia, node.arguments.trailingTrivia)
-                )
-                
+                finalFuncSymbol = funcSymbol
                 break
             }
         } else if let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
+            finalFuncSymbol = funcSymbol
+        }
+        
+        if let finalFuncSymbol {
             var confusedArgs: [LabeledExprSyntax] = []
             node.arguments.forEach {
                 if let label = $0.label {
-                    
-                    for (index, text) in funcSymbol.labels.enumerated() {
+                    for (index, text) in finalFuncSymbol.labels.enumerated() {
                         if text == label.text {
-                            confusedArgs.append($0.with(\.label, .identifier(funcSymbol.confusedLabels[index], leadingTrivia: label.leadingTrivia, trailingTrivia: label.trailingTrivia)))
+                            confusedArgs.append($0.with(\.label, .identifier(finalFuncSymbol.confusedLabels[index], leadingTrivia: label.leadingTrivia, trailingTrivia: label.trailingTrivia)))
                             break
                         }
                     }
@@ -126,6 +112,29 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             newNode = newNode.with(\.arguments, LabeledExprListSyntax(confusedArgs)
                 .with(\.leadingTrivia, node.arguments.leadingTrivia)
                 .with(\.trailingTrivia, node.arguments.trailingTrivia)
+            )
+            
+            var confusedMultipleTrailingClosureElemSyntax: [MultipleTrailingClosureElementSyntax] = []
+            newNode.additionalTrailingClosures.forEach {
+                for (index, label) in finalFuncSymbol.labels.enumerated() {
+                    if label == $0.label.text {
+                        confusedMultipleTrailingClosureElemSyntax.append($0
+                            .with(\.label, .identifier(
+                                finalFuncSymbol.confusedLabels[index],
+                                leadingTrivia: $0.label.leadingTrivia,
+                                trailingTrivia: $0.label.trailingTrivia)
+                            )
+                        )
+                        return
+                    }
+                }
+                
+                confusedMultipleTrailingClosureElemSyntax.append($0)
+            }
+            
+            newNode = newNode.with(\.additionalTrailingClosures, MultipleTrailingClosureElementListSyntax(confusedMultipleTrailingClosureElemSyntax)
+                .with(\.leadingTrivia, newNode.additionalTrailingClosures.leadingTrivia)
+                .with(\.trailingTrivia, newNode.additionalTrailingClosures.trailingTrivia)
             )
         }
         

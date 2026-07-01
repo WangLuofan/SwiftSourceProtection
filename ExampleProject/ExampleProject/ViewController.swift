@@ -18,6 +18,34 @@ enum TestError: Error {
     case generic
 }
 
+/// Keychain 错误类型（便于捕获和处理）
+enum KeychainError: Error, LocalizedError {
+    case saveFailed(status: OSStatus, message: String)
+    case readFailed(status: OSStatus, message: String)
+    case deleteFailed(status: OSStatus, message: String)
+    case dataConversionFailed(message: String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .saveFailed(_, let msg):
+            return msg
+        case .readFailed(_, let msg):
+            return msg
+        case .deleteFailed(_, let msg):
+            return msg
+        case .dataConversionFailed(let msg):
+            return msg
+        }
+    }
+}
+
+extension OSStatus {
+    var message: String {
+        return SecCopyErrorMessageString(self, nil) as String? ?? ""
+    }
+}
+
+
 class ViewController: UIViewController {
     
     var u: Int {
