@@ -157,7 +157,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                     if let idTypeSyntax: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
                         symbol.relatedType.append(idTypeSyntax.name.text)
                     }
-                    symbolName += "_:"
+                    
+                    symbolName += "\($0.firstName?.text ?? "_"):"
                 }
                 symbolName += ")"
             }

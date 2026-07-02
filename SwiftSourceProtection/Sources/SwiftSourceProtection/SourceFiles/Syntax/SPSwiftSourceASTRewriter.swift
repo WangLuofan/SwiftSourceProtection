@@ -58,6 +58,42 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(newNode)
     }
     
+    override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var confusedElements: [EnumCaseElementSyntax] = []
+        node.elements.forEach {
+            guard let params = $0.parameterClause?.parameters else {
+                confusedElements.append($0)
+                return
+            }
+            
+            var confusedParams: [EnumCaseParameterSyntax] = []
+            params.forEach {
+                guard let firstName = $0.firstName else {
+                    confusedParams.append($0)
+                    return
+                }
+                
+                let confusedFistName: String = ConfuseHelper.confusedSymbolName(firstName.text)
+                confusedParams.append($0.with(\.firstName, .identifier(confusedFistName, leadingTrivia: firstName.leadingTrivia, trailingTrivia: firstName.trailingTrivia)))
+            }
+            
+            confusedElements.append($0.with(\.parameterClause, $0.parameterClause?
+                .with(\.parameters, EnumCaseParameterListSyntax(confusedParams)
+                    .with(\.leadingTrivia, params.leadingTrivia)
+                    .with(\.trailingTrivia, params.trailingTrivia)))
+            )
+        }
+        
+        newNode = newNode.with(\.elements, EnumCaseElementListSyntax(confusedElements)
+            .with(\.leadingTrivia, node.elements.leadingTrivia)
+            .with(\.trailingTrivia, node.elements.trailingTrivia)
+        )
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         guard let symbol = self.getRelateCallExpressionId(node.calledExpression) else {
             return super.visit(node)
