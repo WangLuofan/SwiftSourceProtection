@@ -121,7 +121,13 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .enum, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(
+            sourceFile: self.sourceFile,
+            symbolScope: node.symbolScope,
+            nodeKind: .enum,
+            sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia)
+        )
+        
         symbol.originalSymbolName = node.name.text
         
         self.parentStack.last?.children.append(symbol)
@@ -146,24 +152,30 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: EnumCaseDeclSyntax) -> SyntaxVisitorContinueKind {
         node.elements.forEach {
-            let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: $0.name.positionAfterSkippingLeadingTrivia))
+            let symbol: SPSwiftSourceEnumCaseSymbol = SPSwiftSourceEnumCaseSymbol(
+                sourceFile: self.sourceFile,
+                signature: "",
+                symbolScope: node.symbolScope,
+                sourceLocation: self.locationConverter.location(for: $0.name.positionAfterSkippingLeadingTrivia)
+            )
             
-            var symbolName: String = $0.name.text
-            symbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.name.text)
-
+            var symbolSignature: String = $0.name.text
             if let paramClause: EnumCaseParameterClauseSyntax = $0.parameterClause {
-                symbolName += "("
+                symbolSignature += "("
                 paramClause.parameters.forEach {
-                    if let idTypeSyntax: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
-                        symbol.relatedType.append(idTypeSyntax.name.text)
-                    }
+                    let label: String = $0.firstName?.text ?? "_"
+                    symbol.labels.append(label)
+                    symbol.confusedLabels.append(label)
                     
-                    symbolName += "\($0.firstName?.text ?? "_"):"
+                    symbolSignature += "\(label):"
                 }
-                symbolName += ")"
+                symbolSignature += ")"
             }
             
-            symbol.originalSymbolName = symbolName
+            symbol.signature = symbolSignature
+            symbol.originalSymbolName = $0.name.text
+            ConfuseHelper.confuseSymbol(symbol)
+            
             self.currentScope.pushSymbol(symbol)
             
             self.parentStack.last?.children.append(symbol)
@@ -825,7 +837,9 @@ extension SPSwiftSourceASTCollector {
                     }
                     
                     for child in parentSymbol.children {
-                        if child.originalSymbolName == fullName, child.nodeKind == .enumCase {
+                        if child.nodeKind == .enumCase,
+                           let enumCaseSymbol: SPSwiftSourceEnumCaseSymbol = child as? SPSwiftSourceEnumCaseSymbol,
+                           enumCaseSymbol.signature == fullName {
                             child.symbolUSR = dict[sourceKit.keys.usr]
                             break
                         }

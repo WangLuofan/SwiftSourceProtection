@@ -18,7 +18,7 @@ class ConfuseHelper {
             return
         }
         
-        if symbol.nodeKind == .function,
+        if symbol.nodeKind == .function || symbol.nodeKind == .enumCase,
            let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
             funcSymbol.confusedSymbolName = self.confusedSymbolName(funcSymbol.originalSymbolName)
             for (index, label) in funcSymbol.labels.enumerated() {

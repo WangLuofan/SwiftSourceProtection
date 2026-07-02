@@ -18,4 +18,9 @@ class SPSwiftSourceFunctionSymbol: SPSwiftSourceVariableSymbol {
         self.signature = signature
         super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: .function, sourceLocation: sourceLocation)
     }
+    
+    init(sourceFile: File, signature: String, symbolScope: SymbolScope, nodeKind: NodeKind, sourceLocation: SourceLocation) {
+        self.signature = signature
+        super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: nodeKind, sourceLocation: sourceLocation)
+    }
 }

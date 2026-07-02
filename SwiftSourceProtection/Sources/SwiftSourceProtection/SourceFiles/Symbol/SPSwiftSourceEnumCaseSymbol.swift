@@ -7,10 +7,8 @@
 
 import SwiftSyntax
 
-class SPSwiftSourceEnumCaseSymbol: SPSwiftSourceSymbol {
-    lazy var relatedType: [String] = []
-    
-    init(sourceFile: File, symbolScope: SymbolScope, sourceLocation: SourceLocation) {
-        super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: .enumCase, sourceLocation: sourceLocation)
+class SPSwiftSourceEnumCaseSymbol: SPSwiftSourceFunctionSymbol {
+    override init(sourceFile: File, signature: String, symbolScope: SymbolScope, sourceLocation: SourceLocation) {
+        super.init(sourceFile: sourceFile, signature: signature, symbolScope: symbolScope, nodeKind: .enumCase, sourceLocation: sourceLocation)
     }
 }
