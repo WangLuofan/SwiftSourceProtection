@@ -34,5 +34,7 @@ class SPSwiftSourceSymbol {
         self.nodeKind = nodeKind
         self.symbolScope = symbolScope
         self.sourceLocation = sourceLocation
+        
+        IndexStore.indexStore.setSourceLocation(forSymbol: self)
     }
 }

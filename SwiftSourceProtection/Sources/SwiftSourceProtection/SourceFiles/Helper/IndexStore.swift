@@ -17,6 +17,7 @@ class IndexStore {
     private var refForFile: [File: [String: [SKResponseDictionary]]] = [:]
     private var scopeForNode: [File: [UInt64: SPSwiftSourceScope]] = [:]
     private var fileForIndexStore: [File: SKResponseDictionary] = [:]
+    private var symbolForPosition: [File: [String: [SPSwiftSourceSymbol]]] = [:]
 }
 
 extension IndexStore {
@@ -26,6 +27,16 @@ extension IndexStore {
     
     func getSymbol(usr: String) -> SPSwiftSourceSymbol? {
         return self.symbolForUSR[usr]
+    }
+    
+    func setSourceLocation(forSymbol symbol: SPSwiftSourceSymbol) {
+        let uniqueID: String = "\(symbol.sourceLocation.line):\(symbol.sourceLocation.column)"
+        self.symbolForPosition[symbol.sourceFile, default: [:]][uniqueID, default: []].append(symbol)
+    }
+    
+    func getSymbol(line: Int, col: Int, inFile file: File) -> [SPSwiftSourceSymbol]? {
+        let uniqueID: String = "\(line):\(col)"
+        return self.symbolForPosition[file]?[uniqueID]
     }
     
     func set(usr: String, toFile: File) {

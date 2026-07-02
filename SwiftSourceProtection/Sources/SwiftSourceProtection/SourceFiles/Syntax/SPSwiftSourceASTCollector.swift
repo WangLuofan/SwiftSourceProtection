@@ -751,6 +751,17 @@ extension SPSwiftSourceASTCollector {
                                 break
                             }
                         }
+                    } else {
+                        if let line: Int = dict[sourceKit.keys.line],
+                           let col: Int = dict[sourceKit.keys.column],
+                           let symbols: [SPSwiftSourceSymbol] = IndexStore.indexStore.getSymbol(line: line, col: col, inFile: self.sourceFile) {
+                            for symbol in symbols {
+                                if symbol.originalSymbolName == name && symbol.nodeKind == .variable {
+                                    varSymbol = symbol as? SPSwiftSourceVariableSymbol
+                                    break
+                                }
+                            }
+                        }
                     }
                     
                     guard let varSymbol else { break }
