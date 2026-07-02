@@ -162,6 +162,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             var symbolSignature: String = $0.name.text
             if let paramClause: EnumCaseParameterClauseSyntax = $0.parameterClause {
                 symbolSignature += "("
+                
                 paramClause.parameters.forEach {
                     let label: String = $0.firstName?.text ?? "_"
                     symbol.labels.append(label)
@@ -169,6 +170,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                     
                     symbolSignature += "\(label):"
                 }
+                
                 symbolSignature += ")"
             }
             
