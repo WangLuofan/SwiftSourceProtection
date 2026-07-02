@@ -95,12 +95,12 @@ class ViewController: UIViewController {
         }
         d.overC
         
-        self.testLocalBindings()
+        try? self.testLocalBindings()
         self.testExtraLocalBindings()
         self.testAsyncBindings()
     }
     
-    func testLocalBindings() {
+    func testLocalBindings() throws {
         let array: [TestEnum] = [.first, .second(TestA(n: 1, z: "ABC"))]
         
         // while let / while case let
@@ -149,6 +149,8 @@ class ViewController: UIViewController {
             return
         }
         print(last.n)
+        
+        throw KeychainError.saveFailed(status: errSecUnimplemented, message: "Hello, World")
     }
     
     func testExtraLocalBindings() {
