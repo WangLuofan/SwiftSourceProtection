@@ -25,7 +25,7 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
         var nonImportDecls: [CodeBlockItemSyntax] = []
         
         node.statements.forEach {
-            if let importDeclSyntax: ImportDeclSyntax = $0.item.as(ImportDeclSyntax.self) {
+            if let _: ImportDeclSyntax = $0.item.as(ImportDeclSyntax.self) {
                 importDecls.append($0)
             } else {
                 nonImportDecls.append($0)
@@ -35,10 +35,77 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
         importDecls.shuffle()
         nonImportDecls.shuffle()
         
-        newNode = newNode.with(\.statements, CodeBlockItemListSyntax(importDecls + nonImportDecls)
-            .with(\.leadingTrivia, newNode.statements.leadingTrivia)
-            .with(\.trailingTrivia, newNode.statements.trailingTrivia)
-        )
+        newNode = newNode.with(\.statements, CodeBlockItemListSyntax(importDecls + nonImportDecls))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var memberBlockItems: [MemberBlockItemSyntax] = []
+        node.memberBlock.members.forEach {
+            memberBlockItems.append($0)
+        }
+        memberBlockItems.shuffle()
+        
+        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var memberBlockItems: [MemberBlockItemSyntax] = []
+        node.memberBlock.members.forEach {
+            memberBlockItems.append($0)
+        }
+        memberBlockItems.shuffle()
+        
+        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var memberBlockItems: [MemberBlockItemSyntax] = []
+        node.memberBlock.members.forEach {
+            memberBlockItems.append($0)
+        }
+        memberBlockItems.shuffle()
+        
+        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var memberBlockItems: [MemberBlockItemSyntax] = []
+        node.memberBlock.members.forEach {
+            memberBlockItems.append($0)
+        }
+        memberBlockItems.shuffle()
+        
+        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
+        
+        return super.visit(newNode)
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        var newNode = node
+        
+        var memberBlockItems: [MemberBlockItemSyntax] = []
+        node.memberBlock.members.forEach {
+            memberBlockItems.append($0)
+        }
+        memberBlockItems.shuffle()
+        
+        newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
         
         return super.visit(newNode)
     }
