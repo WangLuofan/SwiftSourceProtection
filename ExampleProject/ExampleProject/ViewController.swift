@@ -9,6 +9,12 @@ import UIKit
 import Social
 import Dispatch
 
+func globalFunction(_ num: Int) {
+    print("\(num)")
+}
+
+var globalVariable: String = "123456"
+
 enum TestEnum {
     case first, forth, fifth
     case second(TestA)
