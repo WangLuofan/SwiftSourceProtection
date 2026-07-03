@@ -618,6 +618,33 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         return super.visit(node)
     }
     
+    override func visit(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
+        self.currentScope = self.currentScope.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: DoStmtSyntax) {
+        self.currentScope = self.currentScope.popScope()
+    }
+    
+    override func visit(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
+        self.currentScope = self.currentScope.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: RepeatStmtSyntax) {
+        self.currentScope = self.currentScope.popScope()
+    }
+    
+    override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        self.currentScope = self.currentScope.pushScope()
+        return super.visit(node)
+    }
+    
+    override func visitPost(_ node: DeinitializerDeclSyntax) {
+        self.currentScope = self.currentScope.popScope()
+    }
+    
     override func visitPost(_ node: GuardStmtSyntax) {
         self.currentScope = self.currentScope.popScope()
     }
