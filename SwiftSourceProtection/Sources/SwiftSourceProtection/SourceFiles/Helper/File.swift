@@ -8,6 +8,10 @@ struct File: Hashable {
     var name: String {
         (path as NSString).pathComponents.last ?? ""
     }
+    
+    var directory: String {
+        (path as NSString).deletingLastPathComponent
+    }
 
     /// Returns the disk contents of the file.
     func read() throws -> String {

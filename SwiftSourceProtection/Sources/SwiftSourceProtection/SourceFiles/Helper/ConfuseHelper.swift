@@ -7,6 +7,7 @@
 
 import SwiftSyntax
 import SwiftOperators
+import Foundation
 
 class ConfuseHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
@@ -123,5 +124,14 @@ class ConfuseHelper {
         }
             
         return funcName + "(" + labels.joined() + ")"
+    }
+    
+    static func dumpConfusedTable(_ path: String, fileName: String) {
+        guard let jsonData: Data = try? JSONSerialization.data(withJSONObject: self.confusedTable, options: .prettyPrinted),
+              let jsonContent: String = String(data: jsonData, encoding: .utf8) else {
+            return
+        }
+        
+        try? jsonContent.write(toFile: path + "/" + fileName, atomically: true, encoding: .utf8)
     }
 }

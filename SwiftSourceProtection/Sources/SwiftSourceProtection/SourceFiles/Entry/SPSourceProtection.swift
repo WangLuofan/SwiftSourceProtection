@@ -12,9 +12,11 @@ import SwiftOperators
 
 class SPSourceProtection {
     
-    var schemeInfoProvider: SPSchemeInfoProvider
+    private var schemeInfoProvider: SPSchemeInfoProvider
+    private var projectPath: String
     
     init(project: String, scheme: String) {
+        self.projectPath = File(path: project).directory
         self.schemeInfoProvider = SPSchemeInfoProvider(project: project, scheme: scheme)
     }
     
@@ -102,5 +104,8 @@ class SPSourceProtection {
                 try? shuffledSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
             }
         }
+        
+        logger.log("--- Dumping Confused Table")
+        ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.txt")
     }
 }

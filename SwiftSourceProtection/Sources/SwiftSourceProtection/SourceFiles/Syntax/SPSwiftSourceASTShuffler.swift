@@ -57,7 +57,7 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        var memberBlockItems: [MemberBlockItemSyntax] = self.shuffleMemberBlock(node.memberBlock.members)
+        let memberBlockItems: [MemberBlockItemSyntax] = self.shuffleMemberBlock(node.memberBlock.members)
         newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
         
         return super.visit(newNode)

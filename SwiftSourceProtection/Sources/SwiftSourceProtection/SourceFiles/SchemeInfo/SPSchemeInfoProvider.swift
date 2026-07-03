@@ -8,8 +8,8 @@
 import Foundation
 
 class SPSchemeInfoProvider {
-    var project: String
-    var scheme: String
+    private var project: String
+    private var scheme: String
     
     private var isWorkspace: Bool = false
     
