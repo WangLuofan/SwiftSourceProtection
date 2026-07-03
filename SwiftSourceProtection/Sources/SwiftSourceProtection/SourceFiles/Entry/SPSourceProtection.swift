@@ -89,9 +89,15 @@ class SPSourceProtection {
                     sourceFile: $0,
                     relatedDict: relatedDict
                 )
-                let confusedContent = rewriter.rewrite()
+                let confusedSyntax: SourceFileSyntax = rewriter.rewrite()
                 
-                try? confusedContent.write(toFile: $0.path, atomically: true, encoding: .utf8)
+                let shuffler: SPSwiftSourceASTShuffler = SPSwiftSourceASTShuffler(
+                    sourceTree: confusedSyntax,
+                    sourceFile: $0
+                )
+                let shuffledSyntax: SourceFileSyntax = shuffler.shuffle()
+                
+                try? shuffledSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
             }
         }
     }

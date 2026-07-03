@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import Social
+import Dispatch
 
 enum TestEnum {
     case first, forth, fifth

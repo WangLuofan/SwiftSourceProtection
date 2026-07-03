@@ -179,9 +179,9 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
 }
 
 extension SPSwiftSourceASTRewriter {
-    func rewrite() -> String {
-        let rewritten = self.visit(self.sourceTree)
-        return rewritten.description
+    func rewrite() -> SourceFileSyntax {
+        let rewritedSyntax: SourceFileSyntax = self.visit(self.sourceTree)
+        return rewritedSyntax
     }
     
     private func getRelateCallExpressionId(_ calledExpression: ExprSyntaxProtocol) -> SPSwiftSourceSymbol? {
