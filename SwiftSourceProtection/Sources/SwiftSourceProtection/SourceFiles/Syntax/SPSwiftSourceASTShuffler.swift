@@ -57,12 +57,7 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        var memberBlockItems: [MemberBlockItemSyntax] = []
-        node.memberBlock.members.forEach {
-            memberBlockItems.append($0)
-        }
-        memberBlockItems.shuffle()
-        
+        var memberBlockItems: [MemberBlockItemSyntax] = self.shuffleMemberBlock(node.memberBlock.members)
         newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
         
         return super.visit(newNode)
@@ -71,12 +66,7 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        var memberBlockItems: [MemberBlockItemSyntax] = []
-        node.memberBlock.members.forEach {
-            memberBlockItems.append($0)
-        }
-        memberBlockItems.shuffle()
-        
+        var memberBlockItems: [MemberBlockItemSyntax] = self.shuffleMemberBlock(node.memberBlock.members)
         newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
         
         return super.visit(newNode)
@@ -85,12 +75,7 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        var memberBlockItems: [MemberBlockItemSyntax] = []
-        node.memberBlock.members.forEach {
-            memberBlockItems.append($0)
-        }
-        memberBlockItems.shuffle()
-        
+        var memberBlockItems: [MemberBlockItemSyntax] = self.shuffleMemberBlock(node.memberBlock.members)
         newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
         
         return super.visit(newNode)
@@ -99,12 +84,7 @@ class SPSwiftSourceASTShuffler: SyntaxRewriter {
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         var newNode = node
         
-        var memberBlockItems: [MemberBlockItemSyntax] = []
-        node.memberBlock.members.forEach {
-            memberBlockItems.append($0)
-        }
-        memberBlockItems.shuffle()
-        
+        var memberBlockItems: [MemberBlockItemSyntax] = self.shuffleMemberBlock(node.memberBlock.members)
         newNode = newNode.with(\.memberBlock, newNode.memberBlock.with(\.members, MemberBlockItemListSyntax(memberBlockItems)))
         
         return super.visit(newNode)
@@ -115,5 +95,15 @@ extension SPSwiftSourceASTShuffler {
     func shuffle() -> SourceFileSyntax {
         let rewritedSyntax: SourceFileSyntax = self.visit(self.sourceTree)
         return rewritedSyntax
+    }
+    
+    private func shuffleMemberBlock(_ members: MemberBlockItemListSyntax) -> [MemberBlockItemSyntax] {
+        var memberBlockItems: [MemberBlockItemSyntax] = []
+        members.forEach {
+            memberBlockItems.append($0)
+        }
+        memberBlockItems.shuffle()
+        
+        return memberBlockItems
     }
 }
