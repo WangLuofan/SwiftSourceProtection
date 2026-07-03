@@ -436,9 +436,8 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             }
         }
         
-        if symbol.symbolScope == .local {
-            ConfuseHelper.confuseSymbol(symbol)
-        } else if symbol.symbolScope == .member {
+        ConfuseHelper.confuseSymbol(symbol)
+        if symbol.symbolScope == .member || symbol.symbolScope == .global {
             self.parentStack.last?.children.append(symbol)
         }
         
@@ -788,27 +787,41 @@ extension SPSwiftSourceASTCollector {
                     break
                 case .method: do {
                     guard let fullName: String = dict[sourceKit.keys.name],
-                          let parentName: String = dict.parent[sourceKit.keys.name],
-                          let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                            SPSwiftSourceClassSymbol,
                           let line: Int = dict[sourceKit.keys.line],
                           let column: Int = dict[sourceKit.keys.column] else {
                         break
                     }
-
+                    
                     var funcSymbol: SPSwiftSourceFunctionSymbol?
-                    for child in parentSymbol.children {
-                        guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
-                            continue
+                    if let parentName: String = dict.parent[sourceKit.keys.name],
+                       let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
+                        SPSwiftSourceClassSymbol {
+                        for child in parentSymbol.children {
+                            guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
+                                continue
+                            }
+                            
+                            if fSymbol.signature == fullName,
+                                child.nodeKind == .function,
+                                fSymbol.sourceLocation.line == line,
+                                fSymbol.sourceLocation.column == column
+                            {
+                                funcSymbol = fSymbol
+                                break
+                            }
                         }
-                        
-                        if fSymbol.signature == fullName,
-                            child.nodeKind == .function,
-                            fSymbol.sourceLocation.line == line,
-                            fSymbol.sourceLocation.column == column
-                        {
-                            funcSymbol = fSymbol
-                            break
+                    } else {
+                        if let symbols: [SPSwiftSourceSymbol] = IndexStore.indexStore.getSymbol(line: line, col: column, inFile: self.sourceFile) {
+                            for symbol in symbols {
+                                guard let symbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol else {
+                                    continue
+                                }
+                                
+                                if symbol.signature == fullName && symbol.nodeKind == .function {
+                                    funcSymbol = symbol
+                                    break
+                                }
+                            }
                         }
                     }
                     

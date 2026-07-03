@@ -255,6 +255,8 @@ class TestA {
                 let t = 0
         }
         
+        globalFunction(num1)
+        
         return self.testFunc2(num1, num2: num2)
     }
     
@@ -263,6 +265,8 @@ class TestA {
         
         let testCls: TestClass = TestClass()
         let roundNum = testCls.testFunc().testFunc2().testFunc().testFunc2().testFunc().dVal.roundDecimals(5)
+        
+        globalFunction(num2)
         
         return num1 * num2
     }
