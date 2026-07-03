@@ -43,7 +43,7 @@ class SPSchemeInfoProvider {
         process.standardError = pipe
         
         do {
-            print("Building Project...")
+            print("Building Project \(self.scheme)...")
             
             try process.run()
             let output = try pipe.fileHandleForReading.readToEnd()

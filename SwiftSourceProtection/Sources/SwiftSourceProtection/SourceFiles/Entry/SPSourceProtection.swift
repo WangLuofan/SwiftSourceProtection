@@ -95,6 +95,8 @@ class SPSourceProtection {
                     sourceTree: confusedSyntax,
                     sourceFile: $0
                 )
+                
+                logger.log("--- Shuffling: \($0.name)")
                 let shuffledSyntax: SourceFileSyntax = shuffler.shuffle()
                 
                 try? shuffledSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
