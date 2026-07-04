@@ -106,6 +106,6 @@ class SPSourceProtection {
         }
         
         logger.log("--- Dumping Confused Table")
-        ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.txt")
+        ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.json")
     }
 }
