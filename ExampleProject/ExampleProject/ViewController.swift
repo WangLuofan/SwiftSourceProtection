@@ -290,3 +290,271 @@ extension Double {
         return transformationValue
     }
 }
+
+// MARK: - Missing Swift Syntax Fixtures
+
+typealias SyntaxFixtureIdentifier = String
+typealias SyntaxFixtureHandler<Input, Output> = (Input) throws -> Output
+
+protocol SyntaxFixtureCollectionProtocol {
+    associatedtype Element
+    associatedtype Storage: MutableCollection where Storage.Element == Element
+    
+    var storage: Storage { get set }
+    subscript(position: Storage.Index) -> Element { get set }
+}
+
+precedencegroup SyntaxFixturePrecedence {
+    associativity: left
+    higherThan: AdditionPrecedence
+}
+
+infix operator <~>: SyntaxFixturePrecedence
+
+struct SyntaxFixtureVector: CustomStringConvertible {
+    var x: Int
+    var y: Int
+    
+    var description: String {
+        return "\(x),\(y)"
+    }
+}
+
+func <~> (lhs: SyntaxFixtureVector, rhs: SyntaxFixtureVector) -> SyntaxFixtureVector {
+    return SyntaxFixtureVector(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+}
+
+@propertyWrapper
+struct SyntaxFixtureClamped {
+    private var value: Int
+    private let range: ClosedRange<Int>
+    
+    var wrappedValue: Int {
+        get {
+            return value
+        }
+        set {
+            value = min(max(newValue, range.lowerBound), range.upperBound)
+        }
+    }
+    
+    var projectedValue: String {
+        return "clamped:\(value)"
+    }
+    
+    init(wrappedValue: Int, _ range: ClosedRange<Int>) {
+        self.range = range
+        self.value = min(max(wrappedValue, range.lowerBound), range.upperBound)
+    }
+}
+
+@resultBuilder
+enum SyntaxFixtureStringBuilder {
+    static func buildExpression(_ expression: String) -> [String] {
+        return [expression]
+    }
+    
+    static func buildBlock(_ components: [String]...) -> [String] {
+        return components.flatMap { $0 }
+    }
+    
+    static func buildOptional(_ component: [String]?) -> [String] {
+        return component ?? []
+    }
+    
+    static func buildEither(first component: [String]) -> [String] {
+        return component
+    }
+    
+    static func buildEither(second component: [String]) -> [String] {
+        return component
+    }
+}
+
+func makeSyntaxFixtureStrings(@SyntaxFixtureStringBuilder _ content: () -> [String]) -> [String] {
+    return content()
+}
+
+actor SyntaxFixtureCounter {
+    private var value: Int = 0
+    
+    func increment(by amount: Int = 1) -> Int {
+        value += amount
+        return value
+    }
+    
+    func reset(to newValue: Int) {
+        value = newValue
+    }
+}
+
+struct SyntaxFixtureBuffer<Element>: SyntaxFixtureCollectionProtocol {
+    var storage: [Element]
+    
+    subscript(position: Array<Element>.Index) -> Element {
+        get {
+            return storage[position]
+        }
+        set(newElement) {
+            storage[position] = newElement
+        }
+    }
+    
+    subscript(safe position: Array<Element>.Index) -> Element? {
+        guard storage.indices.contains(position) else {
+            return nil
+        }
+        return storage[position]
+    }
+    
+    func mapDescriptions<Result>(_ transform: SyntaxFixtureHandler<Element, Result>) rethrows -> [String] where Result: CustomStringConvertible {
+        return try storage.map { item in
+            let transformed = try transform(item)
+            return transformed.description
+        }
+    }
+}
+
+final class SyntaxFixtureAccessorBox {
+    @SyntaxFixtureClamped(0...10) var level: Int = 3
+    
+    private var backingStore: [SyntaxFixtureIdentifier: Int] = [:]
+    
+    var observedValue: Int = 0 {
+        willSet(nextObservedValue) {
+            print(nextObservedValue)
+        }
+        didSet(previousObservedValue) {
+            print(previousObservedValue)
+        }
+    }
+    
+    var computedValue: Int {
+        get {
+            return backingStore["computed"] ?? 0
+        }
+        set(newComputedValue) {
+            backingStore["computed"] = newComputedValue
+        }
+    }
+    
+    subscript(named name: SyntaxFixtureIdentifier, default defaultValue: Int) -> Int {
+        get {
+            return backingStore[name] ?? defaultValue
+        }
+        set(newValue) {
+            backingStore[name] = newValue
+        }
+    }
+    
+    deinit {
+        print("SyntaxFixtureAccessorBox deinit")
+    }
+}
+
+@objcMembers
+final class SyntaxFixtureObjCBridge: NSObject {
+    dynamic var exposedName: String = "objc"
+    
+    @objc(handleTapWithSender:)
+    dynamic func handleTap(sender: Any?) {
+        print(sender as Any)
+    }
+    
+    func selectorValue() -> Selector {
+        return #selector(handleTap(sender:))
+    }
+    
+    func keyValueCodingExample() {
+        setValue("runtime", forKey: "exposedName")
+        print(value(forKey: "exposedName") as Any)
+    }
+}
+
+struct SyntaxFixtureCodableUser: Codable {
+    var userName: String
+    var accountID: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case userName = "user_name"
+        case accountID = "account_id"
+    }
+}
+
+enum SyntaxFixturePatternResult {
+    case success(payload: SyntaxFixtureCodableUser, metadata: [String: String])
+    case failure(Error)
+    case empty
+}
+
+func syntaxFixturePatternSamples(_ values: [SyntaxFixturePatternResult?]) {
+    var index = 0
+    repeat {
+        defer {
+            index += 1
+        }
+        
+        guard values.indices.contains(index) else {
+            break
+        }
+        
+        if case let .some(.success(payload: user, metadata: metadata)) = values[index] {
+            print(user.userName, metadata)
+        }
+    } while index < values.count
+    
+    do {
+        let pairedValues = values.enumerated()
+        for case let (offset, .some(.success(payload: user, metadata: metadata))) in pairedValues {
+            print(offset, user.accountID, metadata)
+        }
+    }
+    
+    switch values.first ?? nil {
+    case let .some(.success(payload: user, metadata: metadata)):
+        print(user, metadata)
+    case .some(.failure(let error)):
+        print(error)
+    case .some(.empty), .none:
+        break
+    }
+    
+    let bridgedError: Any = NSError(domain: "syntax.fixture", code: -2)
+    if case let error as NSError = bridgedError {
+        print(error.code)
+    }
+}
+
+func syntaxFixtureGenericWhereSamples<C>(_ collection: C) -> [String] where C: Collection, C.Element: CustomStringConvertible {
+    let vector = SyntaxFixtureVector(x: 1, y: 2) <~> SyntaxFixtureVector(x: 3, y: 4)
+    let builderOutput = makeSyntaxFixtureStrings {
+        "first"
+        if vector.x > 0 {
+            vector.description
+        }
+    }
+    return collection.map(\.description) + builderOutput
+}
+
+func syntaxFixtureAsyncActorSample() {
+    let counter = SyntaxFixtureCounter()
+    Task {
+        async let first = counter.increment()
+        async let second = counter.increment(by: 2)
+        let results = await [first, second]
+        print(results)
+    }
+}
+
+#if false
+@attached(member, names: arbitrary)
+macro SyntaxFixtureAutoMember() = #externalMacro(module: "SyntaxFixtureMacros", type: "SyntaxFixtureAutoMemberMacro")
+
+@freestanding(expression)
+macro syntaxFixtureStringify<T>(_ value: T) = #externalMacro(module: "SyntaxFixtureMacros", type: "SyntaxFixtureStringifyMacro")
+
+@SyntaxFixtureAutoMember
+struct SyntaxFixtureMacroTarget {
+    var name: String
+}
+#endif
