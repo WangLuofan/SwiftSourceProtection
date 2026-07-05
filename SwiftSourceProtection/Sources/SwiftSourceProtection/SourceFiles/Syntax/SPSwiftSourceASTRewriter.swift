@@ -52,8 +52,6 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                         )
                     )
                     break
-                } else {
-                    confusedParams.append($0)
                 }
             }
         }

@@ -81,7 +81,7 @@ class ConfuseHelper {
         let firstCharset: [String.Element] = Array(lowercase + uppercase + underScore)
         
         var randomSymbolName = String(firstCharset[Int.random(in: 0..<firstCharset.count)])
-        let allCharacters: [String] = [lowercase, uppercase, digital, underScore]
+        let allCharacters: [String] = [lowercase, uppercase, digital]
         
         for _ in 1..<randomSymbolLength {
             let randomIndex = Int.random(in: 0..<allCharacters.count)
