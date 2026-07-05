@@ -30,10 +30,10 @@ struct SPArgumentParser: ParsableCommand {
     @Argument(help: "Specify the scheme in the project")
     var scheme: String
     
-    @Flag(help: "Perform a trial run without making any changes.")
+    @Flag(name: [.short, .long], help: "Perform a trial run without making any changes.")
     var dryRun: Bool = false
     
-    @Flag(help: "Randomize the order of source codes.")
+    @Flag(name:[.short, .long], help: "Randomize the order of source codes.")
     var shuffle: Bool = false
     
     func run() throws {
