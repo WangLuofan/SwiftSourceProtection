@@ -14,10 +14,12 @@ class SPSourceProtection {
     
     private var schemeInfoProvider: SPSchemeInfoProvider
     private var projectPath: String
+    private var argument: SPArgument
     
-    init(project: String, scheme: String) {
-        self.projectPath = File(path: project).directory
-        self.schemeInfoProvider = SPSchemeInfoProvider(project: project, scheme: scheme)
+    init(argument: SPArgument) {
+        self.argument = argument
+        self.projectPath = File(path: argument.project).directory
+        self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
     }
     
     func run() {
@@ -91,17 +93,23 @@ class SPSourceProtection {
                     sourceFile: $0,
                     relatedDict: relatedDict
                 )
-                let confusedSyntax: SourceFileSyntax = rewriter.rewrite()
+                var finalSyntax: SourceFileSyntax = rewriter.rewrite()
                 
-                let shuffler: SPSwiftSourceASTShuffler = SPSwiftSourceASTShuffler(
-                    sourceTree: confusedSyntax,
-                    sourceFile: $0
-                )
+                if self.argument.shuffle {
+                    let shuffler: SPSwiftSourceASTShuffler = SPSwiftSourceASTShuffler(
+                        sourceTree: finalSyntax,
+                        sourceFile: $0
+                    )
+                    
+                    logger.log("--- Shuffling: \($0.name)")
+                    finalSyntax = shuffler.shuffle()
+                }
                 
-                logger.log("--- Shuffling: \($0.name)")
-                let shuffledSyntax: SourceFileSyntax = shuffler.shuffle()
-                
-                try? shuffledSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
+                if self.argument.dryRun {
+                    try? finalSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
+                } else {
+                    print(finalSyntax.description)
+                }
             }
         }
         
