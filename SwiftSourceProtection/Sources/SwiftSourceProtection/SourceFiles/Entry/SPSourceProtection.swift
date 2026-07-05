@@ -14,9 +14,11 @@ class SPSourceProtection {
     
     private var schemeInfoProvider: SPSchemeInfoProvider
     private var projectPath: String
-    private var argument: SPArgument
+    private var argument: SPArgumentProtocol
+    private var obfuse: Bool
     
-    init(argument: SPArgument) {
+    init(obfuse: Bool, argument: SPArgumentProtocol) {
+        self.obfuse = obfuse
         self.argument = argument
         self.projectPath = File(path: argument.project).directory
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
@@ -68,9 +70,62 @@ class SPSourceProtection {
             }
         }
         
+        if self.obfuse {
+            self.runObfuse(
+                modules: modules,
+                sourceTrees: sourceTrees,
+                sourceKit: sourceKit,
+                fileScopes: fileScopes
+            )
+        } else {
+            self.runDeobfuse(
+                modules: modules,
+                sourceTrees: sourceTrees,
+                sourceKit: sourceKit
+            )
+        }
+    }
+    
+    private func runDeobfuse(modules: [Module], sourceTrees: [String: SourceFileSyntax], sourceKit: SourceKit) {
+        guard let argument: SPDeObfuseArgument = self.argument as? SPDeObfuseArgument,
+              FileManager.default.fileExists(atPath: argument.confusedMap),
+              let fileData: Data = try? Data(contentsOf: URL(fileURLWithPath: argument.confusedMap)),
+              let confusedMap: [String: String] = try? JSONSerialization.jsonObject(with: fileData) as? [String: String] else {
+            return
+        }
+        
         for module in modules {
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                logger.log("--- Processing: \($0.name)")
+                sourceKit.logger?.log("--- Deobfuse: \($0.name)")
+                
+                guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path] else {
+                    return
+                }
+                
+                let deobfuse: SPSwiftSourceASTDeobfuse = SPSwiftSourceASTDeobfuse(
+                    sourceTree: sourceTree,
+                    sourceFile: $0,
+                    confusedMap: confusedMap
+                )
+                
+                let finalSyntax = deobfuse.deobfuse()
+                if !argument.dryRun {
+                    try? finalSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
+                } else {
+                    print(finalSyntax.description)
+                }
+            }
+        }
+    }
+    
+    private func runObfuse(modules: [Module], sourceTrees: [String: SourceFileSyntax], sourceKit: SourceKit, fileScopes: [String: SPSwiftSourceScope]) {
+        guard let argument: SPObfuseArgument = self.argument as? SPObfuseArgument else {
+            return
+        }
+        
+        for module in modules {
+            module.sourceFiles.sorted { $0.path < $1.path }.forEach {
+                sourceKit.logger?.log("--- Processing: \($0.name)")
                 
                 if let sourceTree = sourceTrees[$0.path], let fileScope = fileScopes[$0.path] {
                     let preRewriter: SPSwiftSourceASTPreRewriter = SPSwiftSourceASTPreRewriter(fileScope: fileScope, sourceFile: $0, sourceKit: sourceKit, sourceTree: sourceTree)
@@ -81,7 +136,7 @@ class SPSourceProtection {
         
         for module in modules {
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                logger.log("--- Rewriting: \($0.name)")
+                sourceKit.logger?.log("--- Rewriting: \($0.name)")
                 
                 guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path],
                       let relatedDict: [UInt64: SPSwiftSourceSymbol] = SymbolIndexRelator.shared.get(forFile: $0) else {
@@ -95,17 +150,17 @@ class SPSourceProtection {
                 )
                 var finalSyntax: SourceFileSyntax = rewriter.rewrite()
                 
-                if self.argument.shuffle {
+                if argument.shuffle {
                     let shuffler: SPSwiftSourceASTShuffler = SPSwiftSourceASTShuffler(
                         sourceTree: finalSyntax,
                         sourceFile: $0
                     )
                     
-                    logger.log("--- Shuffling: \($0.name)")
+                    sourceKit.logger?.log("--- Shuffling: \($0.name)")
                     finalSyntax = shuffler.shuffle()
                 }
                 
-                if self.argument.dryRun {
+                if !argument.dryRun {
                     try? finalSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
                 } else {
                     print(finalSyntax.description)
@@ -113,7 +168,7 @@ class SPSourceProtection {
             }
         }
         
-        logger.log("--- Dumping Confused Table")
+        sourceKit.logger?.log("--- Dumping Confused Table")
         ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.json")
     }
 }

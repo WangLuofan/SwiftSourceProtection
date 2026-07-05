@@ -126,7 +126,7 @@ class ConfuseHelper {
     }
     
     static func dumpConfusedTable(_ path: String, fileName: String) {
-        guard let jsonData: Data = try? JSONSerialization.data(withJSONObject: self.confusedTable, options: .prettyPrinted),
+        guard let jsonData: Data = try? JSONSerialization.data(withJSONObject: self.reversedTable, options: .prettyPrinted),
               let jsonContent: String = String(data: jsonData, encoding: .utf8) else {
             return
         }

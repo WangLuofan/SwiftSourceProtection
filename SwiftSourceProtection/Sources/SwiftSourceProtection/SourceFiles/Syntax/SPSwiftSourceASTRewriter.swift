@@ -44,16 +44,26 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         node.signature.parameterClause.parameters.forEach {
             for (index, label) in funcSymbol.labels.enumerated() {
                 if label == $0.firstName.text {
-                    confusedParams.append($0.with(\.firstName, .identifier(funcSymbol.confusedLabels[index], leadingTrivia: $0.firstName.leadingTrivia, trailingTrivia: $0.firstName.trailingTrivia)))
+                    confusedParams.append($0
+                        .with(\.firstName, .identifier(
+                            funcSymbol.confusedLabels[index],
+                            leadingTrivia: $0.firstName.leadingTrivia,
+                            trailingTrivia: $0.firstName.trailingTrivia)
+                        )
+                    )
                     break
                 }
             }
         }
         
-        let newNode = node.with(\.signature, node.signature.with(\.parameterClause, node.signature.parameterClause.with(\.parameters, FunctionParameterListSyntax(confusedParams))
-            .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
-            .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
-        ))
+        let newNode = node.with(\.signature, node.signature
+            .with(\.parameterClause, node.signature.parameterClause
+                .with(\.parameters, FunctionParameterListSyntax(confusedParams))
+                .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+                .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia))
+                .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
+                .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+        )
         
         return super.visit(newNode)
     }
