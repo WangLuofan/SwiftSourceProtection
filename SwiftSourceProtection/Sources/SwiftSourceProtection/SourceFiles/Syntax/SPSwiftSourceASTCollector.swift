@@ -39,6 +39,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         
         self.extensions.forEach {
             if let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolWithSymbolName($0.originalSymbolName) as? SPSwiftSourceClassSymbol {
+                clsSymbol.isInheritedFromCodableOrCodingKey = clsSymbol.isInheritedFromCodableOrCodingKey || $0.isInheritedFromCodableOrCodingKey
                 clsSymbol.children.append(contentsOf: $0.children)
             } else {
                 self.topScope.pushSymbol($0)
@@ -180,7 +181,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             
             symbol.signature = symbolSignature
             symbol.originalSymbolName = $0.name.text
-            ConfuseHelper.confuseSymbol(symbol)
             
             self.currentScope.pushSymbol(symbol)
             
@@ -194,7 +194,9 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let clsSymbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: node.positionAfterSkippingLeadingTrivia))
         if let extendedType: IdentifierTypeSyntax = node.extendedType.as(IdentifierTypeSyntax.self) {
             clsSymbol.originalSymbolName = extendedType.name.text
+            clsSymbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         }
+        
         self.extensions.append(clsSymbol)
         self.parentStack.append(clsSymbol)
         
@@ -940,6 +942,7 @@ extension SPSwiftSourceASTCollector {
                            let enumCaseSymbol: SPSwiftSourceEnumCaseSymbol = child as? SPSwiftSourceEnumCaseSymbol,
                            enumCaseSymbol.signature == fullName {
                             child.symbolUSR = dict[sourceKit.keys.usr]
+                            child.confusedSymbolName = ConfuseHelper.confusedSymbolName(child.originalSymbolName)
                             break
                         }
                     }
