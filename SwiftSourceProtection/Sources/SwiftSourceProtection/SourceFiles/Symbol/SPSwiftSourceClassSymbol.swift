@@ -10,6 +10,11 @@ import SwiftSyntax
 class SPSwiftSourceClassSymbol: SPSwiftSourceSymbol {
     var children: [SPSwiftSourceSymbol] = []
     
+    /// 是否继承自CodingKey或者Codable
+    /// 如果是继承自这两个协议
+    /// 则整体不混淆
+    var isInheritedFromCodableOrCodingKey: Bool = false
+    
     init(sourceFile: File, symbolScope: SymbolScope, sourceLocation: SourceLocation) {
         super.init(sourceFile: sourceFile, symbolScope: symbolScope, nodeKind: .class, sourceLocation: sourceLocation)
     }

@@ -51,6 +51,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         
         symbol.originalSymbolName = node.name.text
+        symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -75,6 +76,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .struct, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
+        symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -99,6 +101,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .protocol, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
+        symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -129,6 +132,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         )
         
         symbol.originalSymbolName = node.name.text
+        symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -835,10 +839,12 @@ extension SPSwiftSourceASTCollector {
                     var varSymbol: SPSwiftSourceVariableSymbol?
                     if let parentName: String = dict.parent[sourceKit.keys.name],
                        let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
-                        for child in parentSymbol.children {
-                            if child.originalSymbolName == name && child.nodeKind == .variable {
-                                varSymbol = child as? SPSwiftSourceVariableSymbol
-                                break
+                        if !parentSymbol.isInheritedFromCodableOrCodingKey {
+                            for child in parentSymbol.children {
+                                if child.originalSymbolName == name && child.nodeKind == .variable {
+                                    varSymbol = child as? SPSwiftSourceVariableSymbol
+                                    break
+                                }
                             }
                         }
                     } else {
@@ -924,7 +930,8 @@ extension SPSwiftSourceASTCollector {
                     guard let fullName: String = dict[sourceKit.keys.name],
                           let parentName: String = dict.parent[sourceKit.keys.name],
                           let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                            SPSwiftSourceClassSymbol else {
+                            SPSwiftSourceClassSymbol,
+                          parentSymbol.isInheritedFromCodableOrCodingKey == false else {
                         break
                     }
                     
@@ -974,5 +981,23 @@ extension SPSwiftSourceASTCollector {
         }
         
         return isReference
+    }
+    
+    private func inheritedFromCodingKeyOrCodable(_ inheritedClause: InheritanceClauseSyntax?) -> Bool {
+        guard let inheritedClause else {
+            return false
+        }
+        
+        var isInherited: Bool = false
+        inheritedClause.inheritedTypes.forEach {
+            if let idType: IdentifierTypeSyntax = $0.type.as(IdentifierTypeSyntax.self) {
+                if idType.name.text == "Codable" || idType.name.text == "CodingKey" {
+                    isInherited = true
+                    return
+                }
+            }
+        }
+        
+        return isInherited
     }
 }
