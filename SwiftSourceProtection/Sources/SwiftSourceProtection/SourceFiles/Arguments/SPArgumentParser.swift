@@ -8,12 +8,16 @@
 import ArgumentParser
 
 struct SPArgument {
+    /// 项目目录
     let project: String
     
+    /// scheme名称
     let scheme: String
     
+    /// 预览运行
     let dryRun: Bool
     
+    /// 源码乱序
     let shuffle: Bool
 }
 
