@@ -954,6 +954,12 @@ extension SPSwiftSourceASTCollector {
                            enumCaseSymbol.signature == fullName {
                             child.symbolUSR = dict[sourceKit.keys.usr]
                             child.confusedSymbolName = ConfuseHelper.confusedSymbolName(child.originalSymbolName)
+                            
+                            for (index, label) in enumCaseSymbol.labels.enumerated() {
+                                let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
+                                enumCaseSymbol.confusedLabels[index] = confusedLabel
+                            }
+                            
                             break
                         }
                     }
