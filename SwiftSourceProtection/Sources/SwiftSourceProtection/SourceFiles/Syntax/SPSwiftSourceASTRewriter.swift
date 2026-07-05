@@ -176,6 +176,49 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         
         return super.visit(newNode)
     }
+    
+    override func visit(_ node: MacroExpansionExprSyntax) -> ExprSyntax {
+        if node.macroName.text == "selector" {
+            
+            var confusedArgs: [LabeledExprSyntax] = []
+            node.arguments.forEach {
+                if let declRefExpr: DeclReferenceExprSyntax = $0.expression.as(DeclReferenceExprSyntax.self),
+                    let funcSymbol: SPSwiftSourceFunctionSymbol = self.getRelateCallExpressionId($0.expression) as? SPSwiftSourceFunctionSymbol,
+                   let argumentNames = declRefExpr.argumentNames {
+                    
+                    var confusedArgNames: [DeclNameArgumentSyntax] = []
+                    for (index, arg) in argumentNames.arguments.enumerated() {
+                        confusedArgNames.append(arg
+                            .with(\.name, .identifier(
+                                funcSymbol.confusedLabels[index],
+                                leadingTrivia: arg.name.leadingTrivia,
+                                trailingTrivia: arg.name.trailingTrivia)
+                            )
+                        )
+                    }
+                    
+                    confusedArgs.append($0
+                        .with(\.expression, ExprSyntax(
+                            declRefExpr.with(\.argumentNames, argumentNames
+                                .with(\.arguments, DeclNameArgumentListSyntax(confusedArgNames)
+                                     )
+                            )
+                        ))
+                    )
+                } else {
+                    confusedArgs.append($0)
+                }
+            }
+            
+            let newNode = node.with(\.arguments, LabeledExprListSyntax(confusedArgs)
+                .with(\.leadingTrivia, node.arguments.leadingTrivia)
+                .with(\.trailingTrivia, node.arguments.trailingTrivia)
+            )
+            return super.visit(newNode)
+        }
+        
+        return super.visit(node)
+    }
 }
 
 extension SPSwiftSourceASTRewriter {

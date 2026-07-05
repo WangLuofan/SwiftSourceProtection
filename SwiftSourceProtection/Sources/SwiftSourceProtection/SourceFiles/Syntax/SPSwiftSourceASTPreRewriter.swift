@@ -41,6 +41,9 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
         }
 
         let refLoc = self.locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
+        if refLoc.line == 465 {
+            let i = 0
+        }
         if let refs = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: refLoc.line, col: refLoc.column),
            let ref = self.matchRef(refs, to: node) {
             if let usr: String = ref[sourceKit.keys.usr],
