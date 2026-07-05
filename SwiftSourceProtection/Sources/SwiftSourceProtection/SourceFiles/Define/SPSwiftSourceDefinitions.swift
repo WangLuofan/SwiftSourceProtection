@@ -30,3 +30,25 @@ enum SymbolScope {
     case global
     case local
 }
+
+enum SymbolAttribute: String {
+    case resultBuilder = "resultBuilder"
+}
+
+struct ResultBuilderMethod {
+    
+    private static let buildMethods: [String] = [
+        "buildExpression(_:)",
+        "buildBlock(_:)",
+        "buildOptional(_:)",
+        "buildEither(first:)",
+        "buildEither(second:)",
+        "buildArray(_:)",
+        "buildLimitedAvailability(_:)",
+        "buildFinalResult(_:)"
+    ]
+    
+    static func isResultBuilderMethod(_ methodName: String) -> Bool {
+        return self.buildMethods.contains(methodName)
+    }
+}

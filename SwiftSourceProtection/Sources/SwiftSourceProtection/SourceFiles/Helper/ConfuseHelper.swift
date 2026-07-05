@@ -47,7 +47,6 @@ class ConfuseHelper {
            let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
             if funcSymbol.symbolScope == .global ||
                 funcSymbol.symbolScope == .local ||
-                funcSymbol.isStaticSymbol ||
                 funcSymbol.accessLevel == .private {
                 return true
             }

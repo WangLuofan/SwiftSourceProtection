@@ -45,6 +45,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 self.topScope.pushSymbol($0)
             }
         }
+        
         self.extensions.removeAll()
     }
     
@@ -53,6 +54,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         
         symbol.originalSymbolName = node.name.text
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
+        symbol.attrsName = self.attributes(node.attributes)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -78,6 +80,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .struct, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
+        symbol.attrsName = self.attributes(node.attributes)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -103,6 +106,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .protocol, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
+        symbol.attrsName = self.attributes(node.attributes)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -134,6 +138,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         
         symbol.originalSymbolName = node.name.text
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
+        symbol.attrsName = self.attributes(node.attributes)
         
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
@@ -881,6 +886,12 @@ extension SPSwiftSourceASTCollector {
                     if let parentName: String = dict.parent[sourceKit.keys.name],
                        let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
                         SPSwiftSourceClassSymbol {
+                        
+                        if parentSymbol.attrsName.contains(.resultBuilder),
+                           ResultBuilderMethod.isResultBuilderMethod(fullName) {
+                            break
+                        }
+                        
                         for child in parentSymbol.children {
                             guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
                                 continue
@@ -984,6 +995,20 @@ extension SPSwiftSourceASTCollector {
         }
         
         return isReference
+    }
+    
+    private func attributes(_ attributes: AttributeListSyntax) -> [SymbolAttribute] {
+        var attrsName: [SymbolAttribute] = []
+        
+        attributes.forEach {
+            if let attrSyntax: AttributeSyntax = $0.as(AttributeSyntax.self),
+               let attrName: IdentifierTypeSyntax = attrSyntax.attributeName.as(IdentifierTypeSyntax.self),
+               let attr: SymbolAttribute = SymbolAttribute(rawValue: attrName.name.text) {
+                attrsName.append(attr)
+            }
+        }
+        
+        return attrsName
     }
     
     private func inheritedFromCodingKeyOrCodable(_ inheritedClause: InheritanceClauseSyntax?) -> Bool {
