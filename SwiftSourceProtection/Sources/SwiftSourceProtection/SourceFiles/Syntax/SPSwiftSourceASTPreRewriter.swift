@@ -41,6 +41,11 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
         }
 
         let refLoc = self.locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
+        if self.sourceFile.path.contains("cla_NimbusAuroraTransportResponseDecoder_cla"),
+           refLoc.line == 13 {
+            let i = 0
+        }
+        
         if let refs = IndexStore.indexStore.getRef(fromFile: self.sourceFile, line: refLoc.line, col: refLoc.column),
            let ref = self.matchRef(refs, to: node) {
             if let usr: String = ref[sourceKit.keys.usr],
@@ -51,6 +56,8 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
            let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text) {
             if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
                memAccExpr.declName.baseName == node {
+                
+            } else if let tupTypeSyntax: TupleTypeSyntax = node.getParentNode() {
                 
             } else {
                 SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
