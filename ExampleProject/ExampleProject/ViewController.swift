@@ -92,8 +92,8 @@ class ViewController: UIViewController {
         let c: (u: Int, v: Int)
         let d: TestA? = TestA(3)
         
-        let s: (k: Int, t: Double) = (3, 4.5)
-        s.k
+        let s: (kk: Int, tt: Double) = (3, 4.5)
+        s.kk
         
         if let e: Int = d?.testFunc(num1: 3, num2: 4) {
             print(e)
