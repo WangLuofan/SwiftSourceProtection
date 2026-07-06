@@ -52,11 +52,19 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
             if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
                memAccExpr.declName.baseName == node {
                 /// memAcc的decl不处理
+                return super.visit(node)
             } else if let _: TupleTypeSyntax = node.getParentNode() {
                 /// tuple标签不处理
-            } else {
-                SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
+                return super.visit(node)
+            } else if let tupExpr: TupleExprSyntax = node.getParentNode() {
+                for elem in tupExpr.elements {
+                    if elem.label == node {
+                        return super.visit(node)
+                    }
+                }
             }
+                
+            SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
         }
         
         return super.visit(node)
