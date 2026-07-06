@@ -250,7 +250,12 @@ class TestA {
     }
     
     func testTuple() -> (n: Int, m: Double) {
-        return (3, 4.5)
+        let n = 5
+        
+        return (
+            n: 3,
+            m: 4.5
+        )
     }
     
     func testFunc(num1: Int, num2: Int) -> Int {
@@ -284,7 +289,12 @@ class TestA {
 
 class TestB: TestA {
     override var overC: (k: Int, t: Int) {
-        return (4, 5)
+        let k = 5
+        
+        return (
+            k: 3,
+            t: 4
+        )
     }
 }
 
