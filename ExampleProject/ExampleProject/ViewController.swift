@@ -105,8 +105,13 @@ class ViewController: UIViewController {
         d.overC
         
         try? self.testLocalBindings()
+        self.testA().testTuple().m
         self.testExtraLocalBindings()
         self.testAsyncBindings()
+    }
+    
+    func testA() -> TestA {
+        return TestA(3)
     }
     
     func testLocalBindings() throws {
@@ -242,6 +247,10 @@ class TestA {
     
     var overC: (u: Int, v: Int) {
         return (3, 4)
+    }
+    
+    func testTuple() -> (n: Int, m: Double) {
+        return (3, 4.5)
     }
     
     func testFunc(num1: Int, num2: Int) -> Int {
