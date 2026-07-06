@@ -689,27 +689,30 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
         switch node.accessorSpecifier.tokenKind {
         case .keyword(.set), .keyword(.willSet), .keyword(.didSet):
-            if let _ = node.body,
-               let parameters = node.parameters {
+            if let _ = node.body {
                 self.currentScope = self.currentScope.pushScope()
                 
-                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(
-                    sourceFile: self.sourceFile,
-                    symbolScope: .local,
-                    sourceLocation: self
-                        .locationConverter
-                        .location(for: parameters.name.positionAfterSkippingLeadingTrivia)
-                )
-                varSymbol.originalSymbolName = parameters.name.text
-                varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(parameters.name.text)
+                if let parameters = node.parameters {
+                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(
+                        sourceFile: self.sourceFile,
+                        symbolScope: .local,
+                        sourceLocation: self
+                            .locationConverter
+                            .location(for: parameters.name.positionAfterSkippingLeadingTrivia)
+                    )
+                    varSymbol.originalSymbolName = parameters.name.text
+                    varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(parameters.name.text)
+                    
+                    self.currentScope.pushSymbol(varSymbol)
+                }
                 
-                self.currentScope.pushSymbol(varSymbol)
                 IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
             }
             break
         case .keyword(.get):
             if let _ = node.body {
                 self.currentScope = self.currentScope.pushScope()
+                IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
             }
             break
         default:
@@ -722,7 +725,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     override func visitPost(_ node: AccessorDeclSyntax) {
         switch node.accessorSpecifier.tokenKind {
         case .keyword(.set), .keyword(.willSet), .keyword(.didSet):
-            if let _ = node.body, let _ = node.parameters {
+            if let _ = node.body {
                 self.currentScope = self.currentScope.popScope()
             }
             break
