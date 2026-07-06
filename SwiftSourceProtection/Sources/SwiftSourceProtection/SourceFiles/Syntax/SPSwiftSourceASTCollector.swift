@@ -819,7 +819,7 @@ extension SPSwiftSourceASTCollector {
         }
     }
     
-    func relate(_ sourceKit: SourceKit) {
+    func associate(_ sourceKit: SourceKit) {
         guard let resp: SKResponseDictionary = IndexStore.indexStore.getResponse(forFile: self.sourceFile) else {
             return
         }

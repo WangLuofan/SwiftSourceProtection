@@ -55,18 +55,23 @@ class SPSourceProtection {
                 
                 fileScopes[$0.path] = scope
                 
-                logger.log("--- Indexing: \($0.name)")
-                astCollector.index(sourceKit, compilerArguments)
-                
-                astCollectors[$0.path] = astCollector
+                if self.obfuse {
+                    logger.log("--- Indexing: \($0.name)")
+                    astCollector.index(sourceKit, compilerArguments)
+                    
+                    astCollectors[$0.path] = astCollector
+                }
             }
             
-            module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                guard let astCollector: SPSwiftSourceASTCollector = astCollectors[$0.path] else {
-                    return
+            if self.obfuse {
+                module.sourceFiles.sorted { $0.path < $1.path }.forEach {
+                    guard let astCollector: SPSwiftSourceASTCollector = astCollectors[$0.path] else {
+                        return
+                    }
+                    
+                    logger.log("--- Associating: \($0.name)")
+                    astCollector.associate(sourceKit)
                 }
-                
-                astCollector.relate(sourceKit)
             }
         }
         
