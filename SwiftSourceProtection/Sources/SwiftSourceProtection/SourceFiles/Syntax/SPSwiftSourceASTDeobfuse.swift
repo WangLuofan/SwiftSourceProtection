@@ -29,6 +29,44 @@ class SPSwiftSourceASTDeobfuse: SyntaxRewriter {
         return super.visit(node.with(\.tokenKind, .identifier(originalSymbolName)))
     }
     
+    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        var originalParams: [FunctionParameterSyntax] = []
+        node.signature.parameterClause.parameters.forEach {
+            var originalParam = $0
+            if let originFirstName: String = self.confusedMap[$0.firstName.text] {
+                originalParam = originalParam.with(\.firstName, .identifier(
+                    originFirstName,
+                    leadingTrivia: $0.firstName.leadingTrivia,
+                    trailingTrivia: $0.firstName.trailingTrivia)
+                )
+            }
+            
+            if let secondName = $0.secondName,
+               let originSecondName: String = self.confusedMap[secondName.text] {
+                originalParam = originalParam.with(\.secondName, .identifier(
+                    originSecondName,
+                    leadingTrivia: secondName.leadingTrivia,
+                    trailingTrivia: secondName.trailingTrivia)
+                )
+            }
+            
+            originalParams.append(originalParam)
+        }
+        
+        let newParameters = FunctionParameterListSyntax(originalParams)
+            .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
+        let newParameterClause = node.signature.parameterClause
+            .with(\.parameters, newParameters)
+            .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+        let newNode = node.with(\.signature, node.signature
+            .with(\.parameterClause, newParameterClause)
+        )
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var originalParams: [FunctionParameterSyntax] = []
         node.signature.parameterClause.parameters.forEach {
@@ -53,15 +91,15 @@ class SPSwiftSourceASTDeobfuse: SyntaxRewriter {
             originalParams.append(originalParam)
         }
         
-        let newNode = node.with(\.signature, node.signature
-            .with(\.parameterClause, node.signature.parameterClause
-                .with(\.parameters, FunctionParameterListSyntax(originalParams)
-                    .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
-                    .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
-                )
-            )
+        let newParameters = FunctionParameterListSyntax(originalParams)
+            .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
+        let newParameterClause = node.signature.parameterClause
+            .with(\.parameters, newParameters)
             .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
             .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+        let newNode = node.with(\.signature, node.signature
+            .with(\.parameterClause, newParameterClause)
         )
         
         return super.visit(newNode)

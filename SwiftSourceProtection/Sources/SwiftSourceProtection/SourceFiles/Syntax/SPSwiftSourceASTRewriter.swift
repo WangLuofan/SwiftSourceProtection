@@ -56,13 +56,15 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             }
         }
         
+        let newParameters = FunctionParameterListSyntax(confusedParams)
+            .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
+        let newParameterClause = node.signature.parameterClause
+            .with(\.parameters, newParameters)
+            .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
         let newNode = node.with(\.signature, node.signature
-            .with(\.parameterClause, node.signature.parameterClause
-                .with(\.parameters, FunctionParameterListSyntax(confusedParams))
-                .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
-                .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia))
-                .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
-                .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+            .with(\.parameterClause, newParameterClause)
         )
         
         return super.visit(newNode)
@@ -92,13 +94,15 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             }
         }
         
+        let newParameters = FunctionParameterListSyntax(confusedParams)
+            .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
+        let newParameterClause = node.signature.parameterClause
+            .with(\.parameters, newParameters)
+            .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
         let newNode = node.with(\.signature, node.signature
-            .with(\.parameterClause, node.signature.parameterClause
-                .with(\.parameters, FunctionParameterListSyntax(confusedParams))
-                .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
-                .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia))
-                .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
-                .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+            .with(\.parameterClause, newParameterClause)
         )
         
         return super.visit(newNode)
