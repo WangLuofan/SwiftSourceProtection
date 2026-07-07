@@ -855,13 +855,7 @@ extension SPSwiftSourceASTCollector {
                   entryKind.declType() != nil || entryKind.refType() != nil else {
                 return
             }
-            
-            if let name: String = dict[sourceKit.keys.name],
-               name.contains("funn_unhandledError_funn"),
-               self.sourceFile.path.contains("cla_SecureStorage_cla") {
-                let i = 0
-            }
-            
+
             if let kind: SourceKit.DeclarationType = entryKind.declType() {
                 switch kind {
                     case .object, .protocol, .enum: do {
