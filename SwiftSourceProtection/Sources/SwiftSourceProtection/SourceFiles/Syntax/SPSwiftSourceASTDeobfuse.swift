@@ -34,22 +34,32 @@ class SPSwiftSourceASTDeobfuse: SyntaxRewriter {
         node.signature.parameterClause.parameters.forEach {
             var originalParam = $0
             if let originFirstName: String = self.confusedMap[$0.firstName.text] {
-                originalParam = originalParam.with(\.firstName, .identifier(originFirstName, leadingTrivia: $0.firstName.leadingTrivia, trailingTrivia: $0.firstName.trailingTrivia))
+                originalParam = originalParam.with(\.firstName, .identifier(
+                    originFirstName,
+                    leadingTrivia: $0.firstName.leadingTrivia,
+                    trailingTrivia: $0.firstName.trailingTrivia)
+                )
             }
             
             if let secondName = $0.secondName,
                let originSecondName: String = self.confusedMap[secondName.text] {
-                originalParam = originalParam.with(\.secondName, .identifier(originSecondName, leadingTrivia: secondName.leadingTrivia, trailingTrivia: secondName.trailingTrivia))
+                originalParam = originalParam.with(\.secondName, .identifier(
+                    originSecondName,
+                    leadingTrivia: secondName.leadingTrivia,
+                    trailingTrivia: secondName.trailingTrivia)
+                )
             }
             
             originalParams.append(originalParam)
         }
         
-        let newNode = node.with(\.signature, node.signature.with(\.parameterClause, node.signature.parameterClause.with(\.parameters, FunctionParameterListSyntax(originalParams))
-            .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
-            .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia))
-            .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
-            .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+        let newNode = node.with(\.signature, node.signature
+            .with(\.parameterClause, node.signature.parameterClause
+                .with(\.parameters, FunctionParameterListSyntax(originalParams)
+                    .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+                    .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
+                )
+            )
         )
         
         return super.visit(newNode)
