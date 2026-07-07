@@ -87,17 +87,19 @@ extension SPSwiftSourceASTPreRewriter {
     }
     
     private func shouldRelateSymbolForNode(_ node: TokenSyntax) -> Bool {
+        /// 成员访问decl不在当前处理
         if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
            memAccExpr.declName.baseName == node {
             /// memAcc.decl不处理，由后续流程处理
             return false
         }
         
+        /// tuple标签不处理
         if let _: TupleTypeSyntax = node.getParentNode() {
-            /// tuple标签不处理
             return false
         }
         
+        /// tuple标签不处理
         if let tupExpr: TupleExprSyntax = node.getParentNode() {
             for elem in tupExpr.elements {
                 if elem.label == node {
@@ -106,6 +108,7 @@ extension SPSwiftSourceASTPreRewriter {
             }
         }
         
+        // 方法调用单独处理
         if let callExpr: FunctionCallExprSyntax = node.getParentNode() {
             for arg in callExpr.arguments {
                 if arg.label == node {
@@ -114,6 +117,7 @@ extension SPSwiftSourceASTPreRewriter {
             }
         }
         
+        /// Catch语句隐含的error变量
         if let _: CatchClauseSyntax = node.getParentNode(),
            node.text == "error",
            let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile) {
