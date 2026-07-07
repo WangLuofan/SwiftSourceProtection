@@ -60,7 +60,8 @@ class SPSourceProtection {
                 let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(
                     sourceTree: sourceTree,
                     sourceFile: $0,
-                    module: module
+                    module: module,
+                    confusedMap: confusedMap
                 )
                 let scope: SPSwiftSourceScope = astCollector.walk()
                 
