@@ -66,10 +66,12 @@ class ConfuseHelper {
             return symbol
         }
         
+        if let confusedMap {
+            return confusedMap[symbol] ?? symbol
+        }
+        
         if let confusedSymbolName: String = self.confusedTable[symbol] {
             return confusedSymbolName
-        } else if let confusedMap {
-            return confusedMap[symbol] ?? symbol
         }
         
         let lowercase: String = "abcdefghijklmnopqrstuvwxyz"
