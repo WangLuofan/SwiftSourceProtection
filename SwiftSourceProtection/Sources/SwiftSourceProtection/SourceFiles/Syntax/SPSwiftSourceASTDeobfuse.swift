@@ -60,6 +60,8 @@ class SPSwiftSourceASTDeobfuse: SyntaxRewriter {
                     .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia)
                 )
             )
+            .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
+            .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
         )
         
         return super.visit(newNode)
