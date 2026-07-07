@@ -72,7 +72,7 @@ struct SPObfuseParser: ParsableCommand {
             shuffle: self.shuffle
         )
         
-        let ssp: SPSourceProtection = SPSourceProtection(obfuse: true, argument: argument)
+        let ssp: SPSourceProtection = SPSourceProtection(argument: argument)
         ssp.run()
     }
 }
@@ -97,7 +97,7 @@ struct SPDeobfuseParser: ParsableCommand {
             confusedMap: self.map
         )
         
-        let ssp: SPSourceProtection = SPSourceProtection(obfuse: false, argument: argument)
+        let ssp: SPSourceProtection = SPSourceProtection(argument: argument)
         ssp.run()
     }
 }

@@ -15,10 +15,8 @@ class SPSourceProtection {
     private var schemeInfoProvider: SPSchemeInfoProvider
     private var projectPath: String
     private var argument: SPArgumentProtocol
-    private var obfuse: Bool
     
-    init(obfuse: Bool, argument: SPArgumentProtocol) {
-        self.obfuse = obfuse
+    init(argument: SPArgumentProtocol) {
         self.argument = argument
         self.projectPath = File(path: argument.project).directory
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
@@ -67,12 +65,10 @@ class SPSourceProtection {
                 
                 fileScopes[$0.path] = scope
                 
-                if self.obfuse {
-                    logger.log("--- Indexing: \($0.name)")
-                    astCollector.index(sourceKit, compilerArguments)
-                    
-                    astCollectors[$0.path] = astCollector
-                }
+                logger.log("--- Indexing: \($0.name)")
+                astCollector.index(sourceKit, compilerArguments)
+                
+                astCollectors[$0.path] = astCollector
             }
             
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
