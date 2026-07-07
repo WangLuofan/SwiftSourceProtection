@@ -21,7 +21,6 @@ enum NodeKind {
     case variable
     case function
     case label
-    case `enum`
     case enumCase
 }
 

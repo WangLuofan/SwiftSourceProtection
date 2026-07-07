@@ -21,6 +21,8 @@ class SPSwiftSourceSymbol {
     
     var confusedSymbolName: String?
     
+    var parent: SPSwiftSourceSymbol?
+    
     var symbolUSR: String? {
         didSet {
             if let symbolUSR {

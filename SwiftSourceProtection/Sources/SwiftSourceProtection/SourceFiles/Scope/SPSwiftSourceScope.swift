@@ -81,16 +81,4 @@ class SPSwiftSourceScope {
         
         return nil
     }
-    
-    func findSymbolInCurrentScope(_ symbolName: String, _ nodeKind: NodeKind? = nil) -> SPSwiftSourceSymbol? {
-        for (key, value) in self.symbols {
-            if key == symbolName {
-                if nodeKind == nil || nodeKind == value.nodeKind {
-                    return value
-                }
-            }
-        }
-        
-        return nil
-    }
 }

@@ -56,6 +56,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         symbol.attrsName = self.attributes(node.attributes)
         
+        symbol.parent = self.parentStack.last
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
@@ -82,6 +83,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         symbol.attrsName = self.attributes(node.attributes)
         
+        symbol.parent = self.parentStack.last
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
@@ -108,6 +110,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         symbol.attrsName = self.attributes(node.attributes)
         
+        symbol.parent = self.parentStack.last
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
@@ -132,7 +135,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(
             sourceFile: self.sourceFile,
             symbolScope: node.symbolScope,
-            nodeKind: .enum,
+            nodeKind: .class,
             sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia)
         )
         
@@ -140,6 +143,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         symbol.attrsName = self.attributes(node.attributes)
         
+        symbol.parent = self.parentStack.last
         self.parentStack.last?.children.append(symbol)
         self.parentStack.append(symbol)
         
@@ -202,6 +206,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             clsSymbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         }
         
+        clsSymbol.parent = self.parentStack.last
         self.extensions.append(clsSymbol)
         self.parentStack.append(clsSymbol)
         
@@ -230,27 +235,27 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         node.modifiers.forEach { modifier in
             if let declModifierSyntax: DeclModifierSyntax = modifier.as(DeclModifierSyntax.self) {
                 switch declModifierSyntax.name.tokenKind {
-                case .keyword(let keyword):
-                    switch keyword {
-                    case .static:
-                        symbols.forEach { $0.isStaticSymbol = true }
-                    case .open:
-                        symbols.forEach { $0.accessLevel = .open }
-                    case .public:
-                        symbols.forEach { $0.accessLevel = .public }
-                    case .package:
-                        symbols.forEach { $0.accessLevel = .package }
-                    case .internal:
-                        symbols.forEach { $0.accessLevel = .internal }
-                    case .fileprivate:
-                        symbols.forEach { $0.accessLevel = .fileprivate }
-                    case .private:
-                        symbols.forEach { $0.accessLevel = .private }
+                    case .keyword(let keyword):
+                        switch keyword {
+                            case .static:
+                                symbols.forEach { $0.isStaticSymbol = true }
+                            case .open:
+                                symbols.forEach { $0.accessLevel = .open }
+                            case .public:
+                                symbols.forEach { $0.accessLevel = .public }
+                            case .package:
+                                symbols.forEach { $0.accessLevel = .package }
+                            case .internal:
+                                symbols.forEach { $0.accessLevel = .internal }
+                            case .fileprivate:
+                                symbols.forEach { $0.accessLevel = .fileprivate }
+                            case .private:
+                                symbols.forEach { $0.accessLevel = .private }
+                            default:
+                                break
+                        }
                     default:
                         break
-                    }
-                default:
-                    break
                 }
             }
         }
@@ -259,6 +264,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             if $0.symbolScope == .local {
                 $0.confusedSymbolName = ConfuseHelper.confusedSymbolName($0.originalSymbolName)
             } else if $0.symbolScope == .member {
+                $0.parent = self.parentStack.last
                 self.parentStack.last?.children.append($0)
             }
             
@@ -364,27 +370,27 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         node.modifiers.forEach { modifier in
             if let declModifierSyntax: DeclModifierSyntax = modifier.as(DeclModifierSyntax.self) {
                 switch declModifierSyntax.name.tokenKind {
-                case .keyword(let keyword):
-                    switch keyword {
-                    case .static:
-                        symbol.isStaticSymbol = true
-                    case .open:
-                        symbol.accessLevel = .open
-                    case .public:
-                        symbol.accessLevel = .public
-                    case .package:
-                        symbol.accessLevel = .package
-                    case .internal:
-                        symbol.accessLevel = .internal
-                    case .fileprivate:
-                        symbol.accessLevel = .fileprivate
-                    case .private:
-                        symbol.accessLevel = .private
+                    case .keyword(let keyword):
+                        switch keyword {
+                            case .static:
+                                symbol.isStaticSymbol = true
+                            case .open:
+                                symbol.accessLevel = .open
+                            case .public:
+                                symbol.accessLevel = .public
+                            case .package:
+                                symbol.accessLevel = .package
+                            case .internal:
+                                symbol.accessLevel = .internal
+                            case .fileprivate:
+                                symbol.accessLevel = .fileprivate
+                            case .private:
+                                symbol.accessLevel = .private
+                            default:
+                                break
+                        }
                     default:
                         break
-                    }
-                default:
-                    break
                 }
             }
         }
@@ -392,6 +398,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         if symbol.symbolScope == .local {
             ConfuseHelper.confuseSymbol(symbol)
         } else if symbol.symbolScope == .member {
+            symbol.parent = self.parentStack.last
             self.parentStack.last?.children.append(symbol)
         }
         
@@ -422,33 +429,34 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         node.modifiers.forEach { modifier in
             if let declModifierSyntax: DeclModifierSyntax = modifier.as(DeclModifierSyntax.self) {
                 switch declModifierSyntax.name.tokenKind {
-                case .keyword(let keyword):
-                    switch keyword {
-                    case .static:
-                        symbol.isStaticSymbol = true
-                    case .open:
-                        symbol.accessLevel = .open
-                    case .public:
-                        symbol.accessLevel = .public
-                    case .package:
-                        symbol.accessLevel = .package
-                    case .internal:
-                        symbol.accessLevel = .internal
-                    case .fileprivate:
-                        symbol.accessLevel = .fileprivate
-                    case .private:
-                        symbol.accessLevel = .private
+                    case .keyword(let keyword):
+                        switch keyword {
+                            case .static:
+                                symbol.isStaticSymbol = true
+                            case .open:
+                                symbol.accessLevel = .open
+                            case .public:
+                                symbol.accessLevel = .public
+                            case .package:
+                                symbol.accessLevel = .package
+                            case .internal:
+                                symbol.accessLevel = .internal
+                            case .fileprivate:
+                                symbol.accessLevel = .fileprivate
+                            case .private:
+                                symbol.accessLevel = .private
+                            default:
+                                break
+                        }
                     default:
                         break
-                    }
-                default:
-                    break
                 }
             }
         }
         
         ConfuseHelper.confuseSymbol(symbol)
         if symbol.symbolScope == .member || symbol.symbolScope == .global {
+            symbol.parent = self.parentStack.last
             self.parentStack.last?.children.append(symbol)
         }
         
@@ -498,7 +506,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                     varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName($0)
                     
                     self.currentScope.pushSymbol(varSymbol)
-               }
+                }
             } else if let matchPatternCondSyntax: MatchingPatternConditionSyntax = $0.condition.as(MatchingPatternConditionSyntax.self) {
                 let symbols: [String] = self.extractPatternNames(matchPatternCondSyntax.pattern)
                 symbols.forEach {
@@ -694,35 +702,35 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
         switch node.accessorSpecifier.tokenKind {
-        case .keyword(.set), .keyword(.willSet), .keyword(.didSet):
-            if let _ = node.body {
-                self.currentScope = self.currentScope.pushScope()
-                
-                if let parameters = node.parameters {
-                    let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(
-                        sourceFile: self.sourceFile,
-                        symbolScope: .local,
-                        sourceLocation: self
-                            .locationConverter
-                            .location(for: parameters.name.positionAfterSkippingLeadingTrivia)
-                    )
-                    varSymbol.originalSymbolName = parameters.name.text
-                    varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(parameters.name.text)
+            case .keyword(.set), .keyword(.willSet), .keyword(.didSet):
+                if let _ = node.body {
+                    self.currentScope = self.currentScope.pushScope()
                     
-                    self.currentScope.pushSymbol(varSymbol)
+                    if let parameters = node.parameters {
+                        let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(
+                            sourceFile: self.sourceFile,
+                            symbolScope: .local,
+                            sourceLocation: self
+                                .locationConverter
+                                .location(for: parameters.name.positionAfterSkippingLeadingTrivia)
+                        )
+                        varSymbol.originalSymbolName = parameters.name.text
+                        varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(parameters.name.text)
+                        
+                        self.currentScope.pushSymbol(varSymbol)
+                    }
+                    
+                    IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
                 }
-                
-                IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
-            }
-            break
-        case .keyword(.get):
-            if let _ = node.body {
-                self.currentScope = self.currentScope.pushScope()
-                IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
-            }
-            break
-        default:
-            break
+                break
+            case .keyword(.get):
+                if let _ = node.body {
+                    self.currentScope = self.currentScope.pushScope()
+                    IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
+                }
+                break
+            default:
+                break
         }
         
         return super.visit(node)
@@ -730,18 +738,18 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visitPost(_ node: AccessorDeclSyntax) {
         switch node.accessorSpecifier.tokenKind {
-        case .keyword(.set), .keyword(.willSet), .keyword(.didSet):
-            if let _ = node.body {
-                self.currentScope = self.currentScope.popScope()
-            }
-            break
-        case .keyword(.get):
-            if let _ = node.body {
-                self.currentScope = self.currentScope.popScope()
-            }
-            break
-        default:
-            break
+            case .keyword(.set), .keyword(.willSet), .keyword(.didSet):
+                if let _ = node.body {
+                    self.currentScope = self.currentScope.popScope()
+                }
+                break
+            case .keyword(.get):
+                if let _ = node.body {
+                    self.currentScope = self.currentScope.popScope()
+                }
+                break
+            default:
+                break
         }
     }
 }
@@ -750,8 +758,12 @@ extension SPSwiftSourceASTCollector {
     func walk() -> SPSwiftSourceScope {
         self.walk(self.sourceTree)
         
-        IndexStore.indexStore.set(nodeID: self.sourceTree.id.indexInTree.toOpaque(), self.topScope, inFile:
-          self.sourceFile)
+        IndexStore.indexStore.set(
+            nodeID: self.sourceTree.id.indexInTree.toOpaque(),
+            self.topScope,
+            inFile:self.sourceFile
+        )
+        
         return self.topScope
     }
     
@@ -765,10 +777,10 @@ extension SPSwiftSourceASTCollector {
         } else if let exprPatternSyntax: ExpressionPatternSyntax = pattern.as(ExpressionPatternSyntax.self) {
             return extractPatternNames(fromExpr: exprPatternSyntax.expression)
         }
-
+        
         return []
     }
-
+    
     private func extractPatternNames(fromExpr expr: ExprSyntax) -> [String] {
         if let patternExprSyntax: PatternExprSyntax = expr.as(PatternExprSyntax.self) {
             return extractPatternNames(patternExprSyntax.pattern)
@@ -779,7 +791,7 @@ extension SPSwiftSourceASTCollector {
         } else if let seqExprSyntax: SequenceExprSyntax = expr.as(SequenceExprSyntax.self) {
             return seqExprSyntax.elements.flatMap { self.extractPatternNames(fromExpr: $0) }
         }
-
+        
         return []
     }
     
@@ -835,145 +847,79 @@ extension SPSwiftSourceASTCollector {
         
         resp.recurseEntities { (dict: SKResponseDictionary) in
             
-            guard let entryKind: SKUID = dict[sourceKit.keys.kind],
+            guard let line: Int = dict[sourceKit.keys.line],
+                  let column: Int = dict[sourceKit.keys.column],
+                let entryKind: SKUID = dict[sourceKit.keys.kind],
                   entryKind.declType() != nil || entryKind.refType() != nil else {
                 return
             }
             
             if let kind: SourceKit.DeclarationType = entryKind.declType() {
                 switch kind {
-                case .object, .protocol, .enum: do {
-                    if let name: String = dict[sourceKit.keys.name],
-                       let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(name) as? SPSwiftSourceClassSymbol {
-                        clsSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                    }
-                }
-                    break
-                case .property: do {
-                    guard let name: String = dict[sourceKit.keys.name] else { break }
-                    
-                    var varSymbol: SPSwiftSourceVariableSymbol?
-                    if let parentName: String = dict.parent[sourceKit.keys.name],
-                       let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as? SPSwiftSourceClassSymbol {
-                        if !parentSymbol.isInheritedFromCodableOrCodingKey {
-                            for child in parentSymbol.children {
-                                if child.originalSymbolName == name && child.nodeKind == .variable {
-                                    varSymbol = child as? SPSwiftSourceVariableSymbol
-                                    break
-                                }
-                            }
-                        }
-                    } else {
-                        if let line: Int = dict[sourceKit.keys.line],
-                           let col: Int = dict[sourceKit.keys.column],
-                           let symbols: [SPSwiftSourceSymbol] = IndexStore.indexStore.getSymbol(line: line, col: col, inFile: self.sourceFile) {
-                            for symbol in symbols {
-                                if symbol.originalSymbolName == name && symbol.nodeKind == .variable {
-                                    varSymbol = symbol as? SPSwiftSourceVariableSymbol
-                                    break
-                                }
-                            }
+                    case .object, .protocol, .enum: do {
+                        if let name: String = dict[sourceKit.keys.name],
+                           let clsSymbol: SPSwiftSourceClassSymbol = self.matchSymbol(line, column, name, .class) as? SPSwiftSourceClassSymbol {
+                            clsSymbol.symbolUSR = dict[sourceKit.keys.usr]
                         }
                     }
-                    
-                    guard let varSymbol else { break }
-                    varSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                    
-                    if !self.inheritedFromAnyExternal(sourceKit, dict) {
-                        varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(varSymbol.originalSymbolName)
-                    }
-                }
-                    break
-                case .method: do {
-                    guard let fullName: String = dict[sourceKit.keys.name],
-                          let line: Int = dict[sourceKit.keys.line],
-                          let column: Int = dict[sourceKit.keys.column] else {
                         break
-                    }
-                    
-                    var funcSymbol: SPSwiftSourceFunctionSymbol?
-                    if let parentName: String = dict.parent[sourceKit.keys.name],
-                       let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                        SPSwiftSourceClassSymbol {
-                        
-                        if parentSymbol.attrsName.contains(.resultBuilder),
-                           ResultBuilderMethod.isResultBuilderMethod(fullName) {
+                    case .property: do {
+                        guard let name: String = dict[sourceKit.keys.name],
+                              let varSymbol: SPSwiftSourceVariableSymbol = self.matchSymbol(line, column, name, .variable) as? SPSwiftSourceVariableSymbol,
+                              let parentSymbol: SPSwiftSourceClassSymbol = varSymbol.parent as? SPSwiftSourceClassSymbol,
+                              !parentSymbol.isInheritedFromCodableOrCodingKey else {
                             break
                         }
                         
-                        for child in parentSymbol.children {
-                            guard let fSymbol: SPSwiftSourceFunctionSymbol = child as? SPSwiftSourceFunctionSymbol else {
-                                continue
-                            }
-                            
-                            if fSymbol.signature == fullName,
-                                child.nodeKind == .function,
-                                fSymbol.sourceLocation.line == line,
-                                fSymbol.sourceLocation.column == column
-                            {
-                                funcSymbol = fSymbol
-                                break
-                            }
-                        }
-                    } else {
-                        if let symbols: [SPSwiftSourceSymbol] = IndexStore.indexStore.getSymbol(line: line, col: column, inFile: self.sourceFile) {
-                            for symbol in symbols {
-                                guard let symbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol else {
-                                    continue
-                                }
-                                
-                                if symbol.signature == fullName && symbol.nodeKind == .function {
-                                    funcSymbol = symbol
-                                    break
-                                }
-                            }
+                        varSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                        
+                        if !self.inheritedFromAnyExternal(sourceKit, dict) {
+                            varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(varSymbol.originalSymbolName)
                         }
                     }
-                    
-                    guard let funcSymbol else { break }
-                    funcSymbol.symbolUSR = dict[sourceKit.keys.usr]
-                    
-                    if !self.inheritedFromAnyExternal(sourceKit, dict) {
-                        funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
-                        for (index, label) in funcSymbol.labels.enumerated() {
-                            let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
-                            funcSymbol.confusedLabels[index] = confusedLabel
+                        break
+                    case .method: do {
+                        guard let fullName: String = dict[sourceKit.keys.name],
+                              let line: Int = dict[sourceKit.keys.line],
+                              let column: Int = dict[sourceKit.keys.column],
+                              let funcSymbol: SPSwiftSourceFunctionSymbol = self.matchSymbol(line, column, fullName, .function) as? SPSwiftSourceFunctionSymbol else {
+                            break
                         }
                         
-                        for (index, argument) in funcSymbol.arguments.enumerated() {
-                            if argument.confusedSymbolName == nil {
-                                funcSymbol.arguments[index].confusedSymbolName = funcSymbol.confusedLabels[index]
-                            }
-                        }
-                    }
-                }
-                    break
-                case .enumelement: do {
-                    guard let fullName: String = dict[sourceKit.keys.name],
-                          let parentName: String = dict.parent[sourceKit.keys.name],
-                          let parentSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolInCurrentScope(parentName) as?
-                            SPSwiftSourceClassSymbol,
-                          parentSymbol.isInheritedFromCodableOrCodingKey == false else {
-                        break
-                    }
-                    
-                    for child in parentSymbol.children {
-                        if child.nodeKind == .enumCase,
-                           let enumCaseSymbol: SPSwiftSourceEnumCaseSymbol = child as? SPSwiftSourceEnumCaseSymbol,
-                           enumCaseSymbol.signature == fullName {
-                            child.symbolUSR = dict[sourceKit.keys.usr]
-                            child.confusedSymbolName = ConfuseHelper.confusedSymbolName(child.originalSymbolName)
-                            
-                            for (index, label) in enumCaseSymbol.labels.enumerated() {
+                        funcSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                        
+                        if !self.inheritedFromAnyExternal(sourceKit, dict) {
+                            funcSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(funcSymbol.originalSymbolName)
+                            for (index, label) in funcSymbol.labels.enumerated() {
                                 let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
-                                enumCaseSymbol.confusedLabels[index] = confusedLabel
+                                funcSymbol.confusedLabels[index] = confusedLabel
                             }
                             
-                            break
+                            for (index, argument) in funcSymbol.arguments.enumerated() {
+                                if argument.confusedSymbolName == nil {
+                                    funcSymbol.arguments[index].confusedSymbolName = funcSymbol.confusedLabels[index]
+                                }
+                            }
                         }
                     }
-                }
-                    break
+                        break
+                    case .enumelement: do {
+                        guard let fullName: String = dict[sourceKit.keys.name],
+                              let enumCaseSymbol: SPSwiftSourceEnumCaseSymbol = self.matchSymbol(line, column, fullName, .enumCase) as? SPSwiftSourceEnumCaseSymbol,
+                              let parentSymbol: SPSwiftSourceClassSymbol = enumCaseSymbol.parent as? SPSwiftSourceClassSymbol,
+                              !parentSymbol.isInheritedFromCodableOrCodingKey else {
+                            break
+                        }
+                        
+                        enumCaseSymbol.symbolUSR = dict[sourceKit.keys.usr]
+                        enumCaseSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(enumCaseSymbol.originalSymbolName)
+                        
+                        for (index, label) in enumCaseSymbol.labels.enumerated() {
+                            let confusedLabel: String = ConfuseHelper.confusedSymbolName(label)
+                            enumCaseSymbol.confusedLabels[index] = confusedLabel
+                        }
+                    }
+                        break
                 }
             }
         }
@@ -1042,5 +988,24 @@ extension SPSwiftSourceASTCollector {
         }
         
         return isInherited
+    }
+    
+    private func matchSymbol(
+        _ line: Int,
+        _ column: Int,
+        _ symbolName: String,
+        _ nodeKind: NodeKind) -> SPSwiftSourceSymbol?
+    {
+        guard let symbols: [SPSwiftSourceSymbol] = IndexStore.indexStore.getSymbol(line: line, col: column, inFile: self.sourceFile) else {
+            return nil
+        }
+        
+        for symbol in symbols {
+            if symbol.originalSymbolName == symbolName, symbol.nodeKind == nodeKind {
+                return symbol
+            }
+        }
+        
+        return nil
     }
 }
