@@ -13,7 +13,7 @@ class ConfuseHelper {
     nonisolated(unsafe) private static var confusedTable: [String: String] = [String: String]()
     nonisolated(unsafe) private static var reversedTable: [String: String] = [String: String]()
     
-    static func confuseSymbol(_ symbol: SPSwiftSourceSymbol) {
+    static func confuseSymbol(_ symbol: SPSwiftSourceSymbol, confusedMap: [String: String]?) {
         guard !symbol.originalSymbolName.isEmpty,
               self.shouldConfuseSymbol(symbol) else {
             return
@@ -21,13 +21,13 @@ class ConfuseHelper {
         
         if symbol.nodeKind == .function || symbol.nodeKind == .enumCase,
            let funcSymbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol {
-            funcSymbol.confusedSymbolName = self.confusedSymbolName(funcSymbol.originalSymbolName)
+            funcSymbol.confusedSymbolName = self.confusedSymbolName(funcSymbol.originalSymbolName, confusedMap: confusedMap)
             for (index, label) in funcSymbol.labels.enumerated() {
-                let confusedLabel: String = self.confusedSymbolName(label)
+                let confusedLabel: String = self.confusedSymbolName(label, confusedMap: confusedMap)
                 funcSymbol.confusedLabels[index] = confusedLabel
             }
         } else {
-            symbol.confusedSymbolName = self.confusedSymbolName(symbol.originalSymbolName)
+            symbol.confusedSymbolName = self.confusedSymbolName(symbol.originalSymbolName, confusedMap: confusedMap)
         }
         
     }
@@ -61,12 +61,14 @@ class ConfuseHelper {
         return false
     }
 
-    static func confusedSymbolName(_ symbol: String, minLength: Int = 1, maxLength: Int = 31) -> String {
+    static func confusedSymbolName(_ symbol: String, confusedMap: [String: String]?, minLength: Int = 1, maxLength: Int = 31) -> String {
         if symbol.isSwiftKeyWord {
             return symbol
         }
         
         if let confusedSymbolName: String = self.confusedTable[symbol] {
+            return confusedSymbolName
+        } else if let confusedSymbolName: String = confusedMap?[symbol] {
             return confusedSymbolName
         }
         
@@ -90,7 +92,7 @@ class ConfuseHelper {
         }
         
         if self.reversedTable[randomSymbolName] != nil || randomSymbolName.isSwiftKeyWord {
-            return self.confusedSymbolName(symbol)
+            return self.confusedSymbolName(symbol, confusedMap: confusedMap)
         }
         
         self.confusedTable[symbol] = randomSymbolName

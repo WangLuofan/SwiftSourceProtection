@@ -12,11 +12,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var sourceTree: SourceFileSyntax
     private var sourceFile: File
     private var relatedDict: [UInt64: SPSwiftSourceSymbol]
+    private var confusedMap: [String: String]?
     
-    init(sourceTree: SourceFileSyntax, sourceFile: File, relatedDict: [UInt64 : SPSwiftSourceSymbol]) {
+    init(
+        sourceTree: SourceFileSyntax,
+        sourceFile: File,
+        relatedDict: [UInt64 : SPSwiftSourceSymbol],
+        confusedMap: [String: String]? = nil
+    ) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
         self.relatedDict = relatedDict
+        self.confusedMap = confusedMap
         
         super.init(viewMode: .sourceAccurate)
     }
@@ -125,7 +132,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
                     return
                 }
                 
-                let confusedFistName: String = ConfuseHelper.confusedSymbolName(firstName.text)
+                let confusedFistName: String = ConfuseHelper.confusedSymbolName(firstName.text, confusedMap: self.confusedMap)
                 confusedParams.append($0.with(\.firstName, .identifier(confusedFistName, leadingTrivia: firstName.leadingTrivia, trailingTrivia: firstName.trailingTrivia)))
             }
             

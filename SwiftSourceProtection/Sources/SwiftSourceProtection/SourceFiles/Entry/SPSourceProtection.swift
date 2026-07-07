@@ -36,6 +36,13 @@ class SPSourceProtection {
         let logger: Logger = Logger()
         let sourceKit = SourceKit(logger: Logger())
         
+        var confusedMap: [String: String]? = nil
+        if let argument: SPDeObfuseArgument = self.argument as? SPDeObfuseArgument,
+           FileManager.default.fileExists(atPath: argument.confusedMap),
+           let fileData: Data = try? Data(contentsOf: URL(fileURLWithPath: argument.confusedMap)) {
+            confusedMap = try? JSONSerialization.jsonObject(with: fileData) as? [String: String]
+        }
+        
         for module in modules {
             let compilerArguments = SKRequestArray(sourcekitd: sourceKit)
             module.compilerArguments.forEach(compilerArguments.append(_:))
@@ -50,7 +57,11 @@ class SPSourceProtection {
                 
                 sourceTrees[$0.path] = sourceTree
                 
-                let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(sourceTree: sourceTree, sourceFile: $0, module: module)
+                let astCollector: SPSwiftSourceASTCollector = SPSwiftSourceASTCollector(
+                    sourceTree: sourceTree,
+                    sourceFile: $0,
+                    module: module
+                )
                 let scope: SPSwiftSourceScope = astCollector.walk()
                 
                 fileScopes[$0.path] = scope
@@ -63,69 +74,14 @@ class SPSourceProtection {
                 }
             }
             
-            if self.obfuse {
-                module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                    guard let astCollector: SPSwiftSourceASTCollector = astCollectors[$0.path] else {
-                        return
-                    }
-                    
-                    logger.log("--- Associating: \($0.name)")
-                    astCollector.associate(sourceKit)
-                }
-            }
-        }
-        
-        if self.obfuse {
-            self.runObfuse(
-                modules: modules,
-                sourceTrees: sourceTrees,
-                sourceKit: sourceKit,
-                fileScopes: fileScopes
-            )
-        } else {
-            self.runDeobfuse(
-                modules: modules,
-                sourceTrees: sourceTrees,
-                sourceKit: sourceKit
-            )
-        }
-    }
-    
-    private func runDeobfuse(modules: [Module], sourceTrees: [String: SourceFileSyntax], sourceKit: SourceKit) {
-        guard let argument: SPDeObfuseArgument = self.argument as? SPDeObfuseArgument,
-              FileManager.default.fileExists(atPath: argument.confusedMap),
-              let fileData: Data = try? Data(contentsOf: URL(fileURLWithPath: argument.confusedMap)),
-              let confusedMap: [String: String] = try? JSONSerialization.jsonObject(with: fileData) as? [String: String] else {
-            return
-        }
-        
-        for module in modules {
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                sourceKit.logger?.log("--- Deobfuse: \($0.name)")
-                
-                guard let sourceTree: SourceFileSyntax = sourceTrees[$0.path] else {
+                guard let astCollector: SPSwiftSourceASTCollector = astCollectors[$0.path] else {
                     return
                 }
                 
-                let deobfuse: SPSwiftSourceASTDeobfuse = SPSwiftSourceASTDeobfuse(
-                    sourceTree: sourceTree,
-                    sourceFile: $0,
-                    confusedMap: confusedMap
-                )
-                
-                let finalSyntax = deobfuse.deobfuse()
-                if !argument.dryRun {
-                    try? finalSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
-                } else {
-                    print(finalSyntax.description)
-                }
+                logger.log("--- Associating: \($0.name)")
+                astCollector.associate(sourceKit)
             }
-        }
-    }
-    
-    private func runObfuse(modules: [Module], sourceTrees: [String: SourceFileSyntax], sourceKit: SourceKit, fileScopes: [String: SPSwiftSourceScope]) {
-        guard let argument: SPObfuseArgument = self.argument as? SPObfuseArgument else {
-            return
         }
         
         for module in modules {
@@ -151,11 +107,13 @@ class SPSourceProtection {
                 let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(
                     sourceTree: sourceTree,
                     sourceFile: $0,
-                    relatedDict: relatedDict
+                    relatedDict: relatedDict,
+                    confusedMap: confusedMap
                 )
                 var finalSyntax: SourceFileSyntax = rewriter.rewrite()
                 
-                if argument.shuffle {
+                if let argument: SPObfuseArgument = self.argument as? SPObfuseArgument,
+                    argument.shuffle {
                     let shuffler: SPSwiftSourceASTShuffler = SPSwiftSourceASTShuffler(
                         sourceTree: finalSyntax,
                         sourceFile: $0
@@ -165,7 +123,7 @@ class SPSourceProtection {
                     finalSyntax = shuffler.shuffle()
                 }
                 
-                if !argument.dryRun {
+                if !self.argument.dryRun {
                     try? finalSyntax.description.write(toFile: $0.path, atomically: true, encoding: .utf8)
                 } else {
                     print(finalSyntax.description)
@@ -173,7 +131,9 @@ class SPSourceProtection {
             }
         }
         
-        sourceKit.logger?.log("--- Dumping Confused Table")
-        ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.json")
+        if let _: SPObfuseArgument = self.argument as? SPObfuseArgument {
+            sourceKit.logger?.log("--- Dumping Confused Table")
+            ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.json")
+        }
     }
 }
