@@ -40,6 +40,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
         self.extensions.forEach {
             if let clsSymbol: SPSwiftSourceClassSymbol = self.topScope.findSymbolWithSymbolName($0.originalSymbolName) as? SPSwiftSourceClassSymbol {
                 clsSymbol.isInheritedFromCodableOrCodingKey = clsSymbol.isInheritedFromCodableOrCodingKey || $0.isInheritedFromCodableOrCodingKey
+                $0.children.forEach { $0.parent = clsSymbol }
                 clsSymbol.children.append(contentsOf: $0.children)
             } else {
                 self.topScope.pushSymbol($0)
@@ -193,6 +194,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
             
             self.currentScope.pushSymbol(symbol)
             
+            symbol.parent = self.parentStack.last
             self.parentStack.last?.children.append(symbol)
         }
         
@@ -852,6 +854,12 @@ extension SPSwiftSourceASTCollector {
                 let entryKind: SKUID = dict[sourceKit.keys.kind],
                   entryKind.declType() != nil || entryKind.refType() != nil else {
                 return
+            }
+            
+            if let name: String = dict[sourceKit.keys.name],
+               name.contains("funn_unhandledError_funn"),
+               self.sourceFile.path.contains("cla_SecureStorage_cla") {
+                let i = 0
             }
             
             if let kind: SourceKit.DeclarationType = entryKind.declType() {
