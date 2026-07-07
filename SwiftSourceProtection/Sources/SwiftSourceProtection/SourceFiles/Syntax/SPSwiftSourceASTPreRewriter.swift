@@ -51,7 +51,7 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
            let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text) {
             if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
                memAccExpr.declName.baseName == node {
-                /// memAcc的decl不处理
+                /// memAcc.decl不处理，由后续流程处理
                 return super.visit(node)
             } else if let _: TupleTypeSyntax = node.getParentNode() {
                 /// tuple标签不处理

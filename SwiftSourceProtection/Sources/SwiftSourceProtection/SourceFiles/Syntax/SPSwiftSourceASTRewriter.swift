@@ -32,6 +32,42 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(node.with(\.tokenKind, .identifier(confusedSymbolName)))
     }
     
+    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        let signature = ConfuseHelper.generateSignature(funcName: node.initKeyword.text, parameters: node.signature.parameterClause.parameters)
+        
+        guard let scope = IndexStore.indexStore.scope(nodeID: node.id.indexInTree.toOpaque(), inFile: self.sourceFile),
+           let funcSymbol: SPSwiftSourceFunctionSymbol = scope.findSymbolWithSymbolName(signature) as? SPSwiftSourceFunctionSymbol else {
+            return super.visit(node)
+        }
+        
+        var confusedParams: [FunctionParameterSyntax] = []
+        node.signature.parameterClause.parameters.forEach {
+            for (index, label) in funcSymbol.labels.enumerated() {
+                if label == $0.firstName.text {
+                    confusedParams.append($0
+                        .with(\.firstName, .identifier(
+                            funcSymbol.confusedLabels[index],
+                            leadingTrivia: $0.firstName.leadingTrivia,
+                            trailingTrivia: $0.firstName.trailingTrivia)
+                        )
+                    )
+                    break
+                }
+            }
+        }
+        
+        let newNode = node.with(\.signature, node.signature
+            .with(\.parameterClause, node.signature.parameterClause
+                .with(\.parameters, FunctionParameterListSyntax(confusedParams))
+                .with(\.leadingTrivia, node.signature.parameterClause.parameters.leadingTrivia)
+                .with(\.trailingTrivia, node.signature.parameterClause.parameters.trailingTrivia))
+                .with(\.leadingTrivia, node.signature.parameterClause.leadingTrivia)
+                .with(\.trailingTrivia, node.signature.parameterClause.trailingTrivia)
+        )
+        
+        return super.visit(newNode)
+    }
+    
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         let signature = ConfuseHelper.generateSignature(funcName: node.name.text, parameters: node.signature.parameterClause.parameters)
         
