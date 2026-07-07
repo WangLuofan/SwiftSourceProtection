@@ -114,6 +114,12 @@ extension SPSwiftSourceASTPreRewriter {
             }
         }
         
+        if let _: CatchClauseSyntax = node.getParentNode(),
+           node.text == "error",
+           let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile) {
+            return (scopeForNode.findSymbolWithSymbolName(node.text) != nil)
+        }
+        
         return true
     }
 }

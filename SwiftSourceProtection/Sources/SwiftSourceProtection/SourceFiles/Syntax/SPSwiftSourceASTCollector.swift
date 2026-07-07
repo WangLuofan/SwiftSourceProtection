@@ -678,8 +678,23 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     
     override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
         self.currentScope = self.currentScope.pushScope()
-        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         
+        node.catchItems.forEach {
+            if let valueBindingPatternSyntax: ValueBindingPatternSyntax = $0.pattern?.as(ValueBindingPatternSyntax.self),
+               let idPatternSyntax: IdentifierPatternSyntax = valueBindingPatternSyntax.pattern.as(IdentifierPatternSyntax.self) {
+                let varSymbol: SPSwiftSourceVariableSymbol = SPSwiftSourceVariableSymbol(
+                    sourceFile: self.sourceFile,
+                    symbolScope: .local,
+                    sourceLocation: self.locationConverter.location(for: idPatternSyntax.identifier.positionAfterSkippingLeadingTrivia)
+                )
+                
+                varSymbol.originalSymbolName = idPatternSyntax.identifier.text
+                varSymbol.confusedSymbolName = ConfuseHelper.confusedSymbolName(idPatternSyntax.identifier.text)
+                self.currentScope.pushSymbol(varSymbol)
+            }
+        }
+        
+        IndexStore.indexStore.set(nodeID: node.id.indexInTree.toOpaque(), self.currentScope, inFile: self.sourceFile)
         return super.visit(node)
     }
     
