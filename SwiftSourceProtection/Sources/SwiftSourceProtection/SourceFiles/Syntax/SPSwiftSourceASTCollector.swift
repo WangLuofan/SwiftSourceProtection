@@ -882,6 +882,7 @@ extension SPSwiftSourceASTCollector {
                         break
                     case .method: do {
                         guard let fullName: String = dict[sourceKit.keys.name],
+                              !ResultBuilderMethod.isResultBuilderMethod(fullName),
                               let line: Int = dict[sourceKit.keys.line],
                               let column: Int = dict[sourceKit.keys.column],
                               let funcSymbol: SPSwiftSourceFunctionSymbol = self.matchSymbol(line, column, fullName, .function) as? SPSwiftSourceFunctionSymbol else {

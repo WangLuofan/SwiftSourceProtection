@@ -56,7 +56,14 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
             } else if let _: TupleTypeSyntax = node.getParentNode() {
                 /// tuple标签不处理
                 return super.visit(node)
-            } else if let tupExpr: TupleExprSyntax = node.getParentNode() {
+            } else if let callExpr: FunctionCallExprSyntax = node.getParentNode() {
+                for arg in callExpr.arguments {
+                    if arg.label == node {
+                        return super.visit(node)
+                    }
+                }
+            }
+            else if let tupExpr: TupleExprSyntax = node.getParentNode() {
                 for elem in tupExpr.elements {
                     if elem.label == node {
                         return super.visit(node)
