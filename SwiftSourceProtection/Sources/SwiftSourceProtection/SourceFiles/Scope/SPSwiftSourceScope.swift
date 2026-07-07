@@ -64,7 +64,7 @@ class SPSwiftSourceScope {
         return nil
     }
     
-    func findSymbolWithSymbolName(_ symbolName: String) -> SPSwiftSourceSymbol? {
+    func findSymbolWithSymbolName(_ symbolName: String, inCurrentScope: Bool = false) -> SPSwiftSourceSymbol? {
         var curScope: SPSwiftSourceScope? = self
         
         while curScope != nil {
@@ -74,6 +74,10 @@ class SPSwiftSourceScope {
                         return symbol
                     }
                 }
+            }
+            
+            if inCurrentScope {
+                break
             }
             
             curScope = curScope?.prevScope
