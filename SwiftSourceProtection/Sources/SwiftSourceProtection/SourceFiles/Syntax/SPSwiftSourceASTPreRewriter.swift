@@ -48,29 +48,8 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
                 SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
             }
         } else if let scopeForNode: SPSwiftSourceScope = IndexStore.indexStore.scope(token: node, inFile: self.sourceFile),
-           let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text) {
-            if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
-               memAccExpr.declName.baseName == node {
-                /// memAcc.decl不处理，由后续流程处理
-                return super.visit(node)
-            } else if let _: TupleTypeSyntax = node.getParentNode() {
-                /// tuple标签不处理
-                return super.visit(node)
-            } else if let callExpr: FunctionCallExprSyntax = node.getParentNode() {
-                for arg in callExpr.arguments {
-                    if arg.label == node {
-                        return super.visit(node)
-                    }
-                }
-            }
-            else if let tupExpr: TupleExprSyntax = node.getParentNode() {
-                for elem in tupExpr.elements {
-                    if elem.label == node {
-                        return super.visit(node)
-                    }
-                }
-            }
-                
+                  let symbol: SPSwiftSourceSymbol = scopeForNode.findSymbolWithSymbolName(node.text),
+                  self.shouldRelateSymbolForNode(node) {
             SymbolIndexRelator.shared.set(symbol: symbol, index: node.id.indexInTree.toOpaque(), forFile: self.sourceFile)
         }
         
@@ -105,5 +84,36 @@ extension SPSwiftSourceASTPreRewriter {
         } else if let memAccExprSyntax: MemberAccessExprSyntax = calledExpression.as(MemberAccessExprSyntax.self) {
             self.relateCallExpression(memAccExprSyntax.declName)
         }
+    }
+    
+    private func shouldRelateSymbolForNode(_ node: TokenSyntax) -> Bool {
+        if let memAccExpr: MemberAccessExprSyntax = node.getParentNode(),
+           memAccExpr.declName.baseName == node {
+            /// memAcc.decl不处理，由后续流程处理
+            return false
+        }
+        
+        if let _: TupleTypeSyntax = node.getParentNode() {
+            /// tuple标签不处理
+            return false
+        }
+        
+        if let tupExpr: TupleExprSyntax = node.getParentNode() {
+            for elem in tupExpr.elements {
+                if elem.label == node {
+                    return false
+                }
+            }
+        }
+        
+        if let callExpr: FunctionCallExprSyntax = node.getParentNode() {
+            for arg in callExpr.arguments {
+                if arg.label == node {
+                    return false
+                }
+            }
+        }
+        
+        return true
     }
 }
