@@ -66,6 +66,9 @@ class ViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        let code = -1001
+        NSError(domain: "com.test.123", code: code, userInfo: nil)
+        
         super.viewWillAppear(animated)
     }
     

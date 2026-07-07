@@ -176,6 +176,11 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             finalFuncSymbol = funcSymbol
         }
         
+        if finalFuncSymbol?.originalSymbolName == "NSError",
+           self.sourceFile.path.contains("cla_BillingHelper_cla") {
+            let i = 0
+        }
+        
         if let finalFuncSymbol {
             var confusedArgs: [LabeledExprSyntax] = []
             node.arguments.forEach {
