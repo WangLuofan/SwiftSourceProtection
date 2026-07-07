@@ -37,8 +37,7 @@ class ConfuseHelper {
             return false
         }
         
-        if symbol.nodeKind == .class || symbol.nodeKind == .enumCase ||
-            symbol.nodeKind == .protocol || symbol.nodeKind == .struct {
+        if symbol.nodeKind == .class || symbol.nodeKind == .enumCase {
             return true
         }
         

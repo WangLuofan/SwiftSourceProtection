@@ -78,7 +78,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .struct, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .class, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         symbol.attrsName = self.attributes(node.attributes)
@@ -105,7 +105,7 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
     }
     
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .protocol, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
+        let symbol: SPSwiftSourceClassSymbol = SPSwiftSourceClassSymbol(sourceFile: self.sourceFile, symbolScope: node.symbolScope, nodeKind: .class, sourceLocation: self.locationConverter.location(for: node.name.positionAfterSkippingLeadingTrivia))
         symbol.originalSymbolName = node.name.text
         symbol.isInheritedFromCodableOrCodingKey = self.inheritedFromCodingKeyOrCodable(node.inheritanceClause)
         symbol.attrsName = self.attributes(node.attributes)
@@ -1001,7 +1001,21 @@ extension SPSwiftSourceASTCollector {
         }
         
         for symbol in symbols {
-            if symbol.originalSymbolName == symbolName, symbol.nodeKind == nodeKind {
+            if nodeKind == .class,
+               let symbol: SPSwiftSourceClassSymbol = symbol as? SPSwiftSourceClassSymbol,
+               symbol.originalSymbolName == symbolName {
+                return symbol
+            } else if nodeKind == .function,
+                      let symbol: SPSwiftSourceFunctionSymbol = symbol as? SPSwiftSourceFunctionSymbol,
+                      symbol.signature == symbolName {
+                return symbol
+            } else if nodeKind == .variable,
+                      let symbol: SPSwiftSourceVariableSymbol = symbol as? SPSwiftSourceVariableSymbol,
+                      symbol.originalSymbolName == symbolName {
+                return symbol
+            } else if nodeKind == .enumCase,
+                      let symbol: SPSwiftSourceEnumCaseSymbol = symbol as? SPSwiftSourceEnumCaseSymbol,
+                      symbol.signature == symbolName {
                 return symbol
             }
         }

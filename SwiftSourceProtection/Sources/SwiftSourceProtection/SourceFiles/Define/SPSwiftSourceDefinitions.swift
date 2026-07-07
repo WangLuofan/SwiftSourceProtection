@@ -16,11 +16,8 @@ enum AccessLevel {
 
 enum NodeKind {
     case `class`
-    case `protocol`
-    case `struct`
     case variable
     case function
-    case label
     case enumCase
 }
 
