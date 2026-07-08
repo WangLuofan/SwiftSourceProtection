@@ -23,6 +23,8 @@ class SPSourceProtection {
     }
     
     func run() {
+//        SPSwiftSourceASTBuilder().build()
+        
         guard let modules: [Module] = self.schemeInfoProvider.getModulesFromProject() else {
             return
         }
