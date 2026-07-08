@@ -131,7 +131,7 @@ class SPSourceProtection {
         let renamer: SPSwiftSourceFileRenamer = SPSwiftSourceFileRenamer(confusedMap: confusedMap)
         for module in modules {
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                sourceKit.logger?.log("--- Renaming: \($0)")
+                sourceKit.logger?.log("--- Renaming: \($0.name)")
                 renamer.rename($0)
             }
         }

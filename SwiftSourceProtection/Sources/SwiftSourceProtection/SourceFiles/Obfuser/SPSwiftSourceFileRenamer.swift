@@ -19,12 +19,11 @@ extension SPSwiftSourceFileRenamer {
     func rename(_ sourceFile: File) {
         guard FileManager.default.fileExists(atPath: sourceFile.path),
               !sourceFile.name.isEmpty,
-              !sourceFile.directory.isEmpty else {
+              !sourceFile.directory.isEmpty,
+              let confusedFilePath: String = ((sourceFile.directory as NSString)
+                  .appendingPathComponent(ConfuseHelper.confusedSymbolName(sourceFile.nameWithoutExtension, confusedMap: self.confusedMap)) as NSString).appendingPathExtension(sourceFile.extension) else {
             return
         }
-        
-        let confusedFileName: String = ConfuseHelper.confusedSymbolName(sourceFile.name, confusedMap: self.confusedMap)
-        let confusedFilePath: String = (sourceFile.directory as NSString).appendingPathComponent(confusedFileName)
         
         do {
             try? FileManager.default.moveItem(atPath: sourceFile.path, toPath: confusedFilePath)

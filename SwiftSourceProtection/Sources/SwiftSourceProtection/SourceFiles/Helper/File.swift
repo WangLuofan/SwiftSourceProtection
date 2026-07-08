@@ -9,6 +9,14 @@ struct File: Hashable {
         (path as NSString).pathComponents.last ?? ""
     }
     
+    var nameWithoutExtension: String {
+        ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+    }
+    
+    var `extension`: String {
+        (path as NSString).pathExtension
+    }
+    
     var directory: String {
         (path as NSString).deletingLastPathComponent
     }
