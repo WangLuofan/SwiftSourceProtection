@@ -128,6 +128,14 @@ class SPSourceProtection {
             }
         }
         
+        let renamer: SPSwiftSourceFileRenamer = SPSwiftSourceFileRenamer(confusedMap: confusedMap)
+        for module in modules {
+            module.sourceFiles.sorted { $0.path < $1.path }.forEach {
+                sourceKit.logger?.log("--- Renaming: \($0)")
+                renamer.rename($0)
+            }
+        }
+        
         if let _: SPObfuseArgument = self.argument as? SPObfuseArgument {
             sourceKit.logger?.log("--- Dumping Confused Table")
             ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.json")
