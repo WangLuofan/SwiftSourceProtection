@@ -14,15 +14,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var sourceFile: File
     private var relatedDict: [UInt64: SPSwiftSourceSymbol]
     private var confusedMap: [String: String]?
+    private var encGenerated: Bool
     
     init(
         sourceTree: SourceFileSyntax,
         sourceFile: File,
+        encGenerated: Bool,
         relatedDict: [UInt64 : SPSwiftSourceSymbol],
         confusedMap: [String: String]? = nil
     ) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
+        self.encGenerated = encGenerated
         self.relatedDict = relatedDict
         self.confusedMap = confusedMap
         
@@ -279,8 +282,13 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
-        guard node.segments.count == 1,
+        guard self.encGenerated,
+              node.segments.count == 1,
               let stringSegment: StringSegmentSyntax = node.segments.first?.as(StringSegmentSyntax.self) else {
+            return super.visit(node)
+        }
+        
+        if let _: EnumCaseDeclSyntax = node.getParentNode() {
             return super.visit(node)
         }
         

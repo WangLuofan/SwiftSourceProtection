@@ -22,13 +22,16 @@ class SPSourceProtection {
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
     }
     
-    private func generateEncrypted(_ sourceFiles: Set<File>) {
+    private func generateEncrypted(_ sourceFiles: Set<File>) -> Bool {
         if let encryptedPath: String = sourceFiles.randomElement()?.directory {
             let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
             let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey("0x5A")
             
             if !FileManager.default.fileExists(atPath: fileURL.path()) {
-                FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+                if FileManager.default.createFile(atPath: fileURL.path(), contents: nil) == false {
+                    print("SourceCode Generate Error.")
+                    return false
+                }
             }
             
             do {
@@ -36,10 +39,14 @@ class SPSourceProtection {
                 try handle.seekToEnd()
                 try handle.write(contentsOf: sourceCode.formatted().description.data(using: .utf8)!)
                 try handle.close()
+                
+                return true
             } catch {
                 print("SourceCode Generate Error.: \(error.localizedDescription)")
             }
         }
+        
+        return false
     }
     
     func run() {
@@ -66,7 +73,6 @@ class SPSourceProtection {
             let compilerArguments = SKRequestArray(sourcekitd: sourceKit)
             module.compilerArguments.forEach(compilerArguments.append(_:))
             
-            self.generateEncrypted(module.sourceFiles)
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 guard let sourceCode: String = try? $0.read() else {
                     return
@@ -115,6 +121,7 @@ class SPSourceProtection {
         }
         
         for module in modules {
+            let encGenerated: Bool = self.generateEncrypted(module.sourceFiles)
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 sourceKit.logger?.log("--- Rewriting: \($0.name)")
                 
@@ -126,6 +133,7 @@ class SPSourceProtection {
                 let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(
                     sourceTree: sourceTree,
                     sourceFile: $0,
+                    encGenerated: encGenerated,
                     relatedDict: relatedDict,
                     confusedMap: confusedMap
                 )
