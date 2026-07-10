@@ -283,7 +283,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     
     override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
         guard node.segments.count == 1,
-              self.confusedMap != nil && self.encGenerated,
+              self.confusedMap != nil && self.decGenerated,
               let stringSegment: StringSegmentSyntax = node.segments.first?.as(StringSegmentSyntax.self) else {
             return super.visit(node)
         }
