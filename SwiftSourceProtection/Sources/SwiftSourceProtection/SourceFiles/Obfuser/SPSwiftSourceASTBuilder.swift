@@ -20,9 +20,13 @@ class SPSwiftSourceASTBuilder {
 //    }
     
     func buildDecryptedFunctionWithKey(_ key: String) -> SourceFileSyntax {
-        let importDeclSyntax: ImportDeclSyntax = ImportDeclSyntax(path: [
-            ImportPathComponentSyntax(name: .identifier("Foundation"), trailingTrivia: .newlines(2))
-        ])
+        let importDeclSyntax: ImportDeclSyntax = ImportDeclSyntax(
+            leadingTrivia: .newlines(2),
+            path: [
+                ImportPathComponentSyntax(name: .identifier("Foundation"))
+            ],
+            trailingTrivia: .newlines(2)
+        )
         
         let keyVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
             PatternBindingSyntax(
