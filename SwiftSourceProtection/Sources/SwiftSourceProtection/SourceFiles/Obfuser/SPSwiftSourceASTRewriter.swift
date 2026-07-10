@@ -14,18 +14,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var sourceFile: File
     private var relatedDict: [UInt64: SPSwiftSourceSymbol]
     private var confusedMap: [String: String]?
-    private var decGenerated: Bool
+    private var encryptedKey: String?
     
     init(
         sourceTree: SourceFileSyntax,
         sourceFile: File,
-        decGenerated: Bool,
+        encryptedKey: String?,
         relatedDict: [UInt64 : SPSwiftSourceSymbol],
         confusedMap: [String: String]? = nil
     ) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
-        self.decGenerated = decGenerated
+        self.encryptedKey = encryptedKey
         self.relatedDict = relatedDict
         self.confusedMap = confusedMap
         
@@ -281,9 +281,41 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         return super.visit(node)
     }
     
+    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        guard self.confusedMap != nil else {
+            return super.visit(node)
+        }
+        
+        let declName: String = ConfuseHelper.confusedSymbolName(node.declName.baseName.text, confusedMap: self.confusedMap)
+        if let arrayExprSyntax: ArrayExprSyntax = node.base?.as(ArrayExprSyntax.self),
+           declName == "decryptedString" {
+            let decryptedValue: [UInt8] = arrayExprSyntax.elements.compactMap { value -> UInt8? in
+                if let integerLiterial: IntegerLiteralExprSyntax = value.expression.as(IntegerLiteralExprSyntax.self) {
+                    return UInt8(integerLiterial.literal.text.dropFirst(2), radix: 16)
+                }
+                
+                return nil
+            }
+            
+            let decryptedString: String = decryptedValue.decryptedString
+            return ExprSyntax(StringLiteralExprSyntax(
+                leadingTrivia: node.leadingTrivia,
+                openingQuote: .stringQuoteToken(),
+                segments: [
+                    StringLiteralSegmentListSyntax.Element(StringSegmentSyntax(content: .stringSegment(decryptedString)))
+                ],
+                closingQuote: .stringQuoteToken(),
+                trailingTrivia: node.trailingTrivia
+            ))
+        }
+        
+        return super.visit(node)
+    }
+    
     override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
         guard node.segments.count == 1,
-              self.confusedMap == nil && self.decGenerated,
+              let encryptedKey,
+              let encryptedKeyBytes: UInt8 = UInt8(encryptedKey.dropFirst(2), radix: 16),
               let stringSegment: StringSegmentSyntax = node.segments.first?.as(StringSegmentSyntax.self) else {
             return super.visit(node)
         }
@@ -292,7 +324,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             return super.visit(node)
         }
 
-        let bytes: [UInt8] = stringSegment.content.text.encryptedString
+        let bytes: [UInt8] = stringSegment.content.text.encryptedString(encryptedKeyBytes)
         let arrayExpr = ArrayExprSyntax {
             for byte in bytes {
                 ArrayElementSyntax(
@@ -304,8 +336,10 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         }
         
         let memAccExpr: MemberAccessExprSyntax = MemberAccessExprSyntax(
+            leadingTrivia: node.leadingTrivia,
             base: arrayExpr,
-            name: .identifier(ConfuseHelper.confusedSymbolName("decryptedString", confusedMap: self.confusedMap))
+            name: .identifier(ConfuseHelper.confusedSymbolName("decryptedString", confusedMap: self.confusedMap)),
+            trailingTrivia: node.trailingTrivia
         )
         
         return ExprSyntax(memAccExpr)

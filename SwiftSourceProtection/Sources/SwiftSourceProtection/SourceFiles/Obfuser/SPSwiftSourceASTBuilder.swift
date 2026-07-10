@@ -9,16 +9,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 class SPSwiftSourceASTBuilder {
-//    import Foundation
-//    extension [UInt8] {
-//        var decryptedString: String {
-//            let key: UInt8 = 0x5A
-//            let decoded = self.map { $0 ^ key }
-//            
-//            return String(bytes: decoded, encoding: .utf8) ?? ""
-//        }
-//    }
-    
+
     func buildDecryptedFunctionWithKey(_ key: String) -> SourceFileSyntax {
         let importDeclSyntax: ImportDeclSyntax = ImportDeclSyntax(
             leadingTrivia: .newlines(2),
@@ -28,14 +19,6 @@ class SPSwiftSourceASTBuilder {
             trailingTrivia: .newlines(2)
         )
         
-        let keyVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
-            PatternBindingSyntax(
-                pattern: IdentifierPatternSyntax(identifier: .identifier(ConfuseHelper.confusedSymbolName("key", confusedMap: nil))),
-                typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("UInt8"))),
-                initializer: InitializerClauseSyntax(value: IntegerLiteralExprSyntax(literal: .identifier(key)))
-            )
-        ])
-        
         let decodedVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
             PatternBindingSyntax(
                 pattern: IdentifierPatternSyntax(identifier: .identifier(ConfuseHelper.confusedSymbolName("decodedString", confusedMap: nil))),
@@ -43,7 +26,15 @@ class SPSwiftSourceASTBuilder {
                 initializer: InitializerClauseSyntax(
                     value: FunctionCallExprSyntax(
                         calledExpression: MemberAccessExprSyntax(
-                            base: IdentifierExprSyntax(baseName: .identifier("self")),
+                            base: FunctionCallExprSyntax(
+                                calledExpression: MemberAccessExprSyntax(
+                                    base: DeclReferenceExprSyntax(baseName: .identifier("self")),
+                                    name: .identifier("dropFirst")
+                                ),
+                                leftParen: .leftParenToken(),
+                                arguments: [],
+                                rightParen: .rightParenToken()
+                            ),
                             name: .identifier("map")
                         ),
                         arguments: [],
@@ -57,7 +48,7 @@ class SPSwiftSourceASTBuilder {
                                     baseName: .identifier(ConfuseHelper.confusedSymbolName("key", confusedMap: nil))
                                 )
                             )
-                        })
+                        }),
                     )
                 )
             )
@@ -92,11 +83,50 @@ class SPSwiftSourceASTBuilder {
             )
         )
         
+        let ifCondSyntax: IfExprSyntax = IfExprSyntax(
+            conditions: [
+                ConditionElementSyntax(
+                    condition: ConditionElementSyntax.Condition(
+                        OptionalBindingConditionSyntax(
+                            bindingSpecifier: .keyword(.let),
+                            pattern: IdentifierPatternSyntax(
+                                identifier: .identifier(ConfuseHelper.confusedSymbolName("key", confusedMap: nil)),
+                            ),
+                            typeAnnotation: TypeAnnotationSyntax(
+                                type: IdentifierTypeSyntax(name: .identifier("UInt8"))
+                            ),
+                            initializer: InitializerClauseSyntax(
+                                value: MemberAccessExprSyntax(
+                                    base: DeclReferenceExprSyntax(baseName: .identifier("self")),
+                                    name: .identifier("first")
+                                )
+                            )
+                        )
+                    )
+                )
+            ],
+            body: CodeBlockSyntax(statements: [
+                CodeBlockItemSyntax(
+                    item: CodeBlockItemSyntax.Item(decodedVarDecl)
+                ),
+                CodeBlockItemSyntax(
+                    item: CodeBlockItemSyntax.Item(retStmt)
+                )
+            ])
+        )
+        
         let accessorBlock: AccessorBlockSyntax = AccessorBlockSyntax(
             accessors: AccessorBlockSyntax.Accessors(CodeBlockItemListSyntax(itemsBuilder: {
-                keyVarDecl
-                decodedVarDecl
-                retStmt
+                ifCondSyntax
+                ReturnStmtSyntax(
+                    leadingTrivia: .newlines(2),
+                    expression: StringLiteralExprSyntax(
+                        openingQuote: .stringQuoteToken(),
+                        content: "",
+                        closingQuote: .stringQuoteToken()
+                    ),
+                    trailingTrivia: .newline
+                )
             }))
         )
         

@@ -22,15 +22,16 @@ class SPSourceProtection {
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
     }
     
-    private func generateDecrypted(_ sourceFiles: Set<File>) -> Bool {
+    private func generateDecrypted(_ sourceFiles: Set<File>) -> String? {
+        let encryptedKey: String = "0x5A"
         if let encryptedPath: String = sourceFiles.randomElement()?.directory {
             let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
-            let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey("0x5A")
+            let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey(encryptedKey)
             
             if !FileManager.default.fileExists(atPath: fileURL.path()) {
                 if FileManager.default.createFile(atPath: fileURL.path(), contents: nil) == false {
                     print("SourceCode Generate Error.")
-                    return false
+                    return nil
                 }
             }
             
@@ -40,13 +41,13 @@ class SPSourceProtection {
                 try handle.write(contentsOf: sourceCode.formatted().description.data(using: .utf8)!)
                 try handle.close()
                 
-                return true
+                return encryptedKey
             } catch {
                 print("SourceCode Generate Error.: \(error.localizedDescription)")
             }
         }
         
-        return false
+        return nil
     }
     
     func run() {
@@ -121,7 +122,7 @@ class SPSourceProtection {
         }
         
         for module in modules {
-            let decGenerated: Bool = (confusedMap == nil ? self.generateDecrypted(module.sourceFiles) : false)
+            let encryptedKey: String? = (confusedMap == nil ? self.generateDecrypted(module.sourceFiles) : nil)
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 sourceKit.logger?.log("--- Rewriting: \($0.name)")
                 
@@ -133,7 +134,7 @@ class SPSourceProtection {
                 let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(
                     sourceTree: sourceTree,
                     sourceFile: $0,
-                    decGenerated: decGenerated,
+                    encryptedKey: encryptedKey,
                     relatedDict: relatedDict,
                     confusedMap: confusedMap
                 )

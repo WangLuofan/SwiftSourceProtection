@@ -9,11 +9,12 @@ import SwiftSyntax
 
 extension String {
     
-    var encryptedString: [UInt8] {
-        let key: UInt8 = 0x5A
+    func encryptedString(_ key: UInt8) -> [UInt8] {
         let bytes: [UInt8] = Array(self.utf8)
+        var encryptedBytes: [UInt8] = bytes.map { $0 ^ key }
+        encryptedBytes.insert(key, at: 0)
         
-        return bytes.map { $0 ^ key }
+        return encryptedBytes
     }
     
     var isSwiftKeyWord: Bool {
@@ -227,9 +228,12 @@ extension SyntaxProtocol {
 
 extension [UInt8] {
     var decryptedString: String {
-        let key: UInt8 = 0x5A
-        let decoded = self.map { $0 ^ key }
+        if let key: UInt8 = self.first {
+            let decodedString = self.dropFirst().map { $0 ^ key }
+            
+            return String(bytes: decodedString, encoding: .utf8) ?? ""
+        }
         
-        return String(bytes: decoded, encoding: .utf8) ?? ""
+        return ""
     }
 }
