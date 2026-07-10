@@ -282,8 +282,8 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     }
     
     override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
-        guard self.encGenerated,
-              node.segments.count == 1,
+        guard node.segments.count == 1,
+              self.confusedMap != nil && self.encGenerated,
               let stringSegment: StringSegmentSyntax = node.segments.first?.as(StringSegmentSyntax.self) else {
             return super.visit(node)
         }
@@ -291,7 +291,7 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         if let _: EnumCaseDeclSyntax = node.getParentNode() {
             return super.visit(node)
         }
-        
+
         let bytes: [UInt8] = stringSegment.content.text.encryptedString
         let arrayExpr = ArrayExprSyntax {
             for byte in bytes {
