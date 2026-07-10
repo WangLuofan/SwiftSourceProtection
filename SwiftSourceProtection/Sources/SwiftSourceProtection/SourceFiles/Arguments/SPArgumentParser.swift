@@ -16,9 +16,13 @@ protocol SPArgumentProtocol {
     
     /// 预览运行
     var dryRun: Bool { get }
+    
+    /// 重命名文件
+    var rename: Bool { get }
 }
 
 struct SPObfuseArgument: SPArgumentProtocol {
+    let rename: Bool = false
     
     let project: String
     
@@ -31,6 +35,8 @@ struct SPObfuseArgument: SPArgumentProtocol {
 }
 
 struct SPDeObfuseArgument: SPArgumentProtocol {
+    let rename: Bool = false
+    
     let project: String
     
     let scheme: String
@@ -50,6 +56,9 @@ struct CommonOptions: ParsableArguments {
     
     @Flag(name: [.short, .long], help: "Perform a trial run without making any changes.")
     var dryRun: Bool = false
+    
+    @Flag(name: [.short, .long], help: "Rename the source file in the project.")
+    var rename: Bool = false
 }
 
 struct SPObfuseParser: ParsableCommand {
