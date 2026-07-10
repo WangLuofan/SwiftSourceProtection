@@ -23,7 +23,9 @@ class SPSourceProtection {
     }
     
     private func generateDecrypted(_ sourceFiles: Set<File>) -> String? {
-        let encryptedKey: String = "0x5A"
+        let encryptedKeyBytes: UInt8 = UInt8.random(in: UInt8.min...UInt8.max)
+        
+        let encryptedKey: String = String(format: "0x%02X", encryptedKeyBytes)
         if let encryptedPath: String = sourceFiles.randomElement()?.directory {
             let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
             let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey(encryptedKey)

@@ -229,9 +229,9 @@ extension SyntaxProtocol {
 extension [UInt8] {
     var decryptedString: String {
         if let key: UInt8 = self.first {
-            let decodedString = self.dropFirst().map { $0 ^ key }
+            let decodedBytes = self.dropFirst().map { $0 ^ key }
             
-            return String(bytes: decodedString, encoding: .utf8) ?? ""
+            return String(bytes: decodedBytes, encoding: .utf8) ?? ""
         }
         
         return ""
