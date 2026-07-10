@@ -776,6 +776,16 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 break
         }
     }
+    
+    override func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+        node.segments.map {
+            if $0.kind == .stringSegment {
+                let i = 0
+            }
+        }
+        
+        return super.visit(node)
+    }
 }
 
 extension SPSwiftSourceASTCollector {

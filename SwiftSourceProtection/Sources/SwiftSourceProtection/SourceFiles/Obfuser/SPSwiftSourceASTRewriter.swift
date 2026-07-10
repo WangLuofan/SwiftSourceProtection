@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftSyntax
+import SwiftSyntaxBuilder
 
 class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var sourceTree: SourceFileSyntax
@@ -275,6 +276,26 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
         }
         
         return super.visit(node)
+    }
+    
+    override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
+        guard node.segments.count == 1,
+              let stringSegment: StringSegmentSyntax = node.segments.first?.as(StringSegmentSyntax.self) else {
+            return super.visit(node)
+        }
+        
+        let bytes: [UInt8] = stringSegment.content.text.encryptedString
+        let arrayExpr = ArrayExprSyntax {
+            for byte in bytes {
+                ArrayElementSyntax(
+                    expression: IntegerLiteralExprSyntax(
+                        literal: .integerLiteral(String(format: "0x%02X", byte))
+                    )
+                )
+            }
+        }
+        
+        return super.visit(arrayExpr)
     }
 }
 
