@@ -870,12 +870,7 @@ extension SPSwiftSourceASTCollector {
         }
         
         resp.recurseEntities { (dict: SKResponseDictionary) in
-            
-            if let name: String = dict[sourceKit.keys.name],
-               name == "globalVariable" {
-                let i = 0
-            }
-            
+
             guard let line: Int = dict[sourceKit.keys.line],
                   let column: Int = dict[sourceKit.keys.column],
                 let entryKind: SKUID = dict[sourceKit.keys.kind],

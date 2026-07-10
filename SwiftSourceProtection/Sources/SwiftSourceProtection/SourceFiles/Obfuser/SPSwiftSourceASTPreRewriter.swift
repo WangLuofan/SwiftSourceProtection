@@ -34,9 +34,6 @@ class SPSwiftSourceASTPreRewriter: SyntaxVisitor {
     }
     
     override func visit(_ node: TokenSyntax) -> SyntaxVisitorContinueKind {
-        if node.text == "globalVariable" {
-            let i = 0
-        }
         
         guard case .identifier = node.tokenKind,
               !node.text.isSwiftKeyWord else {
