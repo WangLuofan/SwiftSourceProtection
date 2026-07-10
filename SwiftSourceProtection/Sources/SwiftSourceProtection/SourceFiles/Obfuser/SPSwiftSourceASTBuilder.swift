@@ -26,7 +26,7 @@ class SPSwiftSourceASTBuilder {
         
         let keyVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
             PatternBindingSyntax(
-                pattern: IdentifierPatternSyntax(identifier: .identifier("key")),
+                pattern: IdentifierPatternSyntax(identifier: .identifier(ConfuseHelper.confusedSymbolName("key", confusedMap: nil))),
                 typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("UInt8"))),
                 initializer: InitializerClauseSyntax(value: IntegerLiteralExprSyntax(literal: .identifier(key)))
             )
@@ -34,8 +34,8 @@ class SPSwiftSourceASTBuilder {
         
         let decodedVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
             PatternBindingSyntax(
-                pattern: IdentifierPatternSyntax(identifier: .identifier("decodedString")),
-                typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("String"))),
+                pattern: IdentifierPatternSyntax(identifier: .identifier(ConfuseHelper.confusedSymbolName("decodedString", confusedMap: nil))),
+                typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("[UInt8]"))),
                 initializer: InitializerClauseSyntax(
                     value: FunctionCallExprSyntax(
                         calledExpression: MemberAccessExprSyntax(
@@ -50,7 +50,7 @@ class SPSwiftSourceASTBuilder {
                                 ),
                                 operator: BinaryOperatorExprSyntax(operator: .identifier("^")),
                                 rightOperand: IdentifierExprSyntax(
-                                    baseName: .identifier("key")
+                                    baseName: .identifier(ConfuseHelper.confusedSymbolName("key", confusedMap: nil))
                                 )
                             )
                         })
@@ -72,7 +72,7 @@ class SPSwiftSourceASTBuilder {
                         LabeledExprSyntax(
                             label: "bytes",
                             expression: DeclReferenceExprSyntax(
-                                baseName: .identifier("decodedString")
+                                baseName: .identifier(ConfuseHelper.confusedSymbolName("decodedString", confusedMap: nil))
                             )
                         )
                         LabeledExprSyntax(
@@ -98,7 +98,7 @@ class SPSwiftSourceASTBuilder {
         
         let decryptedVariableDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.var), bindings: [
             PatternBindingSyntax(
-                pattern: IdentifierPatternSyntax(identifier: .identifier("decryptedString")),
+                pattern: IdentifierPatternSyntax(identifier: .identifier(ConfuseHelper.confusedSymbolName("decryptedString", confusedMap: nil))),
                 typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("String"))),
                 accessorBlock: accessorBlock
             ),

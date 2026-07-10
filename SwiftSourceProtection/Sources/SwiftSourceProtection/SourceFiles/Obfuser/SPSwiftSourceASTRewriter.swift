@@ -295,7 +295,12 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
             }
         }
         
-        return super.visit(arrayExpr)
+        let memAccExpr: MemberAccessExprSyntax = MemberAccessExprSyntax(
+            base: arrayExpr,
+            name: .identifier(ConfuseHelper.confusedSymbolName("decryptedString", confusedMap: self.confusedMap))
+        )
+        
+        return ExprSyntax(memAccExpr)
     }
 }
 

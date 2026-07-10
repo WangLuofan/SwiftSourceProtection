@@ -22,9 +22,27 @@ class SPSourceProtection {
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
     }
     
+    private func generateEncrypted(_ sourceFiles: Set<File>) {
+        if let encryptedPath: String = sourceFiles.randomElement()?.directory {
+            let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
+            let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey("0x5A")
+            
+            if !FileManager.default.fileExists(atPath: fileURL.path()) {
+                FileManager.default.createFile(atPath: fileURL.path(), contents: nil)
+            }
+            
+            do {
+                let handle = try FileHandle(forWritingTo: fileURL)
+                try handle.seekToEnd()
+                try handle.write(contentsOf: sourceCode.formatted().description.data(using: .utf8)!)
+                try handle.close()
+            } catch {
+                print("SourceCode Generate Error.: \(error.localizedDescription)")
+            }
+        }
+    }
+    
     func run() {
-//        let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey("0x5A")
-//        print(sourceCode.formatted().description)
         
         guard let modules: [Module] = self.schemeInfoProvider.getModulesFromProject() else {
             return
@@ -48,6 +66,7 @@ class SPSourceProtection {
             let compilerArguments = SKRequestArray(sourcekitd: sourceKit)
             module.compilerArguments.forEach(compilerArguments.append(_:))
             
+            self.generateEncrypted(module.sourceFiles)
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 guard let sourceCode: String = try? $0.read() else {
                     return
