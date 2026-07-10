@@ -23,7 +23,8 @@ class SPSourceProtection {
     }
     
     func run() {
-//        SPSwiftSourceASTBuilder().build()
+//        let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey("0x5A")
+//        print(sourceCode.formatted().description)
         
         guard let modules: [Module] = self.schemeInfoProvider.getModulesFromProject() else {
             return

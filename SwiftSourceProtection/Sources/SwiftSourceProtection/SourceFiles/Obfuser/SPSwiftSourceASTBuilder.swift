@@ -9,67 +9,113 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 class SPSwiftSourceASTBuilder {
-    func build() {
-        let source = SourceFileSyntax {
-            ImportDeclSyntax(
-                path: [
-                    ImportPathComponentSyntax(name: .identifier("Foundation"), trailingTrivia: .newlines(2)),
-                ]
+//    import Foundation
+//    extension [UInt8] {
+//        var decryptedString: String {
+//            let key: UInt8 = 0x5A
+//            let decoded = self.map { $0 ^ key }
+//            
+//            return String(bytes: decoded, encoding: .utf8) ?? ""
+//        }
+//    }
+    
+    func buildDecryptedFunctionWithKey(_ key: String) -> SourceFileSyntax {
+        let importDeclSyntax: ImportDeclSyntax = ImportDeclSyntax(path: [
+            ImportPathComponentSyntax(name: .identifier("Foundation"), trailingTrivia: .newlines(2))
+        ])
+        
+        let keyVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
+            PatternBindingSyntax(
+                pattern: IdentifierPatternSyntax(identifier: .identifier("key")),
+                typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("UInt8"))),
+                initializer: InitializerClauseSyntax(value: IntegerLiteralExprSyntax(literal: .identifier(key)))
             )
-            
-            ExtensionDeclSyntax(
-                extendedType: ArrayTypeSyntax(element: IdentifierTypeSyntax(name: .identifier("UInt8")))
-            ) {
-                FunctionDeclSyntax(
-                    name: .identifier("decrypt"),
-                    signature: .init(
-                        parameterClause: .init(parameters: []),
-                        returnClause: .init(type: IdentifierTypeSyntax(name: .identifier("String")))
-                    )
-                ) {
-                    VariableDeclSyntax(
-                        bindingSpecifier: .keyword(.let),
-                    ) {
-                        PatternBindingSyntax(
-                            pattern: IdentifierPatternSyntax(identifier: .identifier("key")),
-                            typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("Int"))),
-                            initializer: .init(value: IntegerLiteralExprSyntax(literal: .integerLiteral("0x5A")))
-                        )
-                    }
-                    
-                    VariableDeclSyntax(
-                        bindingSpecifier: .keyword(.let)
-                    ) {
-                        PatternBindingSyntax(
-                            pattern: IdentifierPatternSyntax(identifier: .identifier("decrypted")),
-                            typeAnnotation: TypeAnnotationSyntax(type: ArrayTypeSyntax(element: IdentifierTypeSyntax(name: .identifier("UInt8")))),
-                            initializer: .init(value: FunctionCallExprSyntax(calledExpression: MemberAccessExprSyntax(base: IdentifierExprSyntax(baseName: .identifier("self")), name: .identifier("map")), arguments: [], trailingClosure: ClosureExprSyntax(statements: [
-                                CodeBlockItemSyntax(
-                                    item: .expr(
-                                        ExprSyntax(
-                                            InfixOperatorExprSyntax(
-                                                leftOperand: ExprSyntax(
-                                                    IdentifierExprSyntax(
-                                                        identifier: .dollarIdentifier("$0")
-                                                    )
-                                                ),
-                                                operator: BinaryOperatorExprSyntax(operator: .identifier("^")),
-                                                rightOperand: ExprSyntax(
-                                                    IdentifierExprSyntax(
-                                                        identifier: .identifier("key")
-                                                    )
-                                                )
-                                            ))
-                                    )
+        ])
+        
+        let decodedVarDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.let), bindings: [
+            PatternBindingSyntax(
+                pattern: IdentifierPatternSyntax(identifier: .identifier("decodedString")),
+                typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("String"))),
+                initializer: InitializerClauseSyntax(
+                    value: FunctionCallExprSyntax(
+                        calledExpression: MemberAccessExprSyntax(
+                            base: IdentifierExprSyntax(baseName: .identifier("self")),
+                            name: .identifier("map")
+                        ),
+                        arguments: [],
+                        trailingClosure: ClosureExprSyntax(statementsBuilder: {
+                            InfixOperatorExprSyntax(
+                                leftOperand: IdentifierExprSyntax(
+                                    baseName: .dollarIdentifier("$0")
+                                ),
+                                operator: BinaryOperatorExprSyntax(operator: .identifier("^")),
+                                rightOperand: IdentifierExprSyntax(
+                                    baseName: .identifier("key")
                                 )
-                            ])))
+                            )
+                        })
+                    )
+                )
+            )
+        ])
+        
+        let retStmt: ReturnStmtSyntax = ReturnStmtSyntax(
+            leadingTrivia: .newlines(2),
+            expression: InfixOperatorExprSyntax(
+                leftOperand: FunctionCallExprSyntax(
+                    calledExpression: DeclReferenceExprSyntax(
+                        baseName: .identifier("String")
+                    ),
+                    leftParen: .leftParenToken(),
+                    rightParen: .rightParenToken(),
+                    argumentsBuilder: {
+                        LabeledExprSyntax(
+                            label: "bytes",
+                            expression: DeclReferenceExprSyntax(
+                                baseName: .identifier("decodedString")
+                            )
+                        )
+                        LabeledExprSyntax(
+                            label: "encoding",
+                            expression: MemberAccessExprSyntax(
+                                name: .identifier("utf8")
+                            )
                         )
                     }
-                }
-            }
+                ),
+                operator: BinaryOperatorExprSyntax(operator: .identifier("??")),
+                rightOperand: IdentifierExprSyntax(baseName: .identifier("\"\""))
+            )
+        )
+        
+        let accessorBlock: AccessorBlockSyntax = AccessorBlockSyntax(
+            accessors: AccessorBlockSyntax.Accessors(CodeBlockItemListSyntax(itemsBuilder: {
+                keyVarDecl
+                decodedVarDecl
+                retStmt
+            }))
+        )
+        
+        let decryptedVariableDecl: VariableDeclSyntax = VariableDeclSyntax(bindingSpecifier: .keyword(.var), bindings: [
+            PatternBindingSyntax(
+                pattern: IdentifierPatternSyntax(identifier: .identifier("decryptedString")),
+                typeAnnotation: TypeAnnotationSyntax(type: IdentifierTypeSyntax(name: .identifier("String"))),
+                accessorBlock: accessorBlock
+            ),
+        ])
+        
+        let extensionDeclSyntax: ExtensionDeclSyntax = ExtensionDeclSyntax(
+            extendedType: IdentifierTypeSyntax(name: .identifier("[UInt8]"))
+        ) {
+            decryptedVariableDecl
         }
         
-        print(source.formatted().description)
+        let sourceCode: SourceFileSyntax = SourceFileSyntax {
+            importDeclSyntax
+            extensionDeclSyntax
+        }
+        
+        return sourceCode
     }
 }
 

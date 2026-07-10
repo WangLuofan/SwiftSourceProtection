@@ -8,6 +8,14 @@
 import SwiftSyntax
 
 extension String {
+    
+    var encryptedString: [UInt8] {
+        let key: UInt8 = 0x5A
+        let bytes: [UInt8] = Array(self.utf8)
+        
+        return bytes.map { $0 ^ key }
+    }
+    
     var isSwiftKeyWord: Bool {
         let swiftKeywords = [
             "_", "$",
@@ -214,5 +222,14 @@ extension SyntaxProtocol {
         }
 
         return .global
+    }
+}
+
+extension [UInt8] {
+    var decryptedString: String {
+        let key: UInt8 = 0x5A
+        let decoded = self.map { $0 ^ key }
+        
+        return String(bytes: decoded, encoding: .utf8) ?? ""
     }
 }
