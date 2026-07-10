@@ -776,16 +776,6 @@ class SPSwiftSourceASTCollector: SyntaxVisitor {
                 break
         }
     }
-    
-    override func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-        node.segments.map {
-            if $0.kind == .stringSegment {
-                let i = 0
-            }
-        }
-        
-        return super.visit(node)
-    }
 }
 
 extension SPSwiftSourceASTCollector {
@@ -881,6 +871,11 @@ extension SPSwiftSourceASTCollector {
         
         resp.recurseEntities { (dict: SKResponseDictionary) in
             
+            if let name: String = dict[sourceKit.keys.name],
+               name == "globalVariable" {
+                let i = 0
+            }
+            
             guard let line: Int = dict[sourceKit.keys.line],
                   let column: Int = dict[sourceKit.keys.column],
                 let entryKind: SKUID = dict[sourceKit.keys.kind],
@@ -899,9 +894,12 @@ extension SPSwiftSourceASTCollector {
                         break
                     case .property: do {
                         guard let name: String = dict[sourceKit.keys.name],
-                              let varSymbol: SPSwiftSourceVariableSymbol = self.matchSymbol(line, column, name, .variable) as? SPSwiftSourceVariableSymbol,
-                              let parentSymbol: SPSwiftSourceClassSymbol = varSymbol.parent as? SPSwiftSourceClassSymbol,
-                              !parentSymbol.isInheritedFromCodableOrCodingKey else {
+                              let varSymbol: SPSwiftSourceVariableSymbol = self.matchSymbol(line, column, name, .variable) as? SPSwiftSourceVariableSymbol else {
+                            break
+                        }
+                        
+                        if let parentSymbol: SPSwiftSourceClassSymbol = varSymbol.parent as? SPSwiftSourceClassSymbol,
+                           parentSymbol.isInheritedFromCodableOrCodingKey {
                             break
                         }
                         
