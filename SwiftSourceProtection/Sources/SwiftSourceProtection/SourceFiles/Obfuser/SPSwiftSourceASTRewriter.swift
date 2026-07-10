@@ -14,18 +14,18 @@ class SPSwiftSourceASTRewriter: SyntaxRewriter {
     private var sourceFile: File
     private var relatedDict: [UInt64: SPSwiftSourceSymbol]
     private var confusedMap: [String: String]?
-    private var encGenerated: Bool
+    private var decGenerated: Bool
     
     init(
         sourceTree: SourceFileSyntax,
         sourceFile: File,
-        encGenerated: Bool,
+        decGenerated: Bool,
         relatedDict: [UInt64 : SPSwiftSourceSymbol],
         confusedMap: [String: String]? = nil
     ) {
         self.sourceTree = sourceTree
         self.sourceFile = sourceFile
-        self.encGenerated = encGenerated
+        self.decGenerated = decGenerated
         self.relatedDict = relatedDict
         self.confusedMap = confusedMap
         

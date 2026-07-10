@@ -22,7 +22,7 @@ class SPSourceProtection {
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
     }
     
-    private func generateEncrypted(_ sourceFiles: Set<File>) -> Bool {
+    private func generateDecrypted(_ sourceFiles: Set<File>) -> Bool {
         if let encryptedPath: String = sourceFiles.randomElement()?.directory {
             let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
             let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey("0x5A")
@@ -121,7 +121,7 @@ class SPSourceProtection {
         }
         
         for module in modules {
-            let encGenerated: Bool = self.generateEncrypted(module.sourceFiles)
+            let decGenerated: Bool = (confusedMap == nil ? self.generateDecrypted(module.sourceFiles) : false)
             module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                 sourceKit.logger?.log("--- Rewriting: \($0.name)")
                 
@@ -133,7 +133,7 @@ class SPSourceProtection {
                 let rewriter: SPSwiftSourceASTRewriter = SPSwiftSourceASTRewriter(
                     sourceTree: sourceTree,
                     sourceFile: $0,
-                    encGenerated: encGenerated,
+                    decGenerated: decGenerated,
                     relatedDict: relatedDict,
                     confusedMap: confusedMap
                 )
