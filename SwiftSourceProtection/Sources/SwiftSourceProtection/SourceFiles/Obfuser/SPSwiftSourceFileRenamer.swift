@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import XcodeProj
 
 class SPSwiftSourceFileRenamer {
     private let confusedMap: [String: String]?
