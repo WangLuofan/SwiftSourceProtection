@@ -13,10 +13,12 @@ import RegexBuilder
 class SPSwiftSourceFileRenamer {
     private let projFile: File
     private let schemeName: String
+    private let confusedSchemeName: String
     private let confusedMap: [String: String]?
     
     init(projFile: File, scheme: String, confusedMap: [String : String]?) {
         self.schemeName = scheme
+        self.confusedSchemeName = ConfuseHelper.confusedSymbolName(scheme, confusedMap: confusedMap)
         self.projFile = projFile
         self.confusedMap = confusedMap
     }
@@ -65,7 +67,7 @@ extension SPSwiftSourceFileRenamer {
                 return true
             }
         } catch {
-            print("Failed to retrieve schemes from Xcode: Unknown Error.")
+            print("Failed to retrieve schemes from Xcode: Unknown Error.: \(error.localizedDescription)")
         }
         
         return false
@@ -103,7 +105,7 @@ extension SPSwiftSourceFileRenamer {
             
             return self.visit(document.root, projPath: projPath)
         } catch {
-            print(error.localizedDescription)
+            print("Parse Project error: \(error.localizedDescription)")
         }
         
         return nil
@@ -129,6 +131,11 @@ extension SPSwiftSourceFileRenamer {
                    blueprintName.contains(self.schemeName) {
                     element.attributes["BlueprintName"] = blueprintName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
                 }
+                
+                if let container: String = element.attributes["ReferencedContainer"],
+                   container.contains(self.schemeName) {
+                    element.attributes["ReferencedContainer"] = container.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
+                }
             }
             
             for child in element.children {
@@ -137,7 +144,6 @@ extension SPSwiftSourceFileRenamer {
         }
         
         var isDirectory: ObjCBool = ObjCBool(false)
-        let confusedSchemeName: String = ConfuseHelper.confusedSymbolName(self.schemeName, confusedMap: self.confusedMap)
         if FileManager.default.fileExists(atPath: schemeDir, isDirectory: &isDirectory),
            isDirectory.boolValue,
            let schemes: [String] = try? FileManager.default.contentsOfDirectory(atPath: schemeDir) {
@@ -148,14 +154,23 @@ extension SPSwiftSourceFileRenamer {
                 }
                 
                 let schemeFile: String = (schemeDir as NSString).appendingPathComponent(scheme)
-                if let confusedShemeFile: String = ((schemeDir as NSString).appendingPathComponent(confusedSchemeName) as NSString).appendingPathExtension("xcscheme") {
+                if let confusedShemeFile: String = ((schemeDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcscheme") {
                     if let schemeData: Data = try? Data(contentsOf: URL(fileURLWithPath: schemeFile)),
                        let document: AEXMLDocument = try? AEXMLDocument(xml: schemeData) {
-                        rename(document.root, confusedSchemeName: confusedSchemeName)
-                        try? document.xml.write(toFile: schemeFile, atomically: true, encoding: .utf8)
+                        rename(document.root, confusedSchemeName: self.confusedSchemeName)
+                        
+                        do {
+                            try document.xml.write(toFile: schemeFile, atomically: true, encoding: .utf8)
+                        } catch {
+                            print("Modify scheme failed: \(error.localizedDescription)")
+                        }
                     }
                     
-                    try? FileManager.default.moveItem(atPath: schemeFile, toPath: confusedShemeFile)
+                    do {
+                        try FileManager.default.moveItem(atPath: schemeFile, toPath: confusedShemeFile)
+                    } catch {
+                        print("Rename scheme failed: \(error.localizedDescription)")
+                    }
                 }
             }
         }
@@ -165,9 +180,20 @@ extension SPSwiftSourceFileRenamer {
         guard let projPath: String = self.findProjectPath() else {
             return
         }
+        let projDir: String = (projPath as NSString).deletingLastPathComponent
         
+        /// 修改scheme
         self.renameScheme((projPath as NSString).appendingPathComponent("xcshareddata/xcschemes"))
-        print("OK")
+        
+        /// 修改项目名称
+        if FileManager.default.fileExists(atPath: projPath),
+           let confusedProject: String = ((projDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcodeproj") {
+            do {
+                try FileManager.default.moveItem(atPath: projPath, toPath: confusedProject)
+            } catch {
+                print("Rename Project Failed: \(error.localizedDescription)")
+            }
+        }
     }
     
     func renameFile(_ sourceFile: File) {
