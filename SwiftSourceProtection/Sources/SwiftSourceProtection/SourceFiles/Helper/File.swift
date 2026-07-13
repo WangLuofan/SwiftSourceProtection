@@ -20,6 +20,18 @@ struct File: Hashable {
     var directory: String {
         (path as NSString).deletingLastPathComponent
     }
+    
+    func appendPathComponent(_ comp: String) -> File {
+        return File(path: (path as NSString).appendingPathComponent(comp))
+    }
+    
+    func appendExtension(_ ext: String) -> File? {
+        guard let newPath = (path as NSString).appendingPathExtension(ext) else {
+            return nil
+        }
+        
+        return File(path: newPath)
+    }
 
     /// Returns the disk contents of the file.
     func read() throws -> String {

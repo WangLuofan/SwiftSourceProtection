@@ -13,12 +13,12 @@ import SwiftOperators
 class SPSourceProtection {
     
     private var schemeInfoProvider: SPSchemeInfoProvider
-    private var projectPath: String
+    private var projectFile: File
     private var argument: SPArgumentProtocol
     
     init(argument: SPArgumentProtocol) {
         self.argument = argument
-        self.projectPath = File(path: argument.project).directory
+        self.projectFile = File(path: argument.project)
         self.schemeInfoProvider = SPSchemeInfoProvider(project: argument.project, scheme: argument.scheme)
     }
     
@@ -162,18 +162,24 @@ class SPSourceProtection {
         }
         
         if self.argument.rename {
-            let renamer: SPSwiftSourceFileRenamer = SPSwiftSourceFileRenamer(confusedMap: confusedMap)
+            let renamer: SPSwiftSourceFileRenamer = SPSwiftSourceFileRenamer(
+                projFile: self.projectFile,
+                scheme: self.argument.scheme,
+                confusedMap: confusedMap
+            )
+            
+            renamer.renameProject()
             for module in modules {
                 module.sourceFiles.sorted { $0.path < $1.path }.forEach {
                     sourceKit.logger?.log("--- Renaming: \($0.name)")
-                    renamer.rename($0)
+                    renamer.renameFile($0)
                 }
             }
         }
         
         if let _: SPObfuseArgument = self.argument as? SPObfuseArgument {
             sourceKit.logger?.log("--- Dumping Confused Table")
-            ConfuseHelper.dumpConfusedTable(self.projectPath, fileName: "confused.json")
+            ConfuseHelper.dumpConfusedTable(self.projectFile.directory, fileName: "confused.json")
         }
     }
 }
