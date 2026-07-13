@@ -9,6 +9,7 @@ import Foundation
 import XcodeProj
 import AEXML
 import RegexBuilder
+import PathKit
 
 class SPSwiftSourceFileRenamer {
     private let projFile: File
@@ -118,82 +119,138 @@ extension SPSwiftSourceFileRenamer {
         
         return self.parseProjectPathFromWorkspace()
     }
+//
+//    private func renameScheme(_ schemeDir: String) {
+//        func rename(_ element: AEXMLElement, confusedSchemeName: String) {
+//            if element.name == "BuildableReference" {
+//                if let buildableName: String = element.attributes["BuildableName"],
+//                   buildableName.contains(self.schemeName) {
+//                    element.attributes["BuildableName"] = buildableName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
+//                }
+//                
+//                if let blueprintName: String = element.attributes["BlueprintName"],
+//                   blueprintName.contains(self.schemeName) {
+//                    element.attributes["BlueprintName"] = blueprintName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
+//                }
+//                
+//                if let container: String = element.attributes["ReferencedContainer"],
+//                   container.contains(self.schemeName) {
+//                    element.attributes["ReferencedContainer"] = container.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
+//                }
+//            }
+//            
+//            for child in element.children {
+//                rename(child, confusedSchemeName: confusedSchemeName)
+//            }
+//        }
+//        
+//        var isDirectory: ObjCBool = ObjCBool(false)
+//        if FileManager.default.fileExists(atPath: schemeDir, isDirectory: &isDirectory),
+//           isDirectory.boolValue,
+//           let schemes: [String] = try? FileManager.default.contentsOfDirectory(atPath: schemeDir) {
+//            for scheme in schemes {
+//                guard (scheme as NSString).pathExtension == "xcscheme",
+//                      (scheme as NSString).deletingPathExtension == self.schemeName else {
+//                    continue
+//                }
+//                
+//                let schemeFile: String = (schemeDir as NSString).appendingPathComponent(scheme)
+//                if let confusedShemeFile: String = ((schemeDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcscheme") {
+//                    if let schemeData: Data = try? Data(contentsOf: URL(fileURLWithPath: schemeFile)),
+//                       let document: AEXMLDocument = try? AEXMLDocument(xml: schemeData) {
+//                        rename(document.root, confusedSchemeName: self.confusedSchemeName)
+//                        
+//                        do {
+//                            try document.xml.write(toFile: schemeFile, atomically: true, encoding: .utf8)
+//                        } catch {
+//                            print("Modify scheme failed: \(error.localizedDescription)")
+//                        }
+//                    }
+//                    
+//                    do {
+//                        try FileManager.default.moveItem(atPath: schemeFile, toPath: confusedShemeFile)
+//                    } catch {
+//                        print("Rename scheme failed: \(error.localizedDescription)")
+//                    }
+//                }
+//            }
+//        }
+//    }
     
-    private func renameScheme(_ schemeDir: String) {
-        func rename(_ element: AEXMLElement, confusedSchemeName: String) {
-            if element.name == "BuildableReference" {
-                if let buildableName: String = element.attributes["BuildableName"],
-                   buildableName.contains(self.schemeName) {
-                    element.attributes["BuildableName"] = buildableName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
-                }
-                
-                if let blueprintName: String = element.attributes["BlueprintName"],
-                   blueprintName.contains(self.schemeName) {
-                    element.attributes["BlueprintName"] = blueprintName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
-                }
-                
-                if let container: String = element.attributes["ReferencedContainer"],
-                   container.contains(self.schemeName) {
-                    element.attributes["ReferencedContainer"] = container.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
+    private func renameScheme(_ xcodeProj: XcodeProj) {
+        guard let sharedData: XCSharedData = xcodeProj.sharedData else {
+            return
+        }
+        
+        for scheme in sharedData.schemes {
+            if scheme.name.contains(self.schemeName) {
+                scheme.name = scheme.name.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+            }
+            
+            if let buildAction = scheme.buildAction {
+                for actionEntrties in buildAction.buildActionEntries {
+                    if actionEntrties.buildableReference.blueprintName.contains(self.schemeName) {
+                        actionEntrties.buildableReference.blueprintName = actionEntrties.buildableReference.blueprintName.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                    }
+                    
+                    if actionEntrties.buildableReference.buildableName.contains(self.schemeName) {
+                        actionEntrties.buildableReference.buildableName = actionEntrties.buildableReference.buildableName.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                    }
+                    
+                    if actionEntrties.buildableReference.referencedContainer.contains(self.schemeName) {
+                        actionEntrties.buildableReference.referencedContainer = actionEntrties.buildableReference.referencedContainer.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                    }
                 }
             }
             
-            for child in element.children {
-                rename(child, confusedSchemeName: confusedSchemeName)
-            }
-        }
-        
-        var isDirectory: ObjCBool = ObjCBool(false)
-        if FileManager.default.fileExists(atPath: schemeDir, isDirectory: &isDirectory),
-           isDirectory.boolValue,
-           let schemes: [String] = try? FileManager.default.contentsOfDirectory(atPath: schemeDir) {
-            for scheme in schemes {
-                guard (scheme as NSString).pathExtension == "xcscheme",
-                      (scheme as NSString).deletingPathExtension == self.schemeName else {
-                    continue
+            if let profileAction = scheme.profileAction,
+               let macroExpansion = profileAction.macroExpansion {
+                if macroExpansion.blueprintName.contains(self.schemeName) {
+                    macroExpansion.blueprintName = macroExpansion.blueprintName.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
                 }
                 
-                let schemeFile: String = (schemeDir as NSString).appendingPathComponent(scheme)
-                if let confusedShemeFile: String = ((schemeDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcscheme") {
-                    if let schemeData: Data = try? Data(contentsOf: URL(fileURLWithPath: schemeFile)),
-                       let document: AEXMLDocument = try? AEXMLDocument(xml: schemeData) {
-                        rename(document.root, confusedSchemeName: self.confusedSchemeName)
-                        
-                        do {
-                            try document.xml.write(toFile: schemeFile, atomically: true, encoding: .utf8)
-                        } catch {
-                            print("Modify scheme failed: \(error.localizedDescription)")
-                        }
-                    }
-                    
-                    do {
-                        try FileManager.default.moveItem(atPath: schemeFile, toPath: confusedShemeFile)
-                    } catch {
-                        print("Rename scheme failed: \(error.localizedDescription)")
-                    }
+                if macroExpansion.buildableName.contains(self.schemeName) {
+                    macroExpansion.buildableName = macroExpansion.buildableName.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                }
+                
+                if macroExpansion.referencedContainer.contains(self.schemeName) {
+                    macroExpansion.referencedContainer = macroExpansion.referencedContainer.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
                 }
             }
         }
     }
     
     func renameProject() {
-        guard let projPath: String = self.findProjectPath() else {
-            return
-        }
-        let projDir: String = (projPath as NSString).deletingLastPathComponent
-        
-        /// 修改scheme
-        self.renameScheme((projPath as NSString).appendingPathComponent("xcshareddata/xcschemes"))
-        
-        /// 修改项目名称
-        if FileManager.default.fileExists(atPath: projPath),
-           let confusedProject: String = ((projDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcodeproj") {
-            do {
-                try FileManager.default.moveItem(atPath: projPath, toPath: confusedProject)
-            } catch {
-                print("Rename Project Failed: \(error.localizedDescription)")
+        do {
+            guard let projPath: String = self.findProjectPath() else {
+                return
             }
+            
+            let xcodeProjPath: Path = Path(projPath)
+            let xcodeProj: XcodeProj = try XcodeProj(path: xcodeProjPath)
+            
+            /// 修改scheme
+            self.renameScheme(xcodeProj)
+            try xcodeProj.writeSchemes(path: xcodeProjPath, override: true)
+        } catch {
+            print("Rename Project Error: \(error.localizedDescription)")
         }
+        
+//        /// 修改scheme
+//        self.renameScheme((projPath as NSString).appendingPathComponent("xcshareddata/xcschemes"))
+//        
+//        /// 修改pbxproj
+//        self.modifyPBXProj((projPath as NSString).appendingPathComponent("project.pbxproj"))
+//        
+//        /// 修改项目名称
+//        if FileManager.default.fileExists(atPath: projPath),
+//           let confusedProject: String = ((projDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcodeproj") {
+//            do {
+//                try FileManager.default.moveItem(atPath: projPath, toPath: confusedProject)
+//            } catch {
+//                print("Rename Project Failed: \(error.localizedDescription)")
+//            }
+//        }
     }
     
     func renameFile(_ sourceFile: File) {
