@@ -168,13 +168,8 @@ class SPSourceProtection {
                 confusedMap: confusedMap
             )
             
+            sourceKit.logger?.log("--- Renaming: \(self.argument.scheme)")
             renamer.renameProject()
-            for module in modules {
-                module.sourceFiles.sorted { $0.path < $1.path }.forEach {
-                    sourceKit.logger?.log("--- Renaming: \($0.name)")
-                    renamer.renameFile($0)
-                }
-            }
         }
         
         if let _: SPObfuseArgument = self.argument as? SPObfuseArgument {

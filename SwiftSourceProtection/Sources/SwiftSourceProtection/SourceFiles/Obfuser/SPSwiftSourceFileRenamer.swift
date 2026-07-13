@@ -119,65 +119,8 @@ extension SPSwiftSourceFileRenamer {
         
         return self.parseProjectPathFromWorkspace()
     }
-//
-//    private func renameScheme(_ schemeDir: String) {
-//        func rename(_ element: AEXMLElement, confusedSchemeName: String) {
-//            if element.name == "BuildableReference" {
-//                if let buildableName: String = element.attributes["BuildableName"],
-//                   buildableName.contains(self.schemeName) {
-//                    element.attributes["BuildableName"] = buildableName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
-//                }
-//                
-//                if let blueprintName: String = element.attributes["BlueprintName"],
-//                   blueprintName.contains(self.schemeName) {
-//                    element.attributes["BlueprintName"] = blueprintName.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
-//                }
-//                
-//                if let container: String = element.attributes["ReferencedContainer"],
-//                   container.contains(self.schemeName) {
-//                    element.attributes["ReferencedContainer"] = container.replacingOccurrences(of: self.schemeName, with: confusedSchemeName)
-//                }
-//            }
-//            
-//            for child in element.children {
-//                rename(child, confusedSchemeName: confusedSchemeName)
-//            }
-//        }
-//        
-//        var isDirectory: ObjCBool = ObjCBool(false)
-//        if FileManager.default.fileExists(atPath: schemeDir, isDirectory: &isDirectory),
-//           isDirectory.boolValue,
-//           let schemes: [String] = try? FileManager.default.contentsOfDirectory(atPath: schemeDir) {
-//            for scheme in schemes {
-//                guard (scheme as NSString).pathExtension == "xcscheme",
-//                      (scheme as NSString).deletingPathExtension == self.schemeName else {
-//                    continue
-//                }
-//                
-//                let schemeFile: String = (schemeDir as NSString).appendingPathComponent(scheme)
-//                if let confusedShemeFile: String = ((schemeDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcscheme") {
-//                    if let schemeData: Data = try? Data(contentsOf: URL(fileURLWithPath: schemeFile)),
-//                       let document: AEXMLDocument = try? AEXMLDocument(xml: schemeData) {
-//                        rename(document.root, confusedSchemeName: self.confusedSchemeName)
-//                        
-//                        do {
-//                            try document.xml.write(toFile: schemeFile, atomically: true, encoding: .utf8)
-//                        } catch {
-//                            print("Modify scheme failed: \(error.localizedDescription)")
-//                        }
-//                    }
-//                    
-//                    do {
-//                        try FileManager.default.moveItem(atPath: schemeFile, toPath: confusedShemeFile)
-//                    } catch {
-//                        print("Rename scheme failed: \(error.localizedDescription)")
-//                    }
-//                }
-//            }
-//        }
-//    }
     
-    private func renameScheme(_ xcodeProj: XcodeProj) {
+    private func modifyScheme(_ xcodeProj: XcodeProj) {
         guard let sharedData: XCSharedData = xcodeProj.sharedData else {
             return
         }
@@ -220,6 +163,41 @@ extension SPSwiftSourceFileRenamer {
         }
     }
     
+    private func modifyXcodeProj(_ xcodeproj: XcodeProj) -> [String] {
+        var groups: [String] = []
+        
+        xcodeproj.pbxproj.fileReferences.forEach { fileRef in
+            if fileRef.path?.contains(self.schemeName) ?? false {
+                fileRef.path = fileRef.path?.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+            }
+            
+            if fileRef.name?.contains(self.schemeName) ?? false {
+                fileRef.name = fileRef.name?.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+            }
+        }
+        
+        xcodeproj.pbxproj.nativeTargets.forEach { nativeTarget in
+            if nativeTarget.name.contains(self.schemeName) {
+                nativeTarget.name = nativeTarget.name.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+            }
+            
+            if nativeTarget.productName?.contains(self.schemeName) ?? false {
+                nativeTarget.productName = nativeTarget.productName?.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+            }
+            
+            nativeTarget.fileSystemSynchronizedGroups?.forEach { rootGroup in
+                if let groupPath: String = rootGroup.path {
+                    groups.append(groupPath)
+                }
+                if rootGroup.path?.contains(self.schemeName) ?? false {
+                    rootGroup.path = rootGroup.path?.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                }
+            }
+        }
+        
+        return groups
+    }
+    
     func renameProject() {
         do {
             guard let projPath: String = self.findProjectPath() else {
@@ -230,30 +208,77 @@ extension SPSwiftSourceFileRenamer {
             let xcodeProj: XcodeProj = try XcodeProj(path: xcodeProjPath)
             
             /// 修改scheme
-            self.renameScheme(xcodeProj)
-            try xcodeProj.writeSchemes(path: xcodeProjPath, override: true)
+            self.modifyScheme(xcodeProj)
+            
+            /// 修改xcodeproj字段
+            let groups: [String] = self.modifyXcodeProj(xcodeProj)
+            
+            /// 写回数据
+            try xcodeProj.write(path: xcodeProjPath, override: true)
+            
+            /// 修改xcodproj目录名
+            if let confusedProjPath: String = (((projPath as NSString).deletingLastPathComponent as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcodeproj") {
+                try FileManager.default.moveItem(atPath: projPath, toPath: confusedProjPath)
+            }
+            
+            /// 修改文件组
+            self.renameFileGroups((projPath as NSString).deletingLastPathComponent, groups)
+            
+            /// 修改根目录及Podfile
+            self.renameRootDirectoryContent(self.projFile.directory)
         } catch {
             print("Rename Project Error: \(error.localizedDescription)")
         }
-        
-//        /// 修改scheme
-//        self.renameScheme((projPath as NSString).appendingPathComponent("xcshareddata/xcschemes"))
-//        
-//        /// 修改pbxproj
-//        self.modifyPBXProj((projPath as NSString).appendingPathComponent("project.pbxproj"))
-//        
-//        /// 修改项目名称
-//        if FileManager.default.fileExists(atPath: projPath),
-//           let confusedProject: String = ((projDir as NSString).appendingPathComponent(self.confusedSchemeName) as NSString).appendingPathExtension("xcodeproj") {
-//            do {
-//                try FileManager.default.moveItem(atPath: projPath, toPath: confusedProject)
-//            } catch {
-//                print("Rename Project Failed: \(error.localizedDescription)")
-//            }
-//        }
     }
     
-    func renameFile(_ sourceFile: File) {
+    private func renameFileGroups(_ projPath: String, _ groups: [String]) {
+        do {
+            for group in groups {
+                let groupPath: String = (projPath as NSString).appendingPathComponent(group)
+                
+                /// 修改文件夹内容
+                self.renameGroupContents(groupPath)
+                
+                /// 修改源代码目录名
+                let confusedFolderName: String = ConfuseHelper.confusedSymbolName(group, confusedMap: self.confusedMap)
+                let confusedGroupPath: String = (projPath as NSString).appendingPathComponent(confusedFolderName)
+                try FileManager.default.moveItem(atPath: groupPath, toPath: confusedGroupPath)
+            }
+        } catch {
+            print("Rename File Group Error: \(error.localizedDescription)")
+        }
+    }
+    
+    private func renameGroupContents(_ groupPath: String) {
+        do {
+            let contents: [String] = try FileManager.default.contentsOfDirectory(atPath: groupPath)
+            
+            for content in contents {
+                var isDirectory: ObjCBool = ObjCBool(false)
+                
+                let contentPath: String = (groupPath as NSString).appendingPathComponent(content)
+                guard FileManager.default.fileExists(atPath: contentPath, isDirectory: &isDirectory) else {
+                    continue
+                }
+                
+                if !isDirectory.boolValue && (content as NSString).pathExtension == "swift" {
+                    self.renameFile(File(path: contentPath))
+                    continue
+                }
+                
+                /// 修改子目录名
+                self.renameGroupContents(contentPath)
+                
+                /// 修改自身名字
+                let confusedContentName: String = ConfuseHelper.confusedSymbolName(content, confusedMap: self.confusedMap)
+                try FileManager.default.moveItem(atPath: contentPath, toPath: (groupPath as NSString).appendingPathComponent(confusedContentName))
+            }
+        } catch {
+            print("Rename Group Folder Error: \(error.localizedDescription)")
+        }
+    }
+    
+    private func renameFile(_ sourceFile: File) {
         guard FileManager.default.fileExists(atPath: sourceFile.path),
               !sourceFile.name.isEmpty,
               !sourceFile.directory.isEmpty,
@@ -263,7 +288,84 @@ extension SPSwiftSourceFileRenamer {
         }
         
         do {
-            try? FileManager.default.moveItem(atPath: sourceFile.path, toPath: confusedFilePath)
+            try FileManager.default.moveItem(atPath: sourceFile.path, toPath: confusedFilePath)
+        } catch {
+            print("Rename Source File Error: \(error.localizedDescription)")
+        }
+    }
+    
+    private func renameRootDirectoryContent(_ rootPath: String) {
+        do {
+            let contents: [String] = try FileManager.default.contentsOfDirectory(atPath: rootPath)
+            var isDirectory: ObjCBool = ObjCBool(false)
+            
+            for content in contents {
+                guard FileManager.default.fileExists(atPath: (rootPath as NSString).appendingPathComponent(content), isDirectory: &isDirectory) else {
+                    continue
+                }
+                
+                if isDirectory.boolValue,
+                   content == self.schemeName {
+                    try FileManager.default.moveItem(atPath: (rootPath as NSString).appendingPathComponent(content), toPath: (rootPath as NSString).appendingPathComponent(self.confusedSchemeName))
+                    continue
+                }
+                
+                if !isDirectory.boolValue,
+                   content == "Podfile" || content == "podfile" {
+                    self.modifyPodfileContent((rootPath as NSString).appendingPathComponent(content))
+                    continue
+                }
+            }
+            
+        } catch {
+            print("Rename Root Content Error: \(error.localizedDescription)")
+        }
+    }
+    
+    private func modifyPodfileContent(_ filePath: String) {
+        do {
+            guard FileManager.default.fileExists(atPath: filePath) else {
+                return
+            }
+            
+            let Podfile: File = File(path: filePath)
+            var podFileContent: [String] = try Podfile.read().components(separatedBy: "\n")
+            
+            let targetRegex: Regex = Regex {
+                ZeroOrMore(.whitespace)
+                "target"
+                ZeroOrMore(.whitespace)
+                Capture {
+                    "'\(self.schemeName)'"
+                }
+            }
+            
+            let projectRegex: Regex = Regex {
+                ZeroOrMore(.whitespace)
+                "project"
+                ZeroOrMore(.whitespace)
+                Capture {
+                    "'\(self.schemeName)"
+                }
+            }
+            
+            /// 替换target/project
+            for (index, line) in podFileContent.enumerated() {
+                if let _ = try targetRegex.firstMatch(in: line) {
+                    podFileContent[index] = line.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                    continue
+                }
+                
+                if let _ = try projectRegex.firstMatch(in: line) {
+                    podFileContent[index] = line.replacingOccurrences(of: self.schemeName, with: self.confusedSchemeName)
+                    continue
+                }
+            }
+            
+            /// 写回文件
+            try podFileContent.joined(separator: "\n").write(toFile: filePath, atomically: true, encoding: .utf8)
+        } catch {
+            print("Modify Podfile Error: \(error.localizedDescription)")
         }
     }
 }
