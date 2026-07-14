@@ -22,7 +22,6 @@ protocol SPArgumentProtocol {
 }
 
 struct SPObfuseArgument: SPArgumentProtocol {
-    let rename: Bool = false
     
     let project: String
     
@@ -32,10 +31,11 @@ struct SPObfuseArgument: SPArgumentProtocol {
     
     /// 源码乱序
     let shuffle: Bool
+    
+    let rename: Bool
 }
 
 struct SPDeObfuseArgument: SPArgumentProtocol {
-    let rename: Bool = false
     
     let project: String
     
@@ -45,6 +45,8 @@ struct SPDeObfuseArgument: SPArgumentProtocol {
     
     /// 混淆映射表
     let confusedMap: String
+    
+    let rename: Bool
 }
 
 struct CommonOptions: ParsableArguments {
@@ -78,7 +80,8 @@ struct SPObfuseParser: ParsableCommand {
             project: self.options.project,
             scheme: self.options.scheme,
             dryRun: self.options.dryRun,
-            shuffle: self.shuffle
+            shuffle: self.shuffle,
+            rename: self.options.rename
         )
         
         let ssp: SPSourceProtection = SPSourceProtection(argument: argument)
@@ -103,7 +106,8 @@ struct SPDeobfuseParser: ParsableCommand {
             project: self.options.project,
             scheme: self.options.scheme,
             dryRun: self.options.dryRun,
-            confusedMap: self.map
+            confusedMap: self.map,
+            rename: self.options.rename
         )
         
         let ssp: SPSourceProtection = SPSourceProtection(argument: argument)
