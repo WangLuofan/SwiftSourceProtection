@@ -1,0 +1,126 @@
+digraph SymbolsClassDiagram {
+  graph [
+    rankdir=TB,
+    bgcolor="#F7F9FC",
+    pad="0.35",
+    nodesep="0.55",
+    ranksep="0.80",
+    fontname="Arial",
+    label="SwiftSourceProtection · Symbols 类图",
+    labelloc="t",
+    fontsize=22,
+    fontcolor="#172033"
+  ];
+
+  node [
+    shape=plain,
+    fontname="Arial"
+  ];
+
+  edge [
+    fontname="Arial",
+    fontsize=10,
+    color="#667085",
+    fontcolor="#475467",
+    arrowsize=0.8
+  ];
+
+  SPSwiftSourceSymbol [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#344054" BGCOLOR="white">
+      <TR><TD BGCOLOR="#344054"><FONT COLOR="white"><B>SPSwiftSourceSymbol</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="8">
+        sourceFile: File<BR ALIGN="LEFT"/>
+        nodeKind: NodeKind<BR ALIGN="LEFT"/>
+        symbolScope: SymbolScope<BR ALIGN="LEFT"/>
+        sourceLocation: SourceLocation<BR ALIGN="LEFT"/>
+        originalSymbolName: String<BR ALIGN="LEFT"/>
+        confusedSymbolName: String?<BR ALIGN="LEFT"/>
+        parent: SPSwiftSourceSymbol?<BR ALIGN="LEFT"/>
+        symbolUSR: String?
+      </TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">init(sourceFile, symbolScope, nodeKind, sourceLocation)</TD></TR>
+    </TABLE>
+  >];
+
+  SPSwiftSourceVariableSymbol [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#175CD3" BGCOLOR="white">
+      <TR><TD BGCOLOR="#175CD3"><FONT COLOR="white"><B>SPSwiftSourceVariableSymbol</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">
+        accessLevel: AccessLevel = .internal<BR ALIGN="LEFT"/>
+        isStaticSymbol: Bool = false
+      </TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">init(sourceFile, symbolScope, nodeKind, sourceLocation)</TD></TR>
+    </TABLE>
+  >];
+
+  SPSwiftSourceFunctionSymbol [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#1570EF" BGCOLOR="white">
+      <TR><TD BGCOLOR="#1570EF"><FONT COLOR="white"><B>SPSwiftSourceFunctionSymbol</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">
+        labels: [String]<BR ALIGN="LEFT"/>
+        confusedLabels: [String]<BR ALIGN="LEFT"/>
+        arguments: [SPSwiftSourceSymbol]<BR ALIGN="LEFT"/>
+        signature: String
+      </TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="8">
+        init(sourceFile, signature, symbolScope, sourceLocation)<BR ALIGN="LEFT"/>
+        init(sourceFile, signature, symbolScope, nodeKind, sourceLocation)
+      </TD></TR>
+    </TABLE>
+  >];
+
+  SPSwiftSourceEnumCaseSymbol [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#7F56D9" BGCOLOR="white">
+      <TR><TD BGCOLOR="#7F56D9"><FONT COLOR="white"><B>SPSwiftSourceEnumCaseSymbol</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nodeKind 固定为 .enumCase</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">init(sourceFile, signature, symbolScope, sourceLocation)</TD></TR>
+    </TABLE>
+  >];
+
+  SPSwiftSourceClassSymbol [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#039855" BGCOLOR="white">
+      <TR><TD BGCOLOR="#039855"><FONT COLOR="white"><B>SPSwiftSourceClassSymbol</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">
+        children: [SPSwiftSourceSymbol]<BR ALIGN="LEFT"/>
+        isInheritedFromCodableOrCodingKey: Bool<BR ALIGN="LEFT"/>
+        attrsName: [SymbolAttribute]
+      </TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="8">
+        init(sourceFile, symbolScope, sourceLocation)<BR ALIGN="LEFT"/>
+        init(sourceFile, symbolScope, nodeKind, sourceLocation)
+      </TD></TR>
+    </TABLE>
+  >];
+
+  SPSwiftSourceVariableSymbol -> SPSwiftSourceSymbol [arrowhead=empty, label="继承"];
+  SPSwiftSourceFunctionSymbol -> SPSwiftSourceVariableSymbol [arrowhead=empty, label="继承"];
+  SPSwiftSourceEnumCaseSymbol -> SPSwiftSourceFunctionSymbol [arrowhead=empty, label="继承"];
+  SPSwiftSourceClassSymbol -> SPSwiftSourceSymbol [arrowhead=empty, label="继承"];
+
+  SPSwiftSourceClassSymbol -> SPSwiftSourceSymbol [
+    arrowhead=vee,
+    arrowtail=odiamond,
+    dir=both,
+    style=dashed,
+    color="#039855",
+    label="children  0..*",
+    constraint=false
+  ];
+
+  SPSwiftSourceFunctionSymbol -> SPSwiftSourceSymbol [
+    arrowhead=vee,
+    arrowtail=odiamond,
+    dir=both,
+    style=dashed,
+    color="#1570EF",
+    label="arguments  0..*",
+    constraint=false
+  ];
+
+  SPSwiftSourceSymbol -> SPSwiftSourceSymbol [
+    arrowhead=vee,
+    style=dashed,
+    label="parent  0..1",
+    constraint=false
+  ];
+}

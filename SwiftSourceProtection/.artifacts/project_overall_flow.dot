@@ -1,0 +1,144 @@
+digraph ProjectOverallFlow {
+  graph [
+    rankdir=TB,
+    bgcolor="#F7F9FC",
+    pad="0.45",
+    nodesep="0.38",
+    ranksep="0.55",
+    fontname="Arial",
+    label="SwiftSourceProtection · 从启动到结束的整体流程",
+    labelloc="t",
+    fontsize=24,
+    fontcolor="#172033",
+    splines=ortho
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=11,
+    color="#98A2B3",
+    fillcolor="white",
+    fontcolor="#172033",
+    margin="0.16,0.10"
+  ];
+
+  edge [fontname="Arial", fontsize=10, color="#667085", fontcolor="#475467", arrowsize=0.75];
+
+  Start [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="程序启动\nmain.swift"];
+  ParseArgs [fillcolor="#EEF4FF", color="#175CD3", label="SPArgumentParser 解析命令行\nproject · scheme · dry-run · rename"];
+  Command [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="选择子命令"];
+  ObfuseArgs [fillcolor="#ECFDF3", color="#039855", label="生成 SPObfuseArgument\n包含 shuffle"];
+  DeobfuseArgs [fillcolor="#F4F3FF", color="#7F56D9", label="生成 SPDeObfuseArgument\n包含 confused.json 路径"];
+  CreateRunner [fillcolor="#EEF4FF", color="#175CD3", label="创建 SPSourceProtection\n调用 run()"];
+
+  CheckXcode [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="xcode-select -p\nXcode 是否可用？"];
+  Build [fillcolor="#FFFAEB", color="#D97706", label="xcodebuild clean build\nProject / Workspace + Scheme + iphonesimulator"];
+  BuildOK [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="构建是否成功？"];
+  ParseModules [fillcolor="#EEF4FF", color="#175CD3", label="解析构建日志\n提取 Module、Swift 文件和编译参数\n过滤 Pods Module"];
+
+  LoadMap [shape=diamond, fillcolor="#F4F3FF", color="#7F56D9", label="是否为 deobfuse？"];
+  ReadMap [fillcolor="#F4F3FF", color="#7F56D9", label="读取 confused.json\n生成 confusedMap"];
+  NoMap [fillcolor="#ECFDF3", color="#039855", label="confusedMap = nil\n进入混淆模式"];
+
+  subgraph cluster_analysis {
+    label="阶段一：逐 Module / 逐文件收集与语义索引";
+    color="#84ADFF";
+    bgcolor="#F5F8FF";
+    style="rounded";
+    fontsize=13;
+
+    ReadSource [label="读取 Swift 源码"];
+    ParseAST [label="SwiftParser 生成 SourceFileSyntax"];
+    Collect [label="SPSwiftSourceASTCollector.walk()\n收集符号 · 建立 Scope 树\n记录节点与 Scope 映射"];
+    Index [label="SourceKit indexsource\n保存 USR · 声明 · 引用 · 源码位置"];
+    Associate [label="同一 Module 文件全部索引后\nassociate() 关联声明与符号\n处理外部继承及特殊保护"];
+
+    { rank=same; ReadSource; ParseAST; Collect; Index; Associate; }
+
+    ReadSource -> ParseAST -> Collect -> Index -> Associate;
+  }
+
+  subgraph cluster_prerewrite {
+    label="阶段二：逐文件建立 Token 与符号关系";
+    color="#B692F6";
+    bgcolor="#F9F5FF";
+    style="rounded";
+    fontsize=13;
+
+    PreRewrite [label="SPSwiftSourceASTPreRewriter.process()\nSourceKit 引用优先，Scope 查找兜底"];
+    Relator [label="SymbolIndexRelator\nToken ID → SPSwiftSourceSymbol"];
+    { rank=same; PreRewrite; Relator; }
+    PreRewrite -> Relator;
+  }
+
+  subgraph cluster_rewrite {
+    label="阶段三：逐 Module / 逐文件重写";
+    color="#6CE9A6";
+    bgcolor="#F2FFF7";
+    style="rounded";
+    fontsize=13;
+
+    Mode [shape=diamond, label="confusedMap 是否为空？"];
+    GenerateHelper [label="混淆模式：随机生成 UInt8 Key\n生成或追加 StringHelper.swift"];
+    SkipHelper [label="反混淆模式：不生成 Key\n使用映射表恢复名称和字符串"];
+    Rewrite [label="SPSwiftSourceASTRewriter.rewrite()\n符号 Token · 参数标签 · 调用点\n初始化器 · 枚举 Case · Selector · 字符串"];
+    Shuffle [shape=diamond, label="obfuse 且启用 --shuffle？"];
+    DoShuffle [label="SPSwiftSourceASTShuffler\n打乱顶层声明和类型成员"];
+    Output [shape=diamond, label="是否启用 --dry-run？"];
+    Print [label="打印最终源码到终端\n不写回 Swift 源文件"];
+    Write [label="将最终 SourceFileSyntax\n写回原 Swift 文件"];
+
+    { rank=same; GenerateHelper; SkipHelper; }
+    { rank=same; DoShuffle; Output; }
+    { rank=same; Print; Write; }
+
+    Mode -> GenerateHelper [label="是 / obfuse"];
+    Mode -> SkipHelper [label="否 / deobfuse"];
+    GenerateHelper -> Rewrite;
+    SkipHelper -> Rewrite;
+    Rewrite -> Shuffle;
+    Shuffle -> DoShuffle [label="是"];
+    Shuffle -> Output [label="否"];
+    DoShuffle -> Output;
+    Output -> Print [label="是"];
+    Output -> Write [label="否"];
+  }
+
+  AfterFiles [label="所有 Module 和 Swift 文件处理完成", fillcolor="#EEF4FF", color="#175CD3"];
+  Rename [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="--rename 且非 dry-run？"];
+  DoRename [fillcolor="#FFF6ED", color="#DC6803", label="SPSwiftSourceFileRenamer.renameProject()\n更新 Scheme · Target · XcodeProj\n重命名目录和 Swift 文件 · 修改 Podfile"];
+  Dump [shape=diamond, fillcolor="#ECFDF3", color="#039855", label="是否为 obfuse？"];
+  DumpMap [fillcolor="#ECFDF3", color="#039855", label="输出 confused.json\n混淆名称 → 原始名称"];
+  End [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="处理结束"];
+  Stop [shape=oval, fillcolor="#D92D20", color="#D92D20", fontcolor="white", label="打印错误并中止"];
+
+  Start -> ParseArgs -> Command;
+  Command -> ObfuseArgs [label="obfuse"];
+  Command -> DeobfuseArgs [label="deobfuse"];
+  ObfuseArgs -> CreateRunner;
+  DeobfuseArgs -> CreateRunner;
+  CreateRunner -> CheckXcode;
+  CheckXcode -> Stop [label="否"];
+  CheckXcode -> Build [label="是"];
+  Build -> BuildOK;
+  BuildOK -> Stop [label="否"];
+  BuildOK -> ParseModules [label="是"];
+  ParseModules -> LoadMap;
+  LoadMap -> ReadMap [label="是"];
+  LoadMap -> NoMap [label="否"];
+  ReadMap -> ReadSource;
+  NoMap -> ReadSource;
+  Associate -> PreRewrite;
+  Relator -> Mode;
+  Print -> AfterFiles;
+  Write -> AfterFiles;
+  AfterFiles -> Rename;
+  Rename -> DoRename [label="是"];
+  Rename -> Dump [label="否"];
+  DoRename -> Dump;
+  Dump -> DumpMap [label="是"];
+  Dump -> End [label="否"];
+  DumpMap -> End;
+}

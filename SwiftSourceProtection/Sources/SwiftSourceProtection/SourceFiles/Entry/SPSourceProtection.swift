@@ -26,30 +26,35 @@ class SPSourceProtection {
         let encryptedKeyBytes: UInt8 = UInt8.random(in: UInt8.min...UInt8.max)
         
         let encryptedKey: String = String(format: "0x%02X", encryptedKeyBytes)
-        if let encryptedPath: String = sourceFiles.randomElement()?.directory {
-            let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
-            let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey(encryptedKey)
-            
-            if !FileManager.default.fileExists(atPath: fileURL.path()) {
-                if FileManager.default.createFile(atPath: fileURL.path(), contents: nil) == false {
-                    print("SourceCode Generate Error.")
-                    return nil
+        
+        if !self.argument.dryRun {
+            if let encryptedPath: String = sourceFiles.randomElement()?.directory {
+                let fileURL: URL = URL(fileURLWithPath: (encryptedPath as NSString).appendingPathComponent("StringHelper.swift"))
+                let sourceCode = SPSwiftSourceASTBuilder().buildDecryptedFunctionWithKey(encryptedKey)
+                
+                if !FileManager.default.fileExists(atPath: fileURL.path()) {
+                    if FileManager.default.createFile(atPath: fileURL.path(), contents: nil) == false {
+                        print("SourceCode Generate Error.")
+                        return nil
+                    }
+                }
+                
+                do {
+                    let handle = try FileHandle(forWritingTo: fileURL)
+                    try handle.seekToEnd()
+                    try handle.write(contentsOf: sourceCode.formatted().description.data(using: .utf8)!)
+                    try handle.close()
+                    
+                    return encryptedKey
+                } catch {
+                    print("SourceCode Generate Error.: \(error.localizedDescription)")
                 }
             }
             
-            do {
-                let handle = try FileHandle(forWritingTo: fileURL)
-                try handle.seekToEnd()
-                try handle.write(contentsOf: sourceCode.formatted().description.data(using: .utf8)!)
-                try handle.close()
-                
-                return encryptedKey
-            } catch {
-                print("SourceCode Generate Error.: \(error.localizedDescription)")
-            }
+            return nil
         }
         
-        return nil
+        return encryptedKey
     }
     
     func run() {

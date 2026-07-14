@@ -1,0 +1,126 @@
+digraph ScopeRelationshipDiagram {
+  graph [
+    rankdir=LR,
+    bgcolor="#F7F9FC",
+    pad="0.35",
+    nodesep="0.55",
+    ranksep="0.85",
+    fontname="Arial",
+    label="SwiftSourceProtection · Scope 关系图",
+    labelloc="t",
+    fontsize=22,
+    fontcolor="#172033"
+  ];
+
+  node [shape=plain, fontname="Arial"];
+  edge [fontname="Arial", fontsize=10, color="#667085", fontcolor="#475467", arrowsize=0.8];
+
+  Scope [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#175CD3" BGCOLOR="white">
+      <TR><TD BGCOLOR="#175CD3"><FONT COLOR="white"><B>SPSwiftSourceScope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">
+        symbols: [String: SPSwiftSourceSymbol]<BR ALIGN="LEFT"/>
+        nextScope: [SPSwiftSourceScope]<BR ALIGN="LEFT"/>
+        prevScope: SPSwiftSourceScope?
+      </TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="9">
+        pushScope() -&gt; SPSwiftSourceScope<BR ALIGN="LEFT"/>
+        popScope() -&gt; SPSwiftSourceScope<BR ALIGN="LEFT"/>
+        pushSymbol(SPSwiftSourceSymbol)<BR ALIGN="LEFT"/>
+        findSymbolWithUSR(String) -&gt; SPSwiftSourceSymbol?<BR ALIGN="LEFT"/>
+        findSymbolWithSymbolName(String, inCurrentScope) -&gt; SPSwiftSourceSymbol?
+      </TD></TR>
+    </TABLE>
+  >];
+
+  Symbol [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#039855" BGCOLOR="white">
+      <TR><TD BGCOLOR="#039855"><FONT COLOR="white"><B>SPSwiftSourceSymbol</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">
+        originalSymbolName: String<BR ALIGN="LEFT"/>
+        symbolUSR: String?<BR ALIGN="LEFT"/>
+        nodeKind: NodeKind<BR ALIGN="LEFT"/>
+        symbolScope: SymbolScope
+      </TD></TR>
+    </TABLE>
+  >];
+
+  Collector [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#7F56D9" BGCOLOR="white">
+      <TR><TD BGCOLOR="#7F56D9"><FONT COLOR="white"><B>SPSwiftSourceASTCollector</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">
+        topScope: SPSwiftSourceScope<BR ALIGN="LEFT"/>
+        currentScope: SPSwiftSourceScope
+      </TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">walk() -&gt; SPSwiftSourceScope</TD></TR>
+    </TABLE>
+  >];
+
+  IndexStore [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#DC6803" BGCOLOR="white">
+      <TR><TD BGCOLOR="#DC6803"><FONT COLOR="white"><B>IndexStore</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">scopeForNode: [File: [UInt64: SPSwiftSourceScope]]</TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT" CELLPADDING="9">
+        set(nodeID, scope, inFile)<BR ALIGN="LEFT"/>
+        scope(nodeID, inFile) -&gt; SPSwiftSourceScope?<BR ALIGN="LEFT"/>
+        scope(token, inFile) -&gt; SPSwiftSourceScope?
+      </TD></TR>
+    </TABLE>
+  >];
+
+  PreRewriter [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#344054" BGCOLOR="white">
+      <TR><TD BGCOLOR="#344054"><FONT COLOR="white"><B>SPSwiftSourceASTPreRewriter</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">根据 Token 所在 Scope 查找并关联符号</TD></TR>
+    </TABLE>
+  >];
+
+  Rewriter [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#344054" BGCOLOR="white">
+      <TR><TD BGCOLOR="#344054"><FONT COLOR="white"><B>SPSwiftSourceASTRewriter</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="9">读取节点 Scope，辅助声明与调用重写</TD></TR>
+    </TABLE>
+  >];
+
+  Scope -> Scope [
+    dir=both,
+    arrowtail=diamond,
+    arrowhead=vee,
+    color="#175CD3",
+    label="nextScope 0..* / prevScope 0..1"
+  ];
+
+  Scope -> Symbol [
+    dir=both,
+    arrowtail=odiamond,
+    arrowhead=vee,
+    color="#039855",
+    label="symbols 0..*\n名称或函数签名作为 Key"
+  ];
+
+  Collector -> Scope [
+    color="#7F56D9",
+    label="创建、进入、退出作用域\npushScope / popScope"
+  ];
+
+  Collector -> Symbol [
+    color="#7F56D9",
+    style=dashed,
+    label="收集后 pushSymbol"
+  ];
+
+  Collector -> IndexStore [
+    color="#DC6803",
+    label="记录 AST 节点对应的 Scope"
+  ];
+
+  IndexStore -> Scope [
+    color="#DC6803",
+    label="File + Node ID → Scope"
+  ];
+
+  PreRewriter -> IndexStore [label="按 Token 查询 Scope"];
+  PreRewriter -> Scope [style=dashed, label="按名称向父级逐层查找符号"];
+  Rewriter -> IndexStore [label="按 Node ID 查询 Scope"];
+  Rewriter -> Scope [style=dashed, label="辅助匹配函数和枚举成员"];
+}

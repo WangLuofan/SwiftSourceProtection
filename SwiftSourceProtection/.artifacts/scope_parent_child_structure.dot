@@ -1,0 +1,106 @@
+digraph ScopeParentChildStructure {
+  graph [
+    rankdir=TB,
+    bgcolor="#F7F9FC",
+    pad="0.40",
+    nodesep="0.70",
+    ranksep="1.00",
+    fontname="Arial",
+    label="SPSwiftSourceScope · 父子作用域组织形式",
+    labelloc="t",
+    fontsize=24,
+    fontcolor="#172033",
+    splines=polyline
+  ];
+
+  node [shape=plain, fontname="Arial"];
+  edge [fontname="Arial", fontsize=11, arrowsize=0.8];
+
+  Root [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#175CD3" BGCOLOR="white">
+      <TR><TD BGCOLOR="#175CD3" COLSPAN="2"><FONT COLOR="white"><B>根作用域 · Root Scope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">prevScope</TD><TD ALIGN="LEFT" CELLPADDING="8">nil</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nextScope</TD><TD ALIGN="LEFT" CELLPADDING="8">[Class Scope, Function Scope]</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">symbols</TD><TD ALIGN="LEFT" CELLPADDING="8">全局类型、函数、变量</TD></TR>
+    </TABLE>
+  >];
+
+  ClassScope [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#039855" BGCOLOR="white">
+      <TR><TD BGCOLOR="#039855" COLSPAN="2"><FONT COLOR="white"><B>Class Scope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">prevScope</TD><TD ALIGN="LEFT" CELLPADDING="8">Root Scope</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nextScope</TD><TD ALIGN="LEFT" CELLPADDING="8">[Method Scope]</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">symbols</TD><TD ALIGN="LEFT" CELLPADDING="8">属性、方法</TD></TR>
+    </TABLE>
+  >];
+
+  FunctionScope [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#7F56D9" BGCOLOR="white">
+      <TR><TD BGCOLOR="#7F56D9" COLSPAN="2"><FONT COLOR="white"><B>Function Scope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">prevScope</TD><TD ALIGN="LEFT" CELLPADDING="8">Root Scope</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nextScope</TD><TD ALIGN="LEFT" CELLPADDING="8">[If Scope, Closure Scope]</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">symbols</TD><TD ALIGN="LEFT" CELLPADDING="8">参数、局部变量</TD></TR>
+    </TABLE>
+  >];
+
+  MethodScope [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#12B76A" BGCOLOR="white">
+      <TR><TD BGCOLOR="#12B76A" COLSPAN="2"><FONT COLOR="white"><B>Method Scope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">prevScope</TD><TD ALIGN="LEFT" CELLPADDING="8">Class Scope</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nextScope</TD><TD ALIGN="LEFT" CELLPADDING="8">[]</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">symbols</TD><TD ALIGN="LEFT" CELLPADDING="8">参数、局部变量</TD></TR>
+    </TABLE>
+  >];
+
+  IfScope [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#DC6803" BGCOLOR="white">
+      <TR><TD BGCOLOR="#DC6803" COLSPAN="2"><FONT COLOR="white"><B>If Scope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">prevScope</TD><TD ALIGN="LEFT" CELLPADDING="8">Function Scope</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nextScope</TD><TD ALIGN="LEFT" CELLPADDING="8">[]</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">symbols</TD><TD ALIGN="LEFT" CELLPADDING="8">条件分支局部变量</TD></TR>
+    </TABLE>
+  >];
+
+  ClosureScope [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" COLOR="#D92D20" BGCOLOR="white">
+      <TR><TD BGCOLOR="#D92D20" COLSPAN="2"><FONT COLOR="white"><B>Closure Scope</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">prevScope</TD><TD ALIGN="LEFT" CELLPADDING="8">Function Scope</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">nextScope</TD><TD ALIGN="LEFT" CELLPADDING="8">[]</TD></TR>
+      <TR><TD ALIGN="LEFT" CELLPADDING="8">symbols</TD><TD ALIGN="LEFT" CELLPADDING="8">闭包参数、捕获变量</TD></TR>
+    </TABLE>
+  >];
+
+  Root -> ClassScope [color="#175CD3", penwidth=2, label="nextScope[0]  子节点"];
+  ClassScope -> Root [color="#98A2B3", style=dashed, label="prevScope  父节点", constraint=false];
+
+  Root -> FunctionScope [color="#175CD3", penwidth=2, label="nextScope[1]  子节点"];
+  FunctionScope -> Root [color="#98A2B3", style=dashed, label="prevScope  父节点", constraint=false];
+
+  ClassScope -> MethodScope [color="#039855", penwidth=2, label="nextScope[0]"];
+  MethodScope -> ClassScope [color="#98A2B3", style=dashed, label="prevScope", constraint=false];
+
+  FunctionScope -> IfScope [color="#7F56D9", penwidth=2, label="nextScope[0]"];
+  IfScope -> FunctionScope [color="#98A2B3", style=dashed, label="prevScope", constraint=false];
+
+  FunctionScope -> ClosureScope [color="#7F56D9", penwidth=2, label="nextScope[1]"];
+  ClosureScope -> FunctionScope [color="#98A2B3", style=dashed, label="prevScope", constraint=false];
+
+  subgraph cluster_legend {
+    label="结构说明";
+    color="#D0D5DD";
+    bgcolor="#FFFFFF";
+    style="rounded";
+    fontsize=13;
+    fontcolor="#344054";
+
+    Legend [shape=plain, label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6">
+        <TR><TD ALIGN="LEFT"><FONT COLOR="#175CD3"><B>实线向下：</B></FONT> 父 Scope 的 nextScope 数组保存直接子 Scope，形成邻接表</TD></TR>
+        <TR><TD ALIGN="LEFT"><FONT COLOR="#667085"><B>虚线向上：</B></FONT> 子 Scope 的 prevScope 保存唯一父 Scope，可直接回退</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>pushScope：</B> 创建子 Scope，同时建立 nextScope 和 prevScope 两个方向的连接</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>popScope：</B> 通过 prevScope 返回父 Scope</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>整体结构：</B> 父指针 + 子节点邻接表构成的双向树；兄弟 Scope 之间没有直接指针</TD></TR>
+      </TABLE>
+    >];
+  }
+}
