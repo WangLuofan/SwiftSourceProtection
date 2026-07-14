@@ -161,7 +161,7 @@ class SPSourceProtection {
             }
         }
         
-        if self.argument.rename {
+        if self.argument.rename && !self.argument.dryRun {
             let renamer: SPSwiftSourceFileRenamer = SPSwiftSourceFileRenamer(
                 projFile: self.projectFile,
                 scheme: self.argument.scheme,
