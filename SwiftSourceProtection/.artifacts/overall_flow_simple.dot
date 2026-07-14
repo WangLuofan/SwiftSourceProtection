@@ -1,0 +1,23 @@
+digraph OverallFlowSimple {
+  graph [rankdir=TB, bgcolor="#F7F9FC", pad="0.4", nodesep="0.32", ranksep="0.38", fontname="Arial", label="Swift 源码保护工具 · 整体流程（简略版）", labelloc="t", fontsize=24, fontcolor="#172033", splines=ortho];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=12, color="#98A2B3", fillcolor="white", fontcolor="#172033", width=3.3, height=0.5];
+  edge [color="#667085", arrowsize=0.75];
+
+  Start [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="开始"];
+  S1 [fillcolor="#EEF4FF", color="#175CD3", label="1. 参数解析"];
+  S2 [fillcolor="#FFF6ED", color="#DC6803", label="2. 检查环境"];
+  S3 [fillcolor="#FFF6ED", color="#DC6803", label="3. 编译项目"];
+  S4 [fillcolor="#EEF4FF", color="#175CD3", label="4. 获取模块和文件"];
+  S5 [fillcolor="#EEF4FF", color="#175CD3", label="5. 收集信息"];
+  S6 [fillcolor="#EEF4FF", color="#175CD3", label="6. 合并信息"];
+  S7 [fillcolor="#F4F3FF", color="#7F56D9", label="7. 索引文件"];
+  S8 [fillcolor="#F4F3FF", color="#7F56D9", label="8. 关联 USR"];
+  S9 [fillcolor="#F4F3FF", color="#7F56D9", label="9. 混淆前预处理"];
+  S10 [fillcolor="#ECFDF3", color="#039855", label="10. 混淆源码"];
+  S11 [fillcolor="#FFFAEB", color="#D97706", label="11. 源码乱序（可选）"];
+  S12 [fillcolor="#FFFAEB", color="#D97706", label="12. 项目重命名（可选）"];
+  S13 [fillcolor="#ECFDF3", color="#039855", label="13. 产生混淆表"];
+  End [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="结束"];
+
+  Start -> S1 -> S2 -> S3 -> S4 -> S5 -> S6 -> S7 -> S8 -> S9 -> S10 -> S11 -> S12 -> S13 -> End;
+}

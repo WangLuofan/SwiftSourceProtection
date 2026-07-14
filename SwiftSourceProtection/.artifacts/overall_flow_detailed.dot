@@ -1,0 +1,50 @@
+digraph OverallFlowDetailed {
+  graph [rankdir=TB, bgcolor="#F7F9FC", pad="0.45", nodesep="0.40", ranksep="0.50", fontname="Arial", label="Swift 源码保护工具 · 整体流程（详细版）", labelloc="t", fontsize=24, fontcolor="#172033", splines=ortho];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=11, color="#98A2B3", fillcolor="white", fontcolor="#172033", margin="0.18,0.10", width=4.2];
+  edge [fontname="Arial", fontsize=10, color="#667085", fontcolor="#475467", arrowsize=0.75];
+
+  Start [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="开始"];
+  Args [fillcolor="#EEF4FF", color="#175CD3", label="1. 参数解析\n读取工程位置、处理模式和可选功能"];
+  Env [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="2. 检查环境\n开发环境和输入是否可用？"];
+  Compile [fillcolor="#FFF6ED", color="#DC6803", label="3. 编译项目\n清理已有结果并执行一次完整构建\n获取真实的构建输出"];
+  CompileOK [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="编译是否成功？"];
+  Modules [fillcolor="#EEF4FF", color="#175CD3", label="4. 获取模块和文件\n从构建输出识别模块、源码文件和编译参数\n排除不需要处理的第三方模块"];
+
+  Collect [fillcolor="#EEF4FF", color="#175CD3", label="5. 收集信息（逐模块、逐文件）\n解析源码结构\n收集类型、函数、变量、参数和枚举成员\n建立父子作用域及符号关系"];
+  Merge [fillcolor="#EEF4FF", color="#175CD3", label="6. 合并信息\n合并扩展声明与原类型的成员信息\n统一特殊继承标记和父子关系"];
+  Index [fillcolor="#F4F3FF", color="#7F56D9", label="7. 索引文件（逐模块、逐文件）\n使用真实编译参数获取声明、引用、位置和语义关系\n缓存文件级索引结果"];
+  Associate [fillcolor="#F4F3FF", color="#7F56D9", label="8. 关联 USR\n为声明绑定统一符号标识\n关联跨作用域和跨文件的同一符号\n识别外部继承与协议约束"];
+  Pre [fillcolor="#F4F3FF", color="#7F56D9", label="9. 混淆前预处理（逐文件）\n把源码标识符与确定的符号对象建立映射\n语义索引优先，作用域查找作为补充"];
+
+  Obfuscate [fillcolor="#ECFDF3", color="#039855", label="10. 混淆源码（逐模块、逐文件）\n替换声明与引用名称\n同步修改函数标签、调用点和特殊语法\n处理可保护的字符串内容"];
+  Preview [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="预览模式？"];
+  Show [fillcolor="#F4F3FF", color="#7F56D9", label="输出处理结果\n不覆盖原源码"];
+  Save [fillcolor="#ECFDF3", color="#039855", label="写回处理后的源码"];
+
+  Shuffle [shape=diamond, fillcolor="#FFFAEB", color="#D97706", label="11. 是否启用源码乱序？"];
+  DoShuffle [fillcolor="#FFFAEB", color="#D97706", label="随机调整文件声明和类型成员顺序"];
+  Rename [shape=diamond, fillcolor="#FFFAEB", color="#D97706", label="12. 是否正式执行且启用项目重命名？"];
+  DoRename [fillcolor="#FFFAEB", color="#D97706", label="同步调整工程名称、配置引用、目录和源码文件名"];
+  Table [fillcolor="#ECFDF3", color="#039855", label="13. 产生混淆表\n保存混淆名称与原始名称的对应关系\n为后续名称恢复提供依据"];
+  End [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="结束"];
+  Abort [shape=oval, fillcolor="#D92D20", color="#D92D20", fontcolor="white", label="输出错误信息并结束"];
+
+  Start -> Args -> Env;
+  Env -> Abort [label="无效"];
+  Env -> Compile [label="有效"];
+  Compile -> CompileOK;
+  CompileOK -> Abort [label="失败"];
+  CompileOK -> Modules [label="成功"];
+  Modules -> Collect -> Merge -> Index -> Associate -> Pre -> Obfuscate -> Shuffle;
+  Shuffle -> DoShuffle [label="是"];
+  Shuffle -> Preview [label="否"];
+  DoShuffle -> Preview;
+  Preview -> Show [label="是"];
+  Preview -> Save [label="否"];
+  Show -> Rename;
+  Save -> Rename;
+  Rename -> DoRename [label="是"];
+  Rename -> Table [label="否"];
+  DoRename -> Table;
+  Table -> End;
+}

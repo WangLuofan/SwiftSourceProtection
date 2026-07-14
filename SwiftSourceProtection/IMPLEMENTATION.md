@@ -648,3 +648,9 @@ override 方法和协议实现必须与父类或协议要求保持一致。如�
 - `IndexStore.swift`：集中保存 USR、文件、源码位置、SourceKit 响应、Scope 和符号之间的映射。
 - `SymbolIndexRelator.swift`：保存 SwiftSyntax Token ID 到符号对象的最终关联。
 - `File.swift`、`Module.swift` 和 `StringHelpers.swift`：提供文件、模块和字符串解析等基础能力。
+
+## 15. 整本流程
+![SwiftSourceProtection_Overall_Flow](assets/SwiftSourceProtection_Overall_Flow.png)
+
+## 16. 作用域关系图
+![SwiftSourceProtection_Scope_Relationship_Diagram](assets/SwiftSourceProtection_Scope_Relationship_Diagram.png)

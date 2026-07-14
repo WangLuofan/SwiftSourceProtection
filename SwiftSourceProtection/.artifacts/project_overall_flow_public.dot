@@ -1,0 +1,82 @@
+digraph PublicOverallFlow {
+  graph [
+    rankdir=TB,
+    bgcolor="#F7F9FC",
+    pad="0.45",
+    nodesep="0.48",
+    ranksep="0.58",
+    fontname="Arial",
+    label="Swift 源码保护工具 · 整体处理流程",
+    labelloc="t",
+    fontsize=24,
+    fontcolor="#172033",
+    splines=ortho
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=12,
+    color="#98A2B3",
+    fillcolor="white",
+    fontcolor="#172033",
+    margin="0.20,0.12",
+    width=2.8
+  ];
+
+  edge [fontname="Arial", fontsize=10, color="#667085", fontcolor="#475467", arrowsize=0.8];
+
+  Start [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="开始"];
+  Input [fillcolor="#EEF4FF", color="#175CD3", label="接收工程信息与处理选项"];
+  Validate [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="运行环境与输入是否有效？"];
+  Prepare [fillcolor="#FFFAEB", color="#D97706", label="准备工程分析环境"];
+  Discover [fillcolor="#EEF4FF", color="#175CD3", label="识别待处理模块与源码文件"];
+  Mode [shape=diamond, fillcolor="#F4F3FF", color="#7F56D9", label="选择处理模式"];
+  Protect [fillcolor="#ECFDF3", color="#039855", label="源码保护模式"];
+  Restore [fillcolor="#F4F3FF", color="#7F56D9", label="源码恢复模式\n加载已有映射信息"];
+
+  Parse [fillcolor="#EEF4FF", color="#175CD3", label="解析源码结构"];
+  Collect [fillcolor="#EEF4FF", color="#175CD3", label="收集声明、引用与作用域"];
+  Analyze [fillcolor="#EEF4FF", color="#175CD3", label="执行语义分析与跨文件关联"];
+  Rules [fillcolor="#FFF6ED", color="#DC6803", label="应用保留规则与兼容性判断"];
+  Transform [fillcolor="#ECFDF3", color="#039855", label="生成并应用源码转换方案"];
+
+  Extra [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="是否启用附加保护？"];
+  ExtraWork [fillcolor="#ECFDF3", color="#039855", label="执行可选的内容保护与结构调整"];
+  Preview [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="预览还是正式执行？"];
+  Show [fillcolor="#F4F3FF", color="#7F56D9", label="输出预览结果\n不覆盖原始源码"];
+  Save [fillcolor="#ECFDF3", color="#039855", label="保存处理后的源码"];
+
+  ProjectChange [shape=diamond, fillcolor="#FFF6ED", color="#DC6803", label="是否处理工程级名称？"];
+  Rename [fillcolor="#FFF6ED", color="#DC6803", label="同步调整工程配置与文件名称"];
+  Result [shape=diamond, fillcolor="#ECFDF3", color="#039855", label="是否需要输出恢复信息？"];
+  Mapping [fillcolor="#ECFDF3", color="#039855", label="保存名称恢复所需的映射信息"];
+  Verify [fillcolor="#EEF4FF", color="#175CD3", label="汇总处理结果"];
+  End [shape=oval, fillcolor="#344054", color="#344054", fontcolor="white", label="结束"];
+  Abort [shape=oval, fillcolor="#D92D20", color="#D92D20", fontcolor="white", label="报告问题并结束"];
+
+  Start -> Input -> Validate;
+  Validate -> Abort [label="否"];
+  Validate -> Prepare [label="是"];
+  Prepare -> Discover -> Mode;
+  Mode -> Protect [label="保护"];
+  Mode -> Restore [label="恢复"];
+  Protect -> Parse;
+  Restore -> Parse;
+  Parse -> Collect -> Analyze -> Rules -> Transform -> Extra;
+  Extra -> ExtraWork [label="是"];
+  Extra -> Preview [label="否"];
+  ExtraWork -> Preview;
+  Preview -> Show [label="预览"];
+  Preview -> Save [label="执行"];
+  Show -> ProjectChange;
+  Save -> ProjectChange;
+  ProjectChange -> Rename [label="是"];
+  ProjectChange -> Result [label="否"];
+  Rename -> Result;
+  Result -> Mapping [label="是"];
+  Result -> Verify [label="否"];
+  Mapping -> Verify;
+  Verify -> End;
+}
